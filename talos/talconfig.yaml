@@ -23,7 +23,7 @@ nodes:
   - hostname: "vrtx-alpha"
     ipAddress: "192.168.168.201"
     installDiskSelector:
-      wwid: "naa.6848f690ee3fcb002def6df504f7b3a6"
+      wwid: "naa.6848f690ee3fcb002f955512161891a2"
     machineSpec:
       secureboot: false
     talosImageURL: factory.talos.dev/installer/f0fd5b00b72f2b679f73e5eef35c97d134df74a1e9d40f548eb27118caceaf1f
@@ -60,7 +60,7 @@ nodes:
           deviceSelectors:
             - busPath: "0000:01:00.*"
     
-  - hostname: "vrtx-beta"
+  - hostname: "vrtx-bravo"
     ipAddress: "192.168.168.202"
     installDiskSelector:
       wwid: "naa.6848f690ee3f9d002f9447e18a5eb424"
@@ -100,7 +100,7 @@ nodes:
           deviceSelectors:
             - busPath: "0000:01:00.*"
     
-  - hostname: "vrtx-charle"
+  - hostname: "vrtx-charlie"
     ipAddress: "192.168.168.203"
     installDiskSelector:
       wwid: "naa.690b11c023cc85002f9405d5105ad690"
