@@ -103,9 +103,9 @@ There are **5 stages** outlined below for completing this project, make sure you
 2. Fill out `cluster.yaml` and `nodes.yaml` configuration files using the comments in those file as a guide.
 
    > [!TIP]
-   > **Network Bonding Configuration**:  
+   > **Network Bonding Configuration**:
    > The template supports several methods for configuring bonded network interfaces:
-   > 
+   >
    > 1. Using interface names directly (recommended):
    >    ```yaml
    >    bond: true
@@ -114,7 +114,7 @@ There are **5 stages** outlined below for completing this project, make sure you
    >      - "eno2"
    >    mtu: 1500            # MTU will be applied to both bond0 and underlying interfaces
    >    ```
-   > 
+   >
    > 2. Using MAC addresses directly:
    >    ```yaml
    >    bond: true
@@ -124,7 +124,7 @@ There are **5 stages** outlined below for completing this project, make sure you
    >      - "00:11:22:33:44:56"
    >    mtu: 1500            # MTU will be applied to both bond0 and underlying interfaces
    >    ```
-   > 
+   >
    > 3. Using device selectors with wildcards:
    >    ```yaml
    >    bond: true
@@ -141,7 +141,7 @@ There are **5 stages** outlined below for completing this project, make sure you
    > **Note about MTU**:
    > - When using interface names or direct MAC addresses, the MTU is automatically applied to both the bond0 interface and the underlying physical interfaces.
    > - When using device selectors with wildcards, the MTU is only applied to the bond0 interface. If you need to set the MTU on the underlying interfaces when using selectors, consider using interface names instead.
-   > 
+   >
    > See the `nodes.example-with-bonding.yaml` file for more examples.
 
 3. Template out the kubernetes and talos configuration files, if any issues come up be sure to read the error and adjust your config files accordingly.
@@ -264,7 +264,7 @@ By default Flux will periodically check your git repository for changes. In-orde
 2. Piece together the full URL with the webhook path appended:
 
     ```text
-    https://flux-webhook.${cloudflare_domain}/hook/12ebd1e363c641dc3c2e430ecf3cee2b3c7a5ac9e1234506f6f5f3ce1230e123
+    https://vrtx-flux-webhook.${cloudflare_domain}/hook/12ebd1e363c641dc3c2e430ecf3cee2b3c7a5ac9e1234506f6f5f3ce1230e123
     ```
 
 3. Navigate to the settings of your repository on Github, under "Settings/Webhooks" press the "Add webhook" button. Fill in the webhook URL and your token from `github-push-token.txt`, Content type: `application/json`, Events: Choose Just the push event, and save.
