@@ -1,0 +1,49 @@
+---
+nodes:
+  # Example node with bonded interfaces using direct interface list (explicit MACs)
+  - name: "control01"            # (REQUIRED) Name of the node
+    address: "192.168.1.101"     # (REQUIRED) IP address of the node
+    controller: true             # This is a controller node
+    disk: "/dev/sda"             # Boot disk
+    schematic_id: "f0fd5b00b72f2b679f73e5eef35c97d134df74a1e9d40f548eb27118caceaf1f"      # Schematic ID from factory.talos.dev
+    bond: true                   # Enable network bonding
+    bond_use_selectors: false    # Use direct interface list (not deviceSelectors)
+    bond_interfaces:             # List of bond member interfaces (MAC addresses)
+      - "00:11:22:33:44:55"      # First NIC in the bond
+      - "00:11:22:33:44:56"      # Second NIC in the bond
+    bond_mode: "802.3ad"         # LACP bonding mode
+    bond_lacp_rate: "fast"       # LACP rate
+    bond_xmit_hash_policy: "layer3+4"  # Hash policy for outgoing traffic
+    bond_miimon: 100             # Link monitoring interval (ms)
+    mtu: 1500                    # MTU setting
+    secureboot: false
+    encrypt_disk: false
+
+  # Example node with bonded interfaces using deviceSelectors (wildcard MACs)
+  - name: "control02"            # (REQUIRED) Name of the node
+    address: "192.168.1.102"     # (REQUIRED) IP address of the node
+    controller: true             # This is a controller node
+    disk: "/dev/sda"             # Boot disk
+    schematic_id: "f0fd5b00b72f2b679f73e5eef35c97d134df74a1e9d40f548eb27118caceaf1f"      # Schematic ID from factory.talos.dev
+    bond: true                   # Enable network bonding
+    bond_use_selectors: true     # Use deviceSelectors with wildcards
+    bond_interfaces:             # List of bond member interfaces (MAC patterns)
+      - "00:50:56:*"             # Will match all NICs with MAC starting with 00:50:56
+    bond_mode: "802.3ad"         # LACP bonding mode
+    bond_lacp_rate: "fast"       # LACP rate
+    bond_xmit_hash_policy: "layer3+4"  # Hash policy for outgoing traffic
+    bond_miimon: 100             # Link monitoring interval (ms)
+    mtu: 1500                    # MTU setting
+    secureboot: false
+    encrypt_disk: false
+
+  # Example node with standard networking (no bonding)
+  - name: "worker01"
+    address: "192.168.1.201"
+    controller: false
+    disk: "/dev/sda"
+    mac_addr: "00:11:22:33:44:60"  # Single MAC address for non-bonded setup
+    schematic_id: "f0fd5b00b72f2b679f73e5eef35c97d134df74a1e9d40f548eb27118caceaf1f"
+    mtu: 1500
+    secureboot: false
+    encrypt_disk: false

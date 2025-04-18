@@ -35,6 +35,58 @@ nodes:
       secureboot: #{ (true if item.secureboot else false) | string | lower }#
     talosImageURL: factory.talos.dev/installer#{ "-secureboot" if item.secureboot | default(false, true) }#/#{ item.schematic_id }#
     controlPlane: #{ (item.controller) | string | lower }#
+    
+    #% if item.bond | default(false, true) %#
+    # Bonded interface configuration
+    networkInterfaces:
+      # Bond interface with either deviceSelectors or direct interface list
+      - interface: bond0
+        dhcp: false
+        #% if node_vlan_tag %#
+        vlans:
+          - vlanId: #{ node_vlan_tag }#
+            addresses:
+              - "#{ item.address }#/#{ node_cidr.split('/') | last }#"
+            mtu: #{ item.mtu | default(1500, true) }#
+            routes:
+              - network: "0.0.0.0/0"
+                gateway: "#{ node_default_gateway }#"
+            #% if item.controller %#
+            vip:
+              ip: "#{ cluster_api_addr }#"
+            #% endif %#
+        #% else %#
+        addresses:
+          - "#{ item.address }#/#{ node_cidr.split('/') | last }#"
+        routes:
+          - network: "0.0.0.0/0"
+            gateway: "#{ node_default_gateway }#"
+        mtu: #{ item.mtu | default(1500, true) }#
+        #% if item.controller %#
+        vip:
+          ip: "#{ cluster_api_addr }#"
+        #% endif %#
+        #% endif %#
+        bond:
+          mode: #{ item.bond_mode | default('802.3ad', true) }#
+          lacpRate: #{ item.bond_lacp_rate | default('fast', true) }#
+          xmitHashPolicy: #{ item.bond_xmit_hash_policy | default('layer3+4', true) }#
+          miimon: #{ item.bond_miimon | default(100, true) }#
+          #% if item.bond_use_selectors | default(false, true) %#
+          # Using deviceSelectors for bond members (supports wildcards)
+          deviceSelectors:
+            #% for intf in item.bond_interfaces | default([], true) %#
+            - hardwareAddr: "#{ intf }#"
+            #% endfor %#
+          #% else %#
+          # Using direct interface list (explicit MAC addresses)
+          interfaces:
+            #% for intf in item.bond_interfaces | default([], true) %#
+            - "#{ intf }#"
+            #% endfor %#
+          #% endif %#
+    #% else %#
+    # Standard network configuration
     networkInterfaces:
       - deviceSelector:
           hardwareAddr: "#{ item.mac_addr | lower }#"
@@ -64,6 +116,8 @@ nodes:
           ip: "#{ cluster_api_addr }#"
         #% endif %#
         #% endif %#
+    #% endif %#
+    
     #% if talos_patches('%s' % (item.name)) | length == 0 %#
     #% if item.encrypt_disk | default(false, true) %#
     patches:
