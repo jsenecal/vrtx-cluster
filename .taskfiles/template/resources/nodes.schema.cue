@@ -17,7 +17,8 @@ import (
 	name:          =~"^[a-z0-9][a-z0-9\\-]{0,61}[a-z0-9]$|^[a-z0-9]$" & !="global" & !="controller" & !="worker"
 	address:       net.IPv4
 	controller:    bool
-	disk:          string
+	disk?:          string  // Can be device path like "/dev/sda" or storage selector like "serial:123456"
+	disk_by_wwid?:   string  // Disk selection by WWID (World Wide Identifier)
 	schematic_id:  =~"^[a-z0-9]{64}$"
 	mtu?:          >=1450 & <=9000
 	secureboot?:   bool
@@ -29,7 +30,14 @@ import (
 	
 	// Bond configuration (optional)
 	bond_interfaces?: [...=~"^([0-9a-f]{2}[:]){5}([0-9a-f]{2})$|^([0-9a-f]{2}[:]){1,5}\\*$"]
-	bond_use_selectors?: bool
+	bond_pci_ids?: [...string]  // PCI bus path selectors (like "00:*" or "00:01.0")
+	bond_drivers?: [...string]  // Network driver names (like "igb" or "virtio_net")
+	bond_combined_selectors?: [...{
+		hardwareAddr?: string
+		busPath?: string
+		driver?: string
+	}]  // Combined selectors with multiple criteria
+	bond_use_selectors?: bool   // Whether to use deviceSelectors instead of direct interface list
 	bond_mode?: string
 	bond_lacp_rate?: string
 	bond_xmit_hash_policy?: string

@@ -25,7 +25,10 @@ nodes:
   #% for item in nodes %#
   - hostname: "#{ item.name }#"
     ipAddress: "#{ item.address }#"
-    #% if item.disk.startswith('/') %#
+    #% if item.disk_by_wwid is defined %#
+    installDiskSelector:
+      wwid: "#{ item.disk_by_wwid }#"
+    #% elif item.disk.startswith('/') %#
     installDisk: "#{ item.disk }#"
     #% else %#
     installDiskSelector:
@@ -78,6 +81,22 @@ nodes:
             #% for intf in item.bond_interfaces | default([], true) %#
             - hardwareAddr: "#{ intf }#"
             #% endfor %#
+            #% for pci in item.bond_pci_ids | default([], true) %#
+            - busPath: "#{ pci }#"
+            #% endfor %#
+            #% for driver in item.bond_drivers | default([], true) %#
+            - driver: "#{ driver }#"
+            #% endfor %#
+            #% if item.bond_combined_selectors is defined %#
+            #% for selector in item.bond_combined_selectors | default([], true) %#
+            #% if loop.first %#
+            - #% else %#
+            - #% endif %#
+              #% for key, value in selector.items() %#
+              #{ key }#: "#{ value }#"
+              #% endfor %#
+            #% endfor %#
+            #% endif %#
           #% else %#
           # Using direct interface list (explicit MAC addresses)
           interfaces:

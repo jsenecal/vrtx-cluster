@@ -4,7 +4,7 @@ nodes:
   - name: "control01"            # (REQUIRED) Name of the node
     address: "192.168.1.101"     # (REQUIRED) IP address of the node
     controller: true             # This is a controller node
-    disk: "/dev/sda"             # Boot disk
+    disk: "/dev/sda"             # Boot disk using device path
     schematic_id: "f0fd5b00b72f2b679f73e5eef35c97d134df74a1e9d40f548eb27118caceaf1f"      # Schematic ID from factory.talos.dev
     bond: true                   # Enable network bonding
     bond_use_selectors: false    # Use direct interface list (not deviceSelectors)
@@ -23,7 +23,7 @@ nodes:
   - name: "control02"            # (REQUIRED) Name of the node
     address: "192.168.1.102"     # (REQUIRED) IP address of the node
     controller: true             # This is a controller node
-    disk: "/dev/sda"             # Boot disk
+    disk_by_wwid: "eui.0123456789abcdef"  # Boot disk selection by WWID
     schematic_id: "f0fd5b00b72f2b679f73e5eef35c97d134df74a1e9d40f548eb27118caceaf1f"      # Schematic ID from factory.talos.dev
     bond: true                   # Enable network bonding
     bond_use_selectors: true     # Use deviceSelectors with wildcards
@@ -41,7 +41,7 @@ nodes:
   - name: "worker01"
     address: "192.168.1.201"
     controller: false
-    disk: "/dev/sda"
+    disk: "ABC123XYZ"  # Boot disk selected by serial number
     mac_addr: "00:11:22:33:44:60"  # Single MAC address for non-bonded setup
     schematic_id: "f0fd5b00b72f2b679f73e5eef35c97d134df74a1e9d40f548eb27118caceaf1f"
     mtu: 1500
