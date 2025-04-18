@@ -22,7 +22,8 @@ cniConfig:
 nodes:
   - hostname: "vrtx-alpha"
     ipAddress: "192.168.168.201"
-    installDisk: "/dev/sda"
+    installDiskSelector:
+      wwid: "naa.6848f690ee3fcb002def6df504f7b3a6"
     machineSpec:
       secureboot: false
     talosImageURL: factory.talos.dev/installer/f0fd5b00b72f2b679f73e5eef35c97d134df74a1e9d40f548eb27118caceaf1f
@@ -48,14 +49,14 @@ nodes:
           lacpRate: fast
           xmitHashPolicy: layer3+4
           miimon: 100
-          # Using direct interface list (explicit MAC addresses)
-          interfaces:
-            - "00:11:22:33:44:55"
-            - "00:11:22:33:44:56"
+          # Using deviceSelectors for bond members (supports wildcards)
+          deviceSelectors:
+            - busPath: "0000:01:00.*"
     
   - hostname: "vrtx-beta"
     ipAddress: "192.168.168.202"
-    installDisk: "/dev/sda"
+    installDiskSelector:
+      wwid: "naa.6848f690ee3f9d002f9447e18a5eb424"
     machineSpec:
       secureboot: false
     talosImageURL: factory.talos.dev/installer/f0fd5b00b72f2b679f73e5eef35c97d134df74a1e9d40f548eb27118caceaf1f
@@ -81,14 +82,14 @@ nodes:
           lacpRate: fast
           xmitHashPolicy: layer3+4
           miimon: 100
-          # Using direct interface list (explicit MAC addresses)
-          interfaces:
-            - "00:11:22:33:44:55"
-            - "00:11:22:33:44:56"
+          # Using deviceSelectors for bond members (supports wildcards)
+          deviceSelectors:
+            - busPath: "0000:01:00.*"
     
   - hostname: "vrtx-charle"
     ipAddress: "192.168.168.203"
-    installDisk: "/dev/sda"
+    installDiskSelector:
+      wwid: "naa.690b11c023cc85002f9405d5105ad690"
     machineSpec:
       secureboot: false
     talosImageURL: factory.talos.dev/installer/f0fd5b00b72f2b679f73e5eef35c97d134df74a1e9d40f548eb27118caceaf1f
@@ -114,10 +115,9 @@ nodes:
           lacpRate: fast
           xmitHashPolicy: layer3+4
           miimon: 100
-          # Using direct interface list (explicit MAC addresses)
-          interfaces:
-            - "00:11:22:33:44:55"
-            - "00:11:22:33:44:56"
+          # Using deviceSelectors for bond members (supports wildcards)
+          deviceSelectors:
+            - busPath: "0000:01:00.*"
     
 
 # Global patches
