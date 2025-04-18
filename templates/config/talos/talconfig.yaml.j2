@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/budimanjojo/talhelper/master/pkg/config/schemas/talconfig.json
 ---
-clusterName: kubernetes
+clusterName: #{ cluster_name | default("kubernetes", true) }#
 
 talosVersion: "${talosVersion}"
 kubernetesVersion: "${kubernetesVersion}"
@@ -42,9 +42,53 @@ nodes:
     #% if item.bond | default(false, true) %#
     # Bonded interface configuration
     networkInterfaces:
-      # Bond interface with either deviceSelectors or direct interface list
+      #% if item.bond_interface_names is defined %#
+      # Add underlying interfaces with MTU settings (interface names)
+      #% for intf in item.bond_interface_names | default([], true) %#
+      - interface: "#{ intf }#"
+        dhcp: false
+        mtu: #{ item.mtu | default(1500, true) }#
+      #% endfor %#
+      #% elif not item.bond_use_selectors | default(false, true) and item.bond_interfaces is defined %#
+      # Add underlying interfaces with MTU settings (MAC addresses)
+      #% for intf in item.bond_interfaces | default([], true) %#
+      - deviceSelector:
+          permanentAddr: "#{ intf }#"
+        dhcp: false
+        mtu: #{ item.mtu | default(1500, true) }#
+      #% endfor %#
+      #% elif item.bond_use_selectors | default(false, true) %#
+      # Using device selectors - we need to add separate interfaces for each selector
+      # with individual MTU settings
+      #% for intf in item.bond_interfaces | default([], true) %#
+      - deviceSelector:
+          permanentAddr: "#{ intf }#"
+        dhcp: false
+        mtu: #{ item.mtu | default(1500, true) }#
+      #% endfor %#
+      #% for bus in item.bond_bus_paths | default([], true) %#
+      - deviceSelector:
+          busPath: "#{ bus }#"
+        dhcp: false
+        mtu: #{ item.mtu | default(1500, true) }#
+      #% endfor %#
+      #% for pci in item.bond_pci_ids | default([], true) %#
+      - deviceSelector:
+          pciID: "#{ pci }#"
+        dhcp: false
+        mtu: #{ item.mtu | default(1500, true) }#
+      #% endfor %#
+      #% for driver in item.bond_drivers | default([], true) %#
+      - deviceSelector:
+          driver: "#{ driver }#"
+        dhcp: false
+        mtu: #{ item.mtu | default(1500, true) }#
+      #% endfor %#
+      #% endif %#
+      # Bond interface with either deviceSelectors, direct interface names, or MAC addresses
       - interface: bond0
         dhcp: false
+        mtu: #{ item.mtu | default(1500, true) }#
         #% if node_vlan_tag %#
         vlans:
           - vlanId: #{ node_vlan_tag }#
@@ -64,7 +108,6 @@ nodes:
         routes:
           - network: "0.0.0.0/0"
             gateway: "#{ node_default_gateway }#"
-        mtu: #{ item.mtu | default(1500, true) }#
         #% if item.controller %#
         vip:
           ip: "#{ cluster_api_addr }#"
@@ -79,10 +122,13 @@ nodes:
           # Using deviceSelectors for bond members (supports wildcards)
           deviceSelectors:
             #% for intf in item.bond_interfaces | default([], true) %#
-            - hardwareAddr: "#{ intf }#"
+            - permanentAddr: "#{ intf }#"
+            #% endfor %#
+            #% for bus in item.bond_bus_paths | default([], true) %#
+            - busPath: "#{ bus }#"
             #% endfor %#
             #% for pci in item.bond_pci_ids | default([], true) %#
-            - busPath: "#{ pci }#"
+            - pciID: "#{ pci }#"
             #% endfor %#
             #% for driver in item.bond_drivers | default([], true) %#
             - driver: "#{ driver }#"
@@ -97,6 +143,12 @@ nodes:
               #% endfor %#
             #% endfor %#
             #% endif %#
+          #% elif item.bond_interface_names is defined %#
+          # Using direct interface names
+          interfaces:
+            #% for intf in item.bond_interface_names | default([], true) %#
+            - "#{ intf }#"
+            #% endfor %#
           #% else %#
           # Using direct interface list (explicit MAC addresses)
           interfaces:

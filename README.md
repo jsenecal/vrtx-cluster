@@ -1,4 +1,4 @@
-# ⛵ Cluster Template
+⛵ Cluster Template
 
 Welcome to my minimalist template for deploying a single Kubernetes cluster. The goal of this project is to make it easier for people interested in using Kubernetes to deploy a cluster at home on bare-metal or VMs. This template closely mirrors my personal [home-ops](https://github.com/onedr0p/home-ops) repository. At a high level this project makes use of [makejinja](https://github.com/mirkolenz/makejinja) to read in configuration files ([cluster.yaml](./cluster.sample.yaml) & [nodes.yaml](./nodes.sample.yaml)). Makejinja will render out templates that will allow you to install a Kubernetes cluster with the features mentioned below.
 
@@ -15,6 +15,8 @@ A Kubernetes cluster deployed with [Talos Linux](https://github.com/siderolabs/t
 - Workflow automation w/ [GitHub Actions](https://github.com/features/actions)
 - Dependency automation w/ [Renovate](https://www.mend.io/renovate)
 - Flux `HelmRelease` and `Kustomization` diffs w/ [flux-local](https://github.com/allenporter/flux-local)
+- Network interface bonding for high availability networking
+- Multiple methods for network interface selection (MAC address, interface name, PCI device selectors)
 
 Does this sound cool to you? If so, continue to read on! 👇
 
@@ -99,6 +101,48 @@ There are **5 stages** outlined below for completing this project, make sure you
     ```
 
 2. Fill out `cluster.yaml` and `nodes.yaml` configuration files using the comments in those file as a guide.
+
+   > [!TIP]
+   > **Network Bonding Configuration**:  
+   > The template supports several methods for configuring bonded network interfaces:
+   > 
+   > 1. Using interface names directly (recommended):
+   >    ```yaml
+   >    bond: true
+   >    bond_interface_names:
+   >      - "eno1"
+   >      - "eno2"
+   >    mtu: 1500            # MTU will be applied to both bond0 and underlying interfaces
+   >    ```
+   > 
+   > 2. Using MAC addresses directly:
+   >    ```yaml
+   >    bond: true
+   >    bond_use_selectors: false
+   >    bond_interfaces:
+   >      - "00:11:22:33:44:55"
+   >      - "00:11:22:33:44:56"
+   >    mtu: 1500            # MTU will be applied to both bond0 and underlying interfaces
+   >    ```
+   > 
+   > 3. Using device selectors with wildcards:
+   >    ```yaml
+   >    bond: true
+   >    bond_use_selectors: true
+   >    bond_interfaces:
+   >      - "00:50:56:*"     # MAC address pattern
+   >    bond_bus_paths:
+   >      - "01:00.*"        # PCI bus path
+   >    bond_pci_ids:
+   >      - "8086:10fb"      # Vendor:Device ID
+   >    mtu: 1500            # Applied to bond0 interface only (use interface names for MTU on underlying interfaces)
+   >    ```
+   >
+   > **Note about MTU**:
+   > - When using interface names or direct MAC addresses, the MTU is automatically applied to both the bond0 interface and the underlying physical interfaces.
+   > - When using device selectors with wildcards, the MTU is only applied to the bond0 interface. If you need to set the MTU on the underlying interfaces when using selectors, consider using interface names instead.
+   > 
+   > See the `nodes.example-with-bonding.yaml` file for more examples.
 
 3. Template out the kubernetes and talos configuration files, if any issues come up be sure to read the error and adjust your config files accordingly.
 
@@ -305,7 +349,7 @@ Below is a general guide on trying to debug an issue with an resource or applica
 4. If a resource exists try to describe it to see what problems it might have:
 
     ```sh
-    kubectl -n <namespace> describe <resource> <name>
+    kubectl -n <namespace> describe <resource> <n>
     ```
 
 5. Check the namespace events:
@@ -341,7 +385,7 @@ Once your cluster is fully configured and you no longer need to run `task config
 
 ## 🙋 GitHub Sponsors Support
 
-If you're having difficulty with this project, can't find the answers you need through the community support options above, or simply want to show your appreciation while gaining deeper insights, I’m offering one-on-one paid support through GitHub Sponsors for a limited time. Payment and scheduling will be coordinated through [GitHub Sponsors](https://github.com/sponsors/onedr0p).
+If you're having difficulty with this project, can't find the answers you need through the community support options above, or simply want to show your appreciation while gaining deeper insights, I'm offering one-on-one paid support through GitHub Sponsors for a limited time. Payment and scheduling will be coordinated through [GitHub Sponsors](https://github.com/sponsors/onedr0p).
 
 <details>
 
@@ -350,7 +394,7 @@ If you're having difficulty with this project, can't find the answers you need t
 <br>
 
 - **Rate**: $50/hour (no longer than 2 hours / day).
-- **What’s Included**: Assistance with deployment, debugging, or answering questions related to this project.
+- **What's Included**: Assistance with deployment, debugging, or answering questions related to this project.
 - **What to Expect**:
   1. Sessions will focus on specific questions or issues you are facing.
   2. I will provide guidance, explanations, and actionable steps to help resolve your concerns.

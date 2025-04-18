@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/budimanjojo/talhelper/master/pkg/config/schemas/talconfig.json
 ---
-clusterName: kubernetes
+clusterName: vrtx-cluster
 
 talosVersion: "${talosVersion}"
 kubernetesVersion: "${kubernetesVersion}"
@@ -31,11 +31,18 @@ nodes:
     
     # Bonded interface configuration
     networkInterfaces:
-      # Bond interface with either deviceSelectors or direct interface list
+      # Using device selectors - we need to add separate interfaces for each selector
+      # with individual MTU settings
+      - deviceSelector:
+          busPath: "0000:01:00.*"
+        dhcp: false
+        mtu: 9000
+      # Bond interface with either deviceSelectors, direct interface names, or MAC addresses
       - interface: bond0
         dhcp: false
+        mtu: 9000
         vlans:
-          - vlanId: 666
+          - vlanId: 168
             addresses:
               - "192.168.168.201/24"
             mtu: 9000
@@ -64,11 +71,18 @@ nodes:
     
     # Bonded interface configuration
     networkInterfaces:
-      # Bond interface with either deviceSelectors or direct interface list
+      # Using device selectors - we need to add separate interfaces for each selector
+      # with individual MTU settings
+      - deviceSelector:
+          busPath: "0000:01:00.*"
+        dhcp: false
+        mtu: 9000
+      # Bond interface with either deviceSelectors, direct interface names, or MAC addresses
       - interface: bond0
         dhcp: false
+        mtu: 9000
         vlans:
-          - vlanId: 666
+          - vlanId: 168
             addresses:
               - "192.168.168.202/24"
             mtu: 9000
@@ -97,11 +111,18 @@ nodes:
     
     # Bonded interface configuration
     networkInterfaces:
-      # Bond interface with either deviceSelectors or direct interface list
+      # Using device selectors - we need to add separate interfaces for each selector
+      # with individual MTU settings
+      - deviceSelector:
+          busPath: "0000:01:00.*"
+        dhcp: false
+        mtu: 9000
+      # Bond interface with either deviceSelectors, direct interface names, or MAC addresses
       - interface: bond0
         dhcp: false
+        mtu: 9000
         vlans:
-          - vlanId: 666
+          - vlanId: 168
             addresses:
               - "192.168.168.203/24"
             mtu: 9000
