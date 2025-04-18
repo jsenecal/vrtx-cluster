@@ -1,0 +1,136 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/budimanjojo/talhelper/master/pkg/config/schemas/talconfig.json
+---
+clusterName: kubernetes
+
+talosVersion: "${talosVersion}"
+kubernetesVersion: "${kubernetesVersion}"
+
+endpoint: https://192.168.168.200:6443
+additionalApiServerCertSans: &sans
+  - "127.0.0.1"
+  - "192.168.168.200"
+  - "k8s.msrtsmth.io"
+additionalMachineCertSans: *sans
+
+clusterPodNets: ["10.42.0.0/16"]
+clusterSvcNets: ["10.43.0.0/16"]
+
+# Disable built-in CNI to use Cilium
+cniConfig:
+  name: none
+
+nodes:
+  - hostname: "vrtx-alpha"
+    ipAddress: "192.168.168.201"
+    installDisk: "/dev/sda"
+    machineSpec:
+      secureboot: false
+    talosImageURL: factory.talos.dev/installer/f0fd5b00b72f2b679f73e5eef35c97d134df74a1e9d40f548eb27118caceaf1f
+    controlPlane: true
+    
+    # Bonded interface configuration
+    networkInterfaces:
+      # Bond interface with either deviceSelectors or direct interface list
+      - interface: bond0
+        dhcp: false
+        vlans:
+          - vlanId: 666
+            addresses:
+              - "192.168.168.201/24"
+            mtu: 9000
+            routes:
+              - network: "0.0.0.0/0"
+                gateway: "192.168.168.1"
+            vip:
+              ip: "192.168.168.200"
+        bond:
+          mode: 802.3ad
+          lacpRate: fast
+          xmitHashPolicy: layer3+4
+          miimon: 100
+          # Using direct interface list (explicit MAC addresses)
+          interfaces:
+            - "00:11:22:33:44:55"
+            - "00:11:22:33:44:56"
+    
+  - hostname: "vrtx-beta"
+    ipAddress: "192.168.168.202"
+    installDisk: "/dev/sda"
+    machineSpec:
+      secureboot: false
+    talosImageURL: factory.talos.dev/installer/f0fd5b00b72f2b679f73e5eef35c97d134df74a1e9d40f548eb27118caceaf1f
+    controlPlane: true
+    
+    # Bonded interface configuration
+    networkInterfaces:
+      # Bond interface with either deviceSelectors or direct interface list
+      - interface: bond0
+        dhcp: false
+        vlans:
+          - vlanId: 666
+            addresses:
+              - "192.168.168.202/24"
+            mtu: 9000
+            routes:
+              - network: "0.0.0.0/0"
+                gateway: "192.168.168.1"
+            vip:
+              ip: "192.168.168.200"
+        bond:
+          mode: 802.3ad
+          lacpRate: fast
+          xmitHashPolicy: layer3+4
+          miimon: 100
+          # Using direct interface list (explicit MAC addresses)
+          interfaces:
+            - "00:11:22:33:44:55"
+            - "00:11:22:33:44:56"
+    
+  - hostname: "vrtx-charle"
+    ipAddress: "192.168.168.203"
+    installDisk: "/dev/sda"
+    machineSpec:
+      secureboot: false
+    talosImageURL: factory.talos.dev/installer/f0fd5b00b72f2b679f73e5eef35c97d134df74a1e9d40f548eb27118caceaf1f
+    controlPlane: true
+    
+    # Bonded interface configuration
+    networkInterfaces:
+      # Bond interface with either deviceSelectors or direct interface list
+      - interface: bond0
+        dhcp: false
+        vlans:
+          - vlanId: 666
+            addresses:
+              - "192.168.168.203/24"
+            mtu: 9000
+            routes:
+              - network: "0.0.0.0/0"
+                gateway: "192.168.168.1"
+            vip:
+              ip: "192.168.168.200"
+        bond:
+          mode: 802.3ad
+          lacpRate: fast
+          xmitHashPolicy: layer3+4
+          miimon: 100
+          # Using direct interface list (explicit MAC addresses)
+          interfaces:
+            - "00:11:22:33:44:55"
+            - "00:11:22:33:44:56"
+    
+
+# Global patches
+patches:
+  - "@./patches/global/machine-files.yaml"
+  - "@./patches/global/machine-kubelet.yaml"
+  - "@./patches/global/machine-network.yaml"
+  - "@./patches/global/machine-sysctls.yaml"
+  - "@./patches/global/machine-time.yaml"
+
+# Controller patches
+controlPlane:
+  patches:
+    - "@./patches/controller/admission-controller-patch.yaml"
+    - "@./patches/controller/cluster.yaml"
+
