@@ -1,21 +1,20 @@
 ---
 nodes:
-  # Example node with bonded interfaces using direct interface list (explicit MACs)
+  # Example node with bonded interfaces using interface names directly
   - name: "control01"            # (REQUIRED) Name of the node
     address: "192.168.1.101"     # (REQUIRED) IP address of the node
     controller: true             # This is a controller node
     disk: "/dev/sda"             # Boot disk using device path
     schematic_id: "f0fd5b00b72f2b679f73e5eef35c97d134df74a1e9d40f548eb27118caceaf1f"      # Schematic ID from factory.talos.dev
     bond: true                   # Enable network bonding
-    bond_use_selectors: false    # Use direct interface list (not deviceSelectors)
-    bond_interfaces:             # List of bond member interfaces (MAC addresses)
-      - "00:11:22:33:44:55"      # First NIC in the bond
-      - "00:11:22:33:44:56"      # Second NIC in the bond
+    bond_interface_names:        # List of bond member interfaces (interface names)
+      - "eno1"                   # First NIC in the bond
+      - "eno2"                   # Second NIC in the bond
     bond_mode: "802.3ad"         # LACP bonding mode
     bond_lacp_rate: "fast"       # LACP rate
     bond_xmit_hash_policy: "layer3+4"  # Hash policy for outgoing traffic
     bond_miimon: 100             # Link monitoring interval (ms)
-    mtu: 1500                    # MTU setting
+    mtu: 1500                    # MTU setting (will be applied to both bond0 and underlying interfaces)
     secureboot: false
     encrypt_disk: false
 
@@ -33,15 +32,34 @@ nodes:
     bond_lacp_rate: "fast"       # LACP rate
     bond_xmit_hash_policy: "layer3+4"  # Hash policy for outgoing traffic
     bond_miimon: 100             # Link monitoring interval (ms)
-    mtu: 1500                    # MTU setting
+    mtu: 1500                    # MTU setting (applied only to bond0 interface)
     secureboot: false
     encrypt_disk: false
 
-  # Example node with standard networking (no bonding)
+  # Example node with bonded interfaces using direct interface list (explicit MACs)
   - name: "worker01"
     address: "192.168.1.201"
     controller: false
     disk: "ABC123XYZ"  # Boot disk selected by serial number
+    schematic_id: "f0fd5b00b72f2b679f73e5eef35c97d134df74a1e9d40f548eb27118caceaf1f"
+    bond: true                   # Enable network bonding
+    bond_use_selectors: false    # Use direct interface list (not deviceSelectors)
+    bond_interfaces:             # List of bond member interfaces (MAC addresses)
+      - "00:11:22:33:44:55"      # First NIC in the bond
+      - "00:11:22:33:44:56"      # Second NIC in the bond
+    bond_mode: "802.3ad"         # LACP bonding mode
+    bond_lacp_rate: "fast"       # LACP rate
+    bond_xmit_hash_policy: "layer3+4"  # Hash policy for outgoing traffic
+    bond_miimon: 100             # Link monitoring interval (ms)
+    mtu: 1500                    # MTU setting (will be applied to both bond0 and underlying interfaces)
+    secureboot: false
+    encrypt_disk: false
+    
+  # Example node with standard networking (no bonding)
+  - name: "worker02"
+    address: "192.168.1.202"
+    controller: false
+    disk: "XYZ123ABC"  # Boot disk selected by serial number
     mac_addr: "00:11:22:33:44:60"  # Single MAC address for non-bonded setup
     schematic_id: "f0fd5b00b72f2b679f73e5eef35c97d134df74a1e9d40f548eb27118caceaf1f"
     mtu: 1500

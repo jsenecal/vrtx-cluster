@@ -29,12 +29,16 @@ import (
 	mac_addr?: =~"^([0-9a-f]{2}[:]){5}([0-9a-f]{2})$"
 	
 	// Bond configuration (optional)
-	bond_interfaces?: [...=~"^([0-9a-f]{2}[:]){5}([0-9a-f]{2})$|^([0-9a-f]{2}[:]){1,5}\\*$"]
-	bond_pci_ids?: [...string]  // PCI bus path selectors (like "00:*" or "00:01.0")
+	bond_interfaces?: [...=~"^([0-9a-f]{2}[:]){5}([0-9a-f]{2})$|^([0-9a-f]{2}[:]){1,5}\\*$"]  // MAC addresses for bonding (permanent addresses recommended)
+	bond_interface_names?: [...string]  // Interface names for bonding (like "eno1", "eno2")
+	bond_bus_paths?: [...string]  // PCI bus paths (like "00:*" or "00:01.0")
+	bond_pci_ids?: [...string]  // PCI vendor:product IDs (like "8086:*" or "8086:1533")
 	bond_drivers?: [...string]  // Network driver names (like "igb" or "virtio_net")
 	bond_combined_selectors?: [...{
 		hardwareAddr?: string
+		permanentAddr?: string
 		busPath?: string
+		pciID?: string
 		driver?: string
 	}]  // Combined selectors with multiple criteria
 	bond_use_selectors?: bool   // Whether to use deviceSelectors instead of direct interface list
