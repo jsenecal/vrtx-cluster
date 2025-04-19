@@ -5,7 +5,7 @@ nodes:
     address: "192.168.1.101"     # (REQUIRED) IP address of the node
     controller: true             # This is a controller node
     disk: "/dev/sda"             # Boot disk using device path
-    schematic_id: "f0fd5b00b72f2b679f73e5eef35c97d134df74a1e9d40f548eb27118caceaf1f"      # Schematic ID from factory.talos.dev
+    schematic_id: "7fdf3f1647531dcbdbb61d6cbb633d8d92dfed19e4b12523aa70a797e01c6213"      # Schematic ID from factory.talos.dev
     bond: true                   # Enable network bonding
     bond_interface_names:        # List of bond member interfaces (interface names)
       - "eno1"                   # First NIC in the bond
@@ -23,7 +23,7 @@ nodes:
     address: "192.168.1.102"     # (REQUIRED) IP address of the node
     controller: true             # This is a controller node
     disk_by_wwid: "eui.0123456789abcdef"  # Boot disk selection by WWID
-    schematic_id: "f0fd5b00b72f2b679f73e5eef35c97d134df74a1e9d40f548eb27118caceaf1f"      # Schematic ID from factory.talos.dev
+    schematic_id: "7fdf3f1647531dcbdbb61d6cbb633d8d92dfed19e4b12523aa70a797e01c6213"      # Schematic ID from factory.talos.dev
     bond: true                   # Enable network bonding
     bond_use_selectors: true     # Use deviceSelectors with wildcards
     bond_interfaces:             # List of bond member interfaces (MAC patterns)
@@ -41,7 +41,7 @@ nodes:
     address: "192.168.1.201"
     controller: false
     disk: "ABC123XYZ"  # Boot disk selected by serial number
-    schematic_id: "f0fd5b00b72f2b679f73e5eef35c97d134df74a1e9d40f548eb27118caceaf1f"
+    schematic_id: "7fdf3f1647531dcbdbb61d6cbb633d8d92dfed19e4b12523aa70a797e01c6213"
     bond: true                   # Enable network bonding
     bond_use_selectors: false    # Use direct interface list (not deviceSelectors)
     bond_interfaces:             # List of bond member interfaces (MAC addresses)
@@ -61,7 +61,7 @@ nodes:
     controller: false
     disk: "XYZ123ABC"  # Boot disk selected by serial number
     mac_addr: "00:11:22:33:44:60"  # Single MAC address for non-bonded setup
-    schematic_id: "f0fd5b00b72f2b679f73e5eef35c97d134df74a1e9d40f548eb27118caceaf1f"
+    schematic_id: "7fdf3f1647531dcbdbb61d6cbb633d8d92dfed19e4b12523aa70a797e01c6213"
     mtu: 1500
     secureboot: false
     encrypt_disk: false
