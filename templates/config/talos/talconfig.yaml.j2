@@ -38,7 +38,7 @@ nodes:
       secureboot: #{ (true if item.secureboot else false) | string | lower }#
     talosImageURL: factory.talos.dev/installer#{ "-secureboot" if item.secureboot | default(false, true) }#/#{ item.schematic_id }#
     controlPlane: #{ (item.controller) | string | lower }#
-    
+
     #% if item.bond | default(false, true) %#
     # Bonded interface configuration
     networkInterfaces:
@@ -188,7 +188,7 @@ nodes:
         #% endif %#
         #% endif %#
     #% endif %#
-    
+
     #% if talos_patches('%s' % (item.name)) | length == 0 %#
     #% if item.encrypt_disk | default(false, true) %#
     patches:
@@ -230,6 +230,28 @@ nodes:
       - "@./patches/#{ item.name }#/#{ file | basename }#"
     #% endfor %#
     #% endif %#
+
+    #% set node_manifests = talos_manifests('%s' % (item.name)) %#
+    #% set global_manifests = talos_manifests('global') %#
+    #% set controller_manifests = talos_manifests('controller') if item.controller else [] %#
+    #% set worker_manifests = talos_manifests('worker') if not item.controller else [] %#
+    #% if node_manifests or global_manifests or controller_manifests or worker_manifests %#
+    # Talos manifests
+    extraManifests:
+      #% for file in node_manifests %#
+      - "@./manifests/#{ item.name }#/#{ file | basename }#"
+      #% endfor %#
+      #% for file in global_manifests %#
+      - "@./manifests/global/#{ file | basename }#"
+      #% endfor %#
+      #% for file in controller_manifests %#
+      - "@./manifests/controller/#{ file | basename }#"
+      #% endfor %#
+      #% for file in worker_manifests %#
+      - "@./manifests/worker/#{ file | basename }#"
+      #% endfor %#
+    #% endif %#
+
   #% endfor %#
 
 #% for file in talos_patches('global') %#

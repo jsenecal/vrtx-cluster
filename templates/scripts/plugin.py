@@ -119,6 +119,13 @@ def talos_patches(value: str) -> list[str]:
         return []
     return [str(f) for f in sorted(path.glob('*.yaml.j2')) if f.is_file()]
 
+# Return a list of files in the talos manifesrs directory
+def talos_manifests(value: str) -> list[str]:
+    path = Path(f'templates/config/talos/manifests/{value}')
+    if not path.is_dir():
+        return []
+    return [str(f) for f in sorted(path.glob('*.yaml.j2')) if f.is_file()]
+
 
 class Plugin(makejinja.plugin.Plugin):
     def __init__(self, data: dict[str, Any]):
@@ -164,5 +171,6 @@ class Plugin(makejinja.plugin.Plugin):
             cloudflare_tunnel_secret,
             github_deploy_key,
             github_push_token,
-            talos_patches
+            talos_patches,
+            talos_manifests
         ]
