@@ -98,7 +98,7 @@ spec:
               value: Object.spec.template.spec.volumes{
                 name: "repository",
                 nfs: Object.spec.template.spec.volumes.nfs{
-                  server: "192.168.168ssh .4",
+                  server: "192.168.168.4",
                   path: "/mnt/zpool/VolSync"
                 }
               }
