@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/monitoring.coreos.com/probe_v1.json
+---
+kind: Probe
+apiVersion: monitoring.coreos.com/v1
+metadata:
+  name: vrtx-devices
+spec:
+  module: icmp
+  prober:
+    url: blackbox-exporter.observability.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        # VRTX Infrastructure
+        - 192.168.255.200 # VRTX Chassis
+        - 192.168.255.201 # VRTX Alpha
+        - 192.168.255.202 # VRTX Bravo
+        - 192.168.255.203 # VRTX Charlie
