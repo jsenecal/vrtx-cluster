@@ -1,0 +1,64 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/source.toolkit.fluxcd.io/ocirepository_v1beta2.json
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: OCIRepository
+metadata:
+  name: snmp-exporter
+spec:
+  interval: 5m
+  layerSelector:
+    mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
+    operation: copy
+  ref:
+    tag: 9.2.1
+  url: oci://registry-1.docker.io/prometheus-community/prometheus-snmp-exporter
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/helm.toolkit.fluxcd.io/helmrelease_v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app snmp-exporter
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: snmp-exporter
+  dependsOn:
+    - name: kube-prometheus-stack
+      namespace: observability
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    fullnameOverride: *app
+    serviceMonitor:
+      enabled: true
+      params:
+        # VRTX Chassis
+        - name: vrtx-chassis
+          module: ["dell"]
+          target: 192.168.255.200
+          auth: ["public_v2c"]
+        # VRTX Node Alpha
+        - name: vrtx-alpha
+          module: ["dell"]
+          target: 192.168.255.201
+          auth: ["public_v2c"]
+        # VRTX Node Bravo
+        - name: vrtx-bravo
+          module: ["dell"]
+          target: 192.168.255.202
+          auth: ["public_v2c"]
+        # VRTX Node Charlie
+        - name: vrtx-charlie
+          module: ["dell"]
+          target: 192.168.255.203
+          auth: ["public_v2c"]
+      path: /snmp
+      scrapeTimeout: 10s
+      relabelings:
+        - { sourceLabels: ["__param_target"], targetLabel: instance }
