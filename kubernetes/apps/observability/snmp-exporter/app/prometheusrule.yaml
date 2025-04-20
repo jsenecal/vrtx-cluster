@@ -1,0 +1,42 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/monitoring.coreos.com/prometheusrule_v1.json
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: snmp-exporter-rules
+spec:
+  groups:
+    - name: snmp-exporter.rules
+      rules:
+        - alert: DellServerCriticalStatus
+          annotations:
+            summary: Dell server/chassis {{$labels.instance}} is reporting a critical status
+          expr: |
+            dellStatusState{dellStatusType="systemComponentStatus"} > 3
+          for: 5m
+          labels:
+            severity: critical
+        - alert: DellServerWarningStatus
+          annotations:
+            summary: Dell server/chassis {{$labels.instance}} is reporting a warning status
+          expr: |
+            dellStatusState{dellStatusType="systemComponentStatus"} > 2
+          for: 5m
+          labels:
+            severity: warning
+        - alert: DellTemperatureWarning
+          annotations:
+            summary: Dell server/chassis {{$labels.instance}} is reporting a temperature warning
+          expr: |
+            dellTemperatureReading{dellTemperatureProbeType="1"} > dellTemperatureWarningThreshold
+          for: 5m
+          labels:
+            severity: warning
+        - alert: DellPowerSupplyFailure
+          annotations:
+            summary: Dell server/chassis {{$labels.instance}} has a power supply failure
+          expr: |
+            dellPowerSupplyStatus > 2
+          for: 5m
+          labels:
+            severity: critical
