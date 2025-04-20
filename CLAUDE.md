@@ -74,6 +74,36 @@ The configuration ensures that MTU is properly set on all levels in the bonding 
 
 This prevents "netlink error stating that the MTU value results in numerical result out of range" by ensuring all interfaces in the bonding chain have consistent MTU settings.
 
+## External Secrets Configuration
+
+When creating ExternalSecrets for this cluster:
+
+1. **ClusterSecretStore Reference**: Always use the name `onepassword-connect` (not `onepassword`) in the secretStoreRef:
+   ```yaml
+   spec:
+     secretStoreRef:
+       kind: ClusterSecretStore
+       name: onepassword-connect
+   ```
+
+2. **Required Fields**: External Secrets must include either `data` or `dataFrom` section:
+   ```yaml
+   # Using dataFrom with extract
+   dataFrom:
+     - extract:
+         key: grafana  # This should match the item name in 1Password
+   
+   # Template usage example
+   target:
+     name: grafana-admin-secret
+     template:
+       data:
+         admin-user: "{{ .GRAFANA_ADMIN_USERNAME }}"
+         admin-password: "{{ .GRAFANA_ADMIN_PASSWORD }}"
+   ```
+
+3. **Store Structure**: 1Password items should contain fields with uppercase names that match template references.
+
 ## Gateway API Setup
 
 To use Gateway API resources (HTTPRoute, etc.) in the cluster:
@@ -158,3 +188,36 @@ To use Gateway API resources (HTTPRoute, etc.) in the cluster:
        - name: cluster-secrets
          kind: Secret
    ```
+   
+## Observability Stack
+
+The observability stack consists of the following components:
+
+1. **Kube-Prometheus-Stack**: Core monitoring system
+   - Prometheus for metrics collection and alerting
+   - Alert Manager for handling alerts
+   - Node Exporter for hardware and OS metrics
+   - Kube State Metrics for Kubernetes object metrics
+
+2. **Grafana**: Visualization platform with pre-configured dashboards for:
+   - Kubernetes resources
+   - Node metrics
+   - Ceph storage
+   - VRTX hardware via SNMP
+   - Network monitoring
+
+3. **Loki & Promtail**: Log collection and aggregation
+   - Promtail collects logs from all pods
+   - Loki stores and indexes logs
+   - Integrated with Grafana for log visualization
+
+4. **Blackbox-Exporter**: Network monitoring
+   - ICMP probes for cluster nodes and infrastructure
+   - HTTP/HTTPS endpoint monitoring
+   - DNS monitoring
+
+5. **SNMP-Exporter**: Hardware monitoring for Dell VRTX chassis
+   - Monitoring chassis and individual blade health
+   - Temperature, power supply, and component status
+
+All component configurations follow the GitOps model with Flux, and changes require commits to the repository to be applied to the cluster.
