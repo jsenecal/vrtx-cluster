@@ -2,13 +2,21 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## GitOps Workflow
+
+This repository follows a GitOps workflow using Flux:
+
+- All changes MUST be committed and pushed to the Git repository to take effect on the cluster
+- After pushing changes to Git, Flux automatically reconciles the changes through a GitHub webhook
+- `task reconcile` is only needed if you want to manually force immediate reconciliation (not typically required)
+
 ## Commands
 
 - `task init` - Initialize configuration files
 - `task configure` - Render and validate configuration files
 - `task bootstrap:talos` - Bootstrap Talos cluster
 - `task bootstrap:apps` - Bootstrap apps into the cluster
-- `task reconcile` - Force Flux to pull changes from Git
+- `task reconcile` - Force Flux to pull changes from Git (only if automatic reconciliation isn't working)
 - `task template:tidy` - Archive template related files
 - `task talos:reset` - Reset cluster nodes
 - `task talos:generate-config` - Generate Talos configuration files
