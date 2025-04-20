@@ -16,9 +16,16 @@ cgroup:
 endpointRoutes:
   enabled: true
 envoy:
-  enabled: false
+  enabled: true
+  rollOutPods: true
+  prometheus:
+    serviceMonitor:
+      enabled: true
 dashboards:
   enabled: true
+gatewayAPI:
+  enabled: true
+  enableAlpn: true
 hubble:
   enabled: false
 ipam:
