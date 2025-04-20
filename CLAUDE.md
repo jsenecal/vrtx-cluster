@@ -73,3 +73,88 @@ The configuration ensures that MTU is properly set on all levels in the bonding 
 - The VLAN interface (if used)
 
 This prevents "netlink error stating that the MTU value results in numerical result out of range" by ensuring all interfaces in the bonding chain have consistent MTU settings.
+
+## Gateway API Setup
+
+To use Gateway API resources (HTTPRoute, etc.) in the cluster:
+
+1. **CRDs Installation**: Gateway API CRDs are added to bootstrap-apps.sh:
+   ```bash
+   # renovate: datasource=github-releases depName=kubernetes-sigs/gateway-api
+   https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.1/experimental-install.yaml
+   ```
+
+2. **Cilium Configuration**: Enable Gateway API support in Cilium:
+   ```yaml
+   # kubernetes/apps/kube-system/cilium/app/helm/values.yaml
+   envoy:
+     enabled: true
+     rollOutPods: true
+     prometheus:
+       serviceMonitor:
+         enabled: true
+   gatewayAPI:
+     enabled: true
+     enableAlpn: true
+   ```
+
+3. **GatewayClass**: Create a GatewayClass for Cilium:
+   ```yaml
+   # kubernetes/apps/kube-system/cilium/gateway/gatewayclass.yaml
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: GatewayClass
+   metadata:
+     name: cilium
+   spec:
+     controllerName: io.cilium/gateway-controller
+   ```
+
+4. **Gateway Resource**: Create an internal Gateway:
+   ```yaml
+   # kubernetes/apps/kube-system/cilium/gateway/internal.yaml
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: Gateway
+   metadata:
+     name: internal
+   spec:
+     gatewayClassName: cilium
+     listeners:
+       - name: https
+         protocol: HTTPS
+         port: 443
+         hostname: "*.k8s.${SECRET_DOMAIN}"
+         allowedRoutes:
+           namespaces:
+             from: All
+         tls:
+           certificateRefs:
+             - kind: Secret
+               name: k8s-tls
+               namespace: cert-manager
+   ```
+
+5. **HTTPRoute**: Reference the Gateway in HTTPRoute resources:
+   ```yaml
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: example-route
+   spec:
+     hostnames: ["app.k8s.${SECRET_DOMAIN}"]
+     parentRefs:
+       - name: internal
+         namespace: kube-system
+         sectionName: https
+     rules:
+       - backendRefs:
+           - name: my-service
+             port: 8080
+   ```
+
+6. **Variable Substitution**: Ensure all kustomizations using these resources have:
+   ```yaml
+   postBuild:
+     substituteFrom:
+       - name: cluster-secrets
+         kind: Secret
+   ```
