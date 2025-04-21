@@ -37,51 +37,6 @@ This repository follows a GitOps workflow using Flux:
 - Kustomize patches should be minimal and focused
 - Always validate Kubernetes manifests with `kubeconform` before applying
 
-## Network Bonding Configuration
-
-This repository implements network bonding for Talos Linux with several configuration options:
-
-1. **Interface Names Method** (recommended):
-   ```yaml
-   bond: true
-   bond_interface_names:
-     - "eno1"
-     - "eno2"
-   mtu: 1500    # Applied to both bond0 and underlying interfaces
-   ```
-
-2. **MAC Addresses Method**:
-   ```yaml
-   bond: true
-   bond_use_selectors: false
-   bond_interfaces:
-     - "00:11:22:33:44:55"
-     - "00:11:22:33:44:56"
-   mtu: 1500    # Applied to both bond0 and underlying interfaces
-   ```
-
-3. **Device Selectors Method**:
-   ```yaml
-   bond: true
-   bond_use_selectors: true
-   bond_interfaces:
-     - "00:50:56:*"    # MAC address pattern
-   bond_bus_paths:
-     - "01:00.*"       # PCI bus path
-   bond_pci_ids:
-     - "8086:10fb"     # Vendor:Device ID
-   mtu: 1500           # Applied to all interfaces
-   ```
-
-### MTU Configuration
-
-The configuration ensures that MTU is properly set on all levels in the bonding chain:
-- Each underlying physical interface
-- The bond0 interface itself 
-- The VLAN interface (if used)
-
-This prevents "netlink error stating that the MTU value results in numerical result out of range" by ensuring all interfaces in the bonding chain have consistent MTU settings.
-
 ## External Secrets Configuration
 
 When creating ExternalSecrets for this cluster:
@@ -100,7 +55,7 @@ When creating ExternalSecrets for this cluster:
    dataFrom:
      - extract:
          key: grafana  # This should match the item name in 1Password
-   
+
    # Template usage example
    target:
      name: grafana-admin-secret
@@ -167,7 +122,7 @@ To use Gateway API resources (HTTPRoute, etc.) in the cluster:
          tls:
            certificateRefs:
              - kind: Secret
-               name: k8s-tls
+               name: k8s-${SECRET_DOMAIN/./-}-production-tls
                namespace: cert-manager
    ```
 
@@ -196,7 +151,7 @@ To use Gateway API resources (HTTPRoute, etc.) in the cluster:
        - name: cluster-secrets
          kind: Secret
    ```
-   
+
 ## Observability Stack
 
 The observability stack consists of the following components:
