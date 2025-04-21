@@ -18,6 +18,8 @@ spec:
   postBuild:
     substituteFrom:
       - kind: Secret
+        name: cloudflare-tunnel-secret
+      - kind: Secret
         name: cluster-secrets
   prune: true
   retryInterval: 2m
