@@ -24,6 +24,7 @@ spec:
     kind: OCIRepository
     name: grafana
   install:
+    timeout: 15m
     remediation:
       retries: -1
   upgrade:
