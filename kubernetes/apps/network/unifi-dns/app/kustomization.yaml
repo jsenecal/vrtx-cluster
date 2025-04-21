@@ -5,7 +5,3 @@ kind: Kustomization
 resources:
   - ./helmrelease.yaml
   - ./secret.sops.yaml
-postBuild:
-  substituteFrom:
-    - name: cluster-secrets
-      kind: Secret

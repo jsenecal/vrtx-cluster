@@ -3,14 +3,14 @@
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
-  name: internal
+  name: external
   annotations:
-    external-dns.alpha.kubernetes.io/target: &hostname internal.k8s.${SECRET_DOMAIN}
+    external-dns.alpha.kubernetes.io/target: &hostname external.${SECRET_DOMAIN}
 spec:
   gatewayClassName: cilium
   addresses:
     - type: IPAddress
-      value: 192.168.168.208
+      value: 192.168.168.210
   infrastructure:
     annotations:
       external-dns.alpha.kubernetes.io/hostname: *hostname
@@ -18,19 +18,19 @@ spec:
     - name: http
       protocol: HTTP
       port: 80
-      hostname: "*.k8s.${SECRET_DOMAIN}"
+      hostname: "*.${SECRET_DOMAIN}"
       allowedRoutes:
         namespaces:
-          from: Same
+          from: All
     - name: https
       protocol: HTTPS
       port: 443
-      hostname: "*.k8s.${SECRET_DOMAIN}"
+      hostname: "*.${SECRET_DOMAIN}"
       allowedRoutes:
         namespaces:
           from: All
       tls:
         certificateRefs:
           - kind: Secret
-            name: k8s-${SECRET_DOMAIN/./-}-production-tls
+            name: ${SECRET_DOMAIN/./-}-production-tls
             namespace: cert-manager

@@ -1,6 +1,11 @@
 ---
+# yaml-language-server: $schema=https://json.schemastore.org/kustomization
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - gatewayclass.yaml
   - internal.yaml
+  - external.yaml
+  - redirect.yaml
+  - certificate.yaml
+  - k8s-certificate.yaml
