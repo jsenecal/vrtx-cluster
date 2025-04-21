@@ -58,6 +58,11 @@ spec:
           module: ["dell"]
           target: 192.168.255.203
           auth: ["public_v2c"]
+        # The APC UPS
+        - name: apcups
+          module: ["apcups"]
+          target: 192.168.255.218
+          auth: ["public_v1"]
       path: /snmp
       scrapeTimeout: 10s
       relabelings:
