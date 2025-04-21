@@ -9,12 +9,14 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
   interval: 1h
   path: ./kubernetes/apps/network/cloudflare-tunnel/app
   postBuild:
     substituteFrom:
-      - kind: Secret
-        name: cloudflare-tunnel-secret
       - kind: Secret
         name: cluster-secrets
   prune: true
