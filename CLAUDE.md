@@ -67,6 +67,21 @@ When creating ExternalSecrets for this cluster:
 
 3. **Store Structure**: 1Password items should contain fields with uppercase names that match template references.
 
+4. **Kustomization Structure**: The external-secrets component has a specific kustomization structure:
+   - The ClusterSecretStore resources are defined in `/kubernetes/apps/external-secrets/external-secrets/stores/`
+   - This stores directory MUST be included in the main kustomization at `/kubernetes/apps/external-secrets/external-secrets/app/kustomization.yaml`:
+     ```yaml
+     resources:
+       - ./helmrelease.yaml
+       - ../stores
+     ```
+   - The stores directory has its own kustomization that includes the onepassword subdirectory:
+     ```yaml
+     # kubernetes/apps/external-secrets/external-secrets/stores/kustomization.yaml
+     resources:
+       - ./onepassword
+     ```
+
 ## Gateway API Setup
 
 To use Gateway API resources (HTTPRoute, etc.) in the cluster:
@@ -184,3 +199,62 @@ The observability stack consists of the following components:
    - Temperature, power supply, and component status
 
 All component configurations follow the GitOps model with Flux, and changes require commits to the repository to be applied to the cluster.
+
+## Troubleshooting
+
+### ExternalSecrets Issues
+
+If external secrets are not getting populated:
+
+1. **Check the ExternalSecret resource status**:
+   ```bash
+   kubectl -n <namespace> get externalsecrets
+   kubectl -n <namespace> describe externalsecret <name>
+   ```
+   Look for status conditions like "SecretSyncedError" which indicate sync failures.
+
+2. **Verify the ClusterSecretStore exists and is valid**:
+   ```bash
+   kubectl get clustersecretstores
+   kubectl describe clustersecretstore onepassword-connect
+   ```
+   Ensure the store is in a "Valid" state.
+
+3. **Check OnePassword Connect is working**:
+   ```bash
+   kubectl -n external-secrets get pods
+   kubectl -n external-secrets logs -l app.kubernetes.io/name=onepassword-connect
+   ```
+   
+4. **Validate kustomization includes the stores directory**:
+   If the ClusterSecretStore is missing, verify that `/kubernetes/apps/external-secrets/external-secrets/app/kustomization.yaml` 
+   includes the `../stores` directory in the resources list.
+
+### Grafana Access Issues
+
+If "no healthy upstream" errors occur when accessing Grafana:
+
+1. **Check Grafana pod status**:
+   ```bash
+   kubectl -n observability get pods -l app.kubernetes.io/name=grafana
+   kubectl -n observability describe pod -l app.kubernetes.io/name=grafana
+   ```
+   Look for issues with container startup or missing secrets.
+
+2. **Verify admin credentials secret exists**:
+   ```bash
+   kubectl -n observability get secret grafana-admin-secret
+   ```
+   This secret should be created by the ExternalSecret.
+
+3. **Check HTTPRoute configuration**:
+   ```bash
+   kubectl -n observability get httproute -l app.kubernetes.io/name=grafana
+   ```
+   Ensure the route is properly configured with correct hostnames and backend references.
+
+4. **Verify Gateway status**:
+   ```bash
+   kubectl -n kube-system get gateway internal
+   ```
+   Ensure the gateway is properly configured and has a "Ready" status.
