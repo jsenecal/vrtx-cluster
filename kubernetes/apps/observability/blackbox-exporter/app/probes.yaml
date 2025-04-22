@@ -11,7 +11,8 @@ spec:
   targets:
     staticConfig:
       static:
-        # VRTX Infrastructure
+        # VRTX OOB Infrastructure
+        - 192.168.255.199 # VRTX Switch
         - 192.168.255.200 # VRTX Chassis
         - 192.168.255.201 # VRTX Alpha
         - 192.168.255.202 # VRTX Bravo
