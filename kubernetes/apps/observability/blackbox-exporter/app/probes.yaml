@@ -17,3 +17,4 @@ spec:
         - 192.168.255.201 # VRTX Alpha
         - 192.168.255.202 # VRTX Bravo
         - 192.168.255.203 # VRTX Charlie
+        - 192.168.255.204 # VRTX Delta
