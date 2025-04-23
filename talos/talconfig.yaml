@@ -26,7 +26,7 @@ nodes:
       wwid: "naa.6848f690ee3fcb002f95b3a418dad9b1"
     machineSpec:
       secureboot: false
-    talosImageURL: factory.talos.dev/installer/7fdf3f1647531dcbdbb61d6cbb633d8d92dfed19e4b12523aa70a797e01c6213
+    talosImageURL: factory.talos.dev/installer/f7688c771633022d85ae7ac82588acb474c69f9a0f2b98131fe1cc9a555a84c4
     controlPlane: true
 
     # Bonded interface configuration
@@ -66,10 +66,10 @@ nodes:
   - hostname: "vrtx-bravo"
     ipAddress: "192.168.168.202"
     installDiskSelector:
-      wwid: "naa.6848f690ee3f9d002f95b40c1fe2aa9b"
+      wwid: "naa.6d0946600c4544002f9aa79d35a52207"
     machineSpec:
       secureboot: false
-    talosImageURL: factory.talos.dev/installer/7fdf3f1647531dcbdbb61d6cbb633d8d92dfed19e4b12523aa70a797e01c6213
+    talosImageURL: factory.talos.dev/installer/f7688c771633022d85ae7ac82588acb474c69f9a0f2b98131fe1cc9a555a84c4
     controlPlane: true
 
     # Bonded interface configuration
@@ -112,7 +112,7 @@ nodes:
       wwid: "naa.690b11c023cc85002f95b43b224aec21"
     machineSpec:
       secureboot: false
-    talosImageURL: factory.talos.dev/installer/7fdf3f1647531dcbdbb61d6cbb633d8d92dfed19e4b12523aa70a797e01c6213
+    talosImageURL: factory.talos.dev/installer/f7688c771633022d85ae7ac82588acb474c69f9a0f2b98131fe1cc9a555a84c4
     controlPlane: true
 
     # Bonded interface configuration
