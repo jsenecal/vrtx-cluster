@@ -51,6 +51,9 @@ nodes:
                 gateway: "192.168.168.1"
             vip:
               ip: "192.168.168.200"
+          - vlanId: 252
+            dhcp: false
+            mtu: 1500
         bond:
           mode: 802.3ad
           lacpRate: fast
@@ -94,6 +97,9 @@ nodes:
                 gateway: "192.168.168.1"
             vip:
               ip: "192.168.168.200"
+          - vlanId: 252
+            dhcp: false
+            mtu: 1500
         bond:
           mode: 802.3ad
           lacpRate: fast
@@ -137,6 +143,52 @@ nodes:
                 gateway: "192.168.168.1"
             vip:
               ip: "192.168.168.200"
+          - vlanId: 252
+            dhcp: false
+            mtu: 1500
+        bond:
+          mode: 802.3ad
+          lacpRate: fast
+          xmitHashPolicy: layer3+4
+          miimon: 100
+          # Using deviceSelectors for bond members (supports wildcards)
+          deviceSelectors:
+            - busPath: "0000:01:00.*"
+    # Talos manifests
+    extraManifests:
+      - "./manifests/global/lldp-config.yaml"
+  - hostname: "vrtx-delta"
+    ipAddress: "192.168.168.204"
+    installDiskSelector:
+      wwid: "naa.6d0946600c45dc002f9cbecc28be9ad9"
+    machineSpec:
+      secureboot: false
+    talosImageURL: factory.talos.dev/installer/f7688c771633022d85ae7ac82588acb474c69f9a0f2b98131fe1cc9a555a84c4
+    controlPlane: false # Worker node
+
+    # Bonded interface configuration
+    networkInterfaces:
+      # Using device selectors - we need to add separate interfaces for each selector
+      # with individual MTU settings
+      - deviceSelector:
+          busPath: "0000:01:00.*"
+        dhcp: false
+        mtu: 9000
+      # Bond interface with either deviceSelectors, direct interface names, or MAC addresses
+      - interface: bond0
+        dhcp: false
+        mtu: 9000
+        vlans:
+          - vlanId: 168
+            addresses:
+              - "192.168.168.204/24"
+            mtu: 9000
+            routes:
+              - network: "0.0.0.0/0"
+                gateway: "192.168.168.1"
+          - vlanId: 252
+            dhcp: false
+            mtu: 1500
         bond:
           mode: 802.3ad
           lacpRate: fast

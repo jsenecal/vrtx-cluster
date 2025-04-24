@@ -12,7 +12,8 @@ cgroup:
     enabled: false
   hostRoot: /sys/fs/cgroup
 # NOTE: devices might need to be set if you have more than one active NIC on your hosts
-devices: "bond0.168"
+devices: "bond0+"
+directRoutingDevice: "bond0.168"
 endpointRoutes:
   enabled: true
 envoy:
