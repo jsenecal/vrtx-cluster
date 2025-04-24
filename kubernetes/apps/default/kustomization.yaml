@@ -5,5 +5,4 @@ kind: Kustomization
 namespace: default
 components:
   - ../../components/common
-  - ../../components/repos/common/app-template
 resources: []
