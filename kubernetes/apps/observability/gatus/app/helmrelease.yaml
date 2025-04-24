@@ -93,7 +93,7 @@ spec:
       app:
         hostnames:
           - "{{ .Release.Name }}.${SECRET_DOMAIN}"
-          - status.${SECRET_DOMAIN}
+          - vrtx-status.${SECRET_DOMAIN}
         parentRefs:
           - name: external
             namespace: kube-system
