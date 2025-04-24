@@ -2,12 +2,8 @@
 # yaml-language-server: $schema=https://json.schemastore.org/kustomization
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: network
+namespace: default
 components:
   - ../../components/common
-  - ../../components/repos/common/app-template
 resources:
-  - ./cloudflare-tunnel/ks.yaml
-  - ./cloudflare-dns/ks.yaml
-  - ./echo/ks.yaml
-  - ./unifi-dns/ks.yaml
+  - ./emqx/ks.yaml

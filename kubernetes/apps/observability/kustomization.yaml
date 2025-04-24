@@ -5,6 +5,7 @@ kind: Kustomization
 namespace: observability
 components:
   - ../../components/common
+  - ../../components/repos/common/app-template
 resources:
   - ./blackbox-exporter/ks.yaml
   - ./gatus/ks.yaml
