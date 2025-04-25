@@ -13,7 +13,7 @@ spec:
       namespace: kube-system
       sectionName: https
   hostnames:
-    - "emqx.k8s.${SECRET_DOMAIN}"
+    - emqx.k8s.${SECRET_DOMAIN}
   rules:
     - backendRefs:
         - name: emqx-dashboard
