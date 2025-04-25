@@ -6,3 +6,9 @@ resources:
   - ./cluster.yaml
   - ./gatus.yaml
   - ./podmonitor.yaml
+  - ./httproute.yaml
+postBuild:
+  substituteFrom:
+    - name: cluster-secrets
+      kind: Secret
+      namespace: flux-system
