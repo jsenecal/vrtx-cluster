@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 This repository follows a GitOps workflow using Flux:
 
 - All changes MUST be committed and pushed to the Git repository to take effect on the cluster
+- When creating commits, DO NOT add Claude attribution in commit messages
 - After pushing changes to Git, Flux automatically reconciles the changes through a GitHub webhook
 - `task reconcile` is only needed if you want to manually force immediate reconciliation (not typically required)
 
