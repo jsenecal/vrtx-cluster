@@ -19,3 +19,11 @@ data:
           - "[CONNECTED] == true"
         alerts:
           - type: pushover
+      - name: emqx-dashboard
+        group: Infrastructure
+        url: https://emqx.k8s.${SECRET_DOMAIN}/dashboard/
+        interval: 5m
+        conditions:
+          - "[STATUS] == 200"
+        alerts:
+          - type: pushover
