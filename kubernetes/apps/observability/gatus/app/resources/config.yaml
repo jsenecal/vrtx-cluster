@@ -16,7 +16,7 @@ connectivity:
     interval: 1m
 endpoints:
   - name: flux-webhook
-    group: external
+    group: Infrastructure
     url: "https://vrtx-flux-webhook.${SECRET_DOMAIN}"
     interval: 1m
     client:
