@@ -21,7 +21,7 @@ data:
           - type: pushover
       - name: emqx-dashboard
         group: Infrastructure
-        url: https://emqx.k8s.${SECRET_DOMAIN}/dashboard/
+        url: https://emqx.k8s.${SECRET_DOMAIN}/status
         interval: 5m
         client:
           dns-resolver: tcp://192.168.168.1:53
