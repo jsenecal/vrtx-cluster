@@ -9,7 +9,7 @@ data:
   config.yaml: |
     endpoints:
       - name: emqx-mqtt
-        group: infrastructure
+        group: Infrastructure
         url: tcp://emqx-listeners.iot.svc.cluster.local:1883
         interval: 1m
         ui:
