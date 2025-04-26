@@ -10,6 +10,8 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   interval: 1h
+  components:
+    - ../../../../components/gatus/public
   path: ./kubernetes/apps/observability/kromgo/app
   postBuild:
     substitute:
