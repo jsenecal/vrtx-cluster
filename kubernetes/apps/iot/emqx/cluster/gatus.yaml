@@ -9,7 +9,7 @@ data:
   config.yaml: |
     endpoints:
       - name: emqx-mqtt
-        group: Infrastructure
+        group: IoT
         url: tcp://emqx-listeners.iot.svc.cluster.local:1883
         interval: 1m
         ui:
@@ -20,7 +20,7 @@ data:
         alerts:
           - type: pushover
       - name: emqx-dashboard
-        group: Infrastructure
+        group: IoT
         url: https://emqx.k8s.${SECRET_DOMAIN}/status
         interval: 5m
         client:
