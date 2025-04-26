@@ -70,9 +70,9 @@ spec:
             port: *healthPort
     route:
       app:
-        hostnames: ["{{ .Release.Name }}.k8s.${SECRET_DOMAIN}"]
+        hostnames: ["{{ .Release.Name }}.${SECRET_DOMAIN}"]
         parentRefs:
-          - name: internal
+          - name: external
             namespace: kube-system
             sectionName: https
         rules:
