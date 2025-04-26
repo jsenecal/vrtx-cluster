@@ -27,5 +27,6 @@ data:
           dns-resolver: tcp://192.168.168.1:53
         conditions:
           - "[STATUS] == 200"
+          - "[BODY] == pat(*is running*)"
         alerts:
           - type: pushover
