@@ -30,6 +30,7 @@ spec:
               UP_UNIFI_DEFAULT_URL: https://192.168.168.1
               UP_PROMETHEUS_HTTP_LISTEN: 0.0.0.0:80
               UP_INFLUXDB_DISABLE: true
+              UP_DEBUG: true
             envFrom:
               - secretRef:
                   name: unpoller-secret
