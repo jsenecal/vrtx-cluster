@@ -8,7 +8,7 @@ metadata:
 data:
   config.yaml: |
     endpoints:
-      - name: emqx-mqtt
+      - name: emqx-mqtt-tcp
         group: IoT
         url: tcp://emqx-listeners.iot.svc.cluster.local:1883
         interval: 1m
