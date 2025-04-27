@@ -16,6 +16,8 @@ spec:
     cleanupOnFail: true
     remediation:
       retries: 3
+  # To suspend the HelmRelease for migration, uncomment the next line
+  suspend: true
   values:
     controllers:
       overseerr:
