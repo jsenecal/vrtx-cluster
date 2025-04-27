@@ -113,7 +113,7 @@ spec:
         type: emptyDir
       nfs-nas-downloads:
         type: nfs
-        server: 192.168.254.4
+        server: 192.168.168.4
         path: /mnt/zpool/shares/downloads/torrents/complete
         advancedMounts:
           plex:
@@ -121,7 +121,7 @@ spec:
               - path: /mnt/downloads
       nfs-nas-media:
         type: nfs
-        server: 192.168.254.4
+        server: 192.168.168.4
         path: /mnt/zpool/shares/media
         advancedMounts:
           plex:
