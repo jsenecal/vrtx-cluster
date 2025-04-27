@@ -38,6 +38,31 @@ This repository follows a GitOps workflow using Flux:
 - Kustomize patches should be minimal and focused
 - Always validate Kubernetes manifests with `kubeconform` before applying
 
+## Reference Repositories
+
+This repository takes inspiration and patterns from two key sources:
+
+1. **onedr0p/home-ops** (linked in the repo as `onedr0p_home-ops`):
+   - A comprehensive GitOps repository for home Kubernetes clusters
+   - Well-maintained and regularly updated with best practices
+   - Provides examples for modern Kubernetes application deployments
+   - Uses latest patterns for ExternalSecrets, Gateway API, and other components
+   - Found at: https://github.com/onedr0p/home-ops
+
+2. **home-k3s**:
+   - A simpler K3s-based home cluster repository
+   - Contains configurations for media services and other home applications
+   - Used as a reference for migrating applications to this repository
+   - Applications from this repo should be migrated following the patterns of onedr0p/home-ops
+
+When merging or creating applications in this repository:
+- Follow the directory structure and naming conventions of onedr0p/home-ops
+- Update API versions to the latest stable versions (e.g., ExternalSecrets v1 rather than v1beta1)
+- Implement proper Loki monitoring rules for applications
+- Use proper TLS configurations
+- Prefer HTTPRoute over Ingress when possible
+- Ensure proper dependency management between applications
+
 ## External Secrets Configuration
 
 When creating ExternalSecrets for this cluster:
@@ -200,6 +225,39 @@ The observability stack consists of the following components:
    - Temperature, power supply, and component status
 
 All component configurations follow the GitOps model with Flux, and changes require commits to the repository to be applied to the cluster.
+
+## Media Services Applications
+
+The `media-services` namespace contains applications for home media management:
+
+1. **Plex**: Media server for streaming movies, TV shows, and other media
+   - Includes plex-image-cleanup for maintenance
+   - Uses NFS for accessing media storage
+   - Includes Loki rules for monitoring database health
+
+2. **Sonarr/Radarr**: Automated media management for TV shows and movies
+   - Configure with appropriate permissions for media access
+   - Include proper database monitoring with Loki rules
+   - Use ExternalSecrets for API keys
+
+3. **Prowlarr**: Indexer manager and proxy for Sonarr/Radarr
+   - Centralizes indexer configurations
+   - Includes Loki monitoring rules for database issues
+
+4. **Overseerr**: Request management and discovery for media
+   - Allows users to request new content
+   - Integrates with Sonarr/Radarr for automated fulfillment
+
+5. **Tautulli**: Monitoring and analytics for Plex
+   - Provides insights into Plex usage
+   - Includes watch history and user statistics
+
+When adding new media applications or updating existing ones:
+- Follow the pattern of separating app configuration from kustomization resources
+- Implement proper persistent storage with appropriate volume claims
+- Set up Loki rules for monitoring application health
+- Use proper container security contexts
+- Configure proper ingress or HTTPRoute resources for access
 
 ## Troubleshooting
 
