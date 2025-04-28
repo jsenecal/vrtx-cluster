@@ -1,14 +1,11 @@
 endpoints:
   - name: "${APP}"
     group: Internal Services
-    url: 1.1.1.1
+    url: "https://${GATUS_SUBDOMAIN:-${APP}}.k8s.mstrsmth.io${GATUS_PATH:-/}"
     interval: 1m
     ui:
       hide-hostname: true
       hide-url: true
-    dns:
-      query-name: "${GATUS_SUBDOMAIN:=${APP}}.k8s.${SECRET_DOMAIN}"
-      query-type: A
     conditions:
       - "len([BODY]) != 0"
       - "[STATUS] == ${GATUS_STATUS:=200}"
