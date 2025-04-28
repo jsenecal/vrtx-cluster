@@ -1,23 +1,25 @@
 ---
 groups:
-  - name: prowlarr
+  - name: sonarr
     rules:
-      - alert: ProwlarrDatabaseIsLocked
+      - alert: SonarrDatabaseIsLocked
         expr: |
-          sum by (app) (count_over_time({app=~"prowlarr"} |~ "(?i)database is locked"[5m])) > 0
+          sum by (app) (count_over_time({app=~"sonarr"} |~ "(?i)database is locked"[5m])) > 0
         for: 5m
         annotations:
           summary: >-
             {{ $labels.app }} is experiencing database issues
         labels:
           severity: critical
+          category: logs
 
-      - alert: ProwlarrDatabaseIsMalformed
+      - alert: SonarrDatabaseIsMalformed
         expr: |
-          sum by (app) (count_over_time({app=~"prowlarr"} |~ "(?i)database disk image is malformed"[5m])) > 0
+          sum by (app) (count_over_time({app=~"sonarr"} |~ "(?i)database disk image is malformed"[5m])) > 0
         for: 5m
         annotations:
           summary: >-
             {{ $labels.app }} is experiencing database issues
         labels:
           severity: critical
+          category: logs
