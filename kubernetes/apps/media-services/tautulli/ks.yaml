@@ -3,7 +3,7 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app radarr
+  name: &app tautulli
   namespace: &namespace media-services
 spec:
   commonMetadata:
@@ -16,11 +16,11 @@ spec:
     - name: rook-ceph-cluster
       namespace: rook-ceph
   interval: 1h
-  path: ./kubernetes/apps/media-services/radarr/app
+  path: ./kubernetes/apps/media-services/tautulli/app
   postBuild:
     substitute:
       APP: *app
-      GATUS_PATH: /ping
+      GATUS_PATH: /status
       VOLSYNC_CAPACITY: 5Gi
     substituteFrom:
       - name: cluster-secrets
