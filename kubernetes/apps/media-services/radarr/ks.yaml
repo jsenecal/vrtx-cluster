@@ -3,24 +3,25 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app overseerr
+  name: &app radarr
   namespace: &namespace media-services
 spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
   components:
-    - ../../../../components/gatus/public
+    - ../../../../components/gatus/internal
     - ../../../../components/volsync
   dependsOn:
     - name: rook-ceph-cluster
       namespace: rook-ceph
+    - name: onepassword-connect
+      namespace: external-secrets
   interval: 1h
-  path: ./kubernetes/apps/media-services/overseerr/app
+  path: ./kubernetes/apps/media-services/radarr/app
   postBuild:
     substitute:
       APP: *app
-      GATUS_PATH: /api/v1/status
       VOLSYNC_CAPACITY: 5Gi
     substituteFrom:
       - name: cluster-secrets

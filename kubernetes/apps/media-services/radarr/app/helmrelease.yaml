@@ -3,35 +3,43 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: &app sonarr
+  name: &app radarr
 spec:
   interval: 1h
   chartRef:
     kind: OCIRepository
     name: app-template
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
   # To suspend the HelmRelease for migration, uncomment the next line
-  # suspend: true
+  suspend: true
   values:
     controllers:
-      sonarr:
+      radarr:
         annotations:
           reloader.stakater.com/auto: "true"
         containers:
           app:
             image:
-              repository: ghcr.io/onedr0p/sonarr-develop
-              tag: 4.0.14.2938@sha256:75da01d2da78d226cd89352fbab919f2eb26ea9a8d6c592bf812dde5f8949243
+              repository: ghcr.io/onedr0p/radarr-develop
+              tag: 5.22.2.9862@sha256:9f24da505e2ba09957355a2b638660af2325e9861efb8b77583ca71fa6790789
             env:
-              SONARR__APP__INSTANCENAME: Sonarr
-              SONARR__APP__THEME: dark
-              SONARR__LOG__DBENABLED: "False"
-              SONARR__LOG__LEVEL: info
-              SONARR__SERVER__PORT: &port 80
-              SONARR__UPDATE__BRANCH: develop
+              RADARR__APP__INSTANCENAME: Radarr
+              RADARR__APP__THEME: dark
+              RADARR__AUTH__REQUIRED: DisabledForLocalAddresses
+              RADARR__LOG__DBENABLED: "False"
+              RADARR__LOG__LEVEL: info
+              RADARR__SERVER__PORT: &port 80
+              RADARR__UPDATE__BRANCH: develop
               TZ: America/Toronto
             envFrom:
               - secretRef:
-                  name: sonarr-secret
+                  name: radarr-secret
             probes:
               liveness: &probes
                 enabled: true
@@ -45,22 +53,15 @@ spec:
                   timeoutSeconds: 1
                   failureThreshold: 3
               readiness: *probes
-              startup:
-                enabled: true
-                spec:
-                  failureThreshold: 30
-                  periodSeconds: 5
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
             resources:
               requests:
                 cpu: 100m
               limits:
                 memory: 4Gi
-            securityContext:
-              allowPrivilegeEscalation: false
-              readOnlyRootFilesystem: true
-              capabilities:
-                drop:
-                  - ALL
     defaultPodOptions:
       securityContext:
         runAsNonRoot: true
@@ -70,7 +71,7 @@ spec:
         fsGroupChangePolicy: OnRootMismatch
     service:
       app:
-        controller: sonarr
+        controller: radarr
         ports:
           http:
             port: *port
@@ -88,9 +89,9 @@ spec:
                 port: *port
     persistence:
       config:
-        existingClaim: sonarr
+        existingClaim: radarr
       config-cache:
-        existingClaim: sonarr-cache
+        existingClaim: radarr-cache
         globalMounts:
           - path: /config/MediaCover
       add-ons:
@@ -99,14 +100,14 @@ spec:
         type: emptyDir
       nfs-nas-media:
         type: nfs
-        server: 192.168.168.4
+        server: 192.168.254.4
         path: /mnt/zpool/shares/media
         globalMounts:
           - path: /data/media
             readOnly: false
       nfs-nas-downloads:
         type: nfs
-        server: 192.168.168.4
+        server: 192.168.254.4
         path: /mnt/zpool/shares/downloads
         globalMounts:
           - path: /data/downloads
