@@ -10,4 +10,5 @@ endpoints:
       query-name: "${GATUS_SUBDOMAIN:=${APP}}.k8s.${SECRET_DOMAIN}"
       query-type: A
     conditions:
-      - "len([BODY]) == 0"
+      - "len([BODY]) != 0"
+      - "[STATUS] == ${GATUS_STATUS:=200}"
