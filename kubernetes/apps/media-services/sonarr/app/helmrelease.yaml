@@ -90,7 +90,7 @@ spec:
                 port: *port
     persistence:
       config:
-        existingClaim: sonarr\
+        existingClaim: sonarr
       config-cache:
         existingClaim: sonarr-cache
         globalMounts:
