@@ -30,6 +30,8 @@ spec:
     cleanupOnFail: true
     remediation:
       retries: 3
+  # Suspend the release
+  suspend: true
   values:
     githubConfigUrl: https://github.com/jsenecal/vrtx-cluster
     githubConfigSecret: vrtx-cluster-runner-secret
