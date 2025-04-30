@@ -43,7 +43,7 @@ spec:
           module: ["dell"]
           target: 192.168.255.200
           auth: ["public_v2"]
-          scrapeInterval: 30s
+          interval: 30s
         # VRTX Node Alpha
         - name: vrtx-alpha
           module: ["dell"]
@@ -78,9 +78,9 @@ spec:
           module: ["if_mib"]
           target: 192.168.255.199
           auth: ["public_v2"]
-          scrapeInterval: 30s
+          interval: 30s
       path: /snmp
       scrapeTimeout: 30s
-      scrapeInterval: 60s
+      interval: 60s
       relabelings:
         - { sourceLabels: ["__param_target"], targetLabel: instance }
