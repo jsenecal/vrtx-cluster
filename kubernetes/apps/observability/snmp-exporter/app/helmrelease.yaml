@@ -79,7 +79,7 @@ spec:
           auth: ["public_v1"]
         # The VRTX Switch
         - name: vrtx-switch
-          module: ["dell_network"]
+          module: ["if_mib"]
           target: 192.168.255.199
           auth: ["public_v2"]
       path: /snmp
