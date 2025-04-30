@@ -43,31 +43,30 @@ spec:
           module: ["dell"]
           target: 192.168.255.200
           auth: ["public_v2"]
-          interval: 30s
         # VRTX Node Alpha
-        - name: vrtx-alpha
-          module: ["dell"]
-          target: 192.168.255.201
-          auth: ["public_v2"]
-          scrapeTimeout: 60s
-        # VRTX Node Bravo
-        - name: vrtx-bravo
-          module: ["dell"]
-          target: 192.168.255.202
-          auth: ["public_v2"]
-          scrapeTimeout: 60s
-        # VRTX Node Charlie
-        - name: vrtx-charlie
-          module: ["dell"]
-          target: 192.168.255.203
-          auth: ["public_v2"]
-          scrapeTimeout: 60s
-        # VRTX Node Delta
-        - name: vrtx-delta
-          module: ["dell"]
-          target: 192.168.255.204
-          auth: ["public_v2"]
-          scrapeTimeout: 60s
+        # - name: vrtx-alpha
+        #   module: ["dell"]
+        #   target: 192.168.255.201
+        #   auth: ["public_v2"]
+        #   scrapeTimeout: 60s
+        # # VRTX Node Bravo
+        # - name: vrtx-bravo
+        #   module: ["dell"]
+        #   target: 192.168.255.202
+        #   auth: ["public_v2"]
+        #   scrapeTimeout: 60s
+        # # VRTX Node Charlie
+        # - name: vrtx-charlie
+        #   module: ["dell"]
+        #   target: 192.168.255.203
+        #   auth: ["public_v2"]
+        #   scrapeTimeout: 60s
+        # # VRTX Node Delta
+        # - name: vrtx-delta
+        #   module: ["dell"]
+        #   target: 192.168.255.204
+        #   auth: ["public_v2"]
+        #   scrapeTimeout: 60s
         # The APC UPS
         - name: apcups
           module: ["apcups"]
@@ -78,9 +77,7 @@ spec:
           module: ["if_mib"]
           target: 192.168.255.199
           auth: ["public_v2"]
-          interval: 30s
       path: /snmp
       scrapeTimeout: 30s
-      interval: 60s
       relabelings:
         - { sourceLabels: ["__param_target"], targetLabel: instance }
