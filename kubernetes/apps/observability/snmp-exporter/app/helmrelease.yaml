@@ -63,6 +63,11 @@ spec:
           module: ["apcups"]
           target: 192.168.255.218
           auth: ["public_v1"]
+        # The VRTX Switch
+        - name: vrtx-switch
+          module: ["dell_network"]
+          target: 192.168.255.199
+          auth: ["public_v2"]
       path: /snmp
       scrapeTimeout: 30s
       relabelings:
