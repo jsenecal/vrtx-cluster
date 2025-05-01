@@ -65,8 +65,8 @@ spec:
               - mountPath: /var/run/secrets/talos.dev
                 name: talos
                 readOnly: true
-        serviceAccountName: vrtx-cluster-runner
+        serviceAccountName: &sa-name vrtx-cluster-runner
         volumes:
           - name: talos
             secret:
-              secretName: *name
+              secretName: *sa-name
