@@ -34,7 +34,7 @@ spec:
   # suspend: true
   values:
     githubConfigUrl: https://github.com/jsenecal/vrtx-cluster
-    githubConfigSecret: &secretname vrtx-cluster-runner-secret
+    githubConfigSecret: vrtx-cluster-runner-secret
     minRunners: 1
     maxRunners: 3
     containerMode:
@@ -69,4 +69,4 @@ spec:
         volumes:
           - name: talos
             secret:
-              secretName: *secretname
+              secretName: *name
