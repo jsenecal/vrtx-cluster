@@ -5,4 +5,6 @@ machine:
       allowedRoles:
         - os:admin
       allowedKubernetesNamespaces:
-        - system-upgrade
+        - "actions-runner-system"
+        - "system-upgrade"
+    stableHostname: true
