@@ -79,11 +79,19 @@
       matchUpdateTypes: ["minor"],
       semanticCommitType: "feat",
       commitMessageExtra: "( {{currentVersion}} → {{newVersion}} )",
+      automerge: true,
+      automergeType: "branch",
+      matchCurrentVersion: "!/^0/",
+      platformAutomerge: true
     },
     {
       matchUpdateTypes: ["patch"],
       semanticCommitType: "fix",
       commitMessageExtra: "( {{currentVersion}} → {{newVersion}} )",
+      automerge: true,
+      automergeType: "branch",
+      matchCurrentVersion: "!/^0/",
+      platformAutomerge: true
     },
     {
       matchUpdateTypes: ["digest"],
