@@ -103,7 +103,7 @@ jobs:
       - name: Install talosctl
         run: curl -fsSL https://talos.dev/install | sh
       - name: Pull Image
-        run: echo 'Running on $NODE; talosctl --nodes $NODE image pull ${{ matrix.image }}
+        run: talosctl --nodes $NODE image pull ${{ matrix.image }}
 
   success:
     if: ${{ !cancelled() }}
