@@ -102,12 +102,8 @@ jobs:
     steps:
       - name: Install talosctl
         run: curl -fsSL https://talos.dev/install | sh
-
-      - name: Print Node
-        run: 'echo "Running from node: $NODE"'
-
       - name: Pull Image
-        run: talosctl --nodes $NODE image pull ${{ matrix.image }}
+        run: echo 'Running on $NODE; talosctl --nodes $NODE image pull ${{ matrix.image }}
 
   success:
     if: ${{ !cancelled() }}
