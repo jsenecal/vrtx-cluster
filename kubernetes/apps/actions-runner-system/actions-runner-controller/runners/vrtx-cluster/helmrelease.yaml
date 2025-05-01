@@ -17,7 +17,7 @@ spec:
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: &name vrtx-cluster-runner
+  name: &name vrtx-cluster
 spec:
   interval: 1h
   chartRef:
@@ -65,7 +65,7 @@ spec:
               - mountPath: /var/run/secrets/talos.dev
                 name: talos
                 readOnly: true
-        serviceAccountName: *name
+        serviceAccountName: vrtx-cluster-runner
         volumes:
           - name: talos
             secret:
