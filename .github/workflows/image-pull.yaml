@@ -93,7 +93,7 @@ jobs:
     if: ${{ needs.diff.outputs.images != '[]' }}
     needs: diff
     name: Image Pull - Pull Images
-    runs-on: vrtx-cluster-runner
+    runs-on: vrtx-cluster
     strategy:
       matrix:
         image: ${{ fromJSON(needs.diff.outputs.images) }}
