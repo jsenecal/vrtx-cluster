@@ -8,3 +8,6 @@ machine:
         - "actions-runner-system"
         - "system-upgrade"
     stableHostname: true
+    rbac: true
+    apidCheckExtKeyUsage: true
+    diskQuotaSupport: true
