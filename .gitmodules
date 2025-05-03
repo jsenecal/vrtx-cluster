@@ -1,0 +1,3 @@
+[submodule ".src/onedr0p-home-ops"]
+	path = .src/onedr0p-home-ops
+	url = https://github.com/onedr0p/home-ops
