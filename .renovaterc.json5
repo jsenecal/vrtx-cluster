@@ -97,6 +97,10 @@
       matchUpdateTypes: ["digest"],
       semanticCommitType: "chore",
       commitMessageExtra: "( {{currentDigestShort}} → {{newDigestShort}} )",
+      automerge: true,
+      automergeType: "branch",
+      matchCurrentVersion: "!/^0/",
+      platformAutomerge: true
     },
     {
       matchDatasources: ["docker"],
