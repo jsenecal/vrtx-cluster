@@ -7,6 +7,7 @@ resources:
   - ./esphome/ks.yaml
   # - ./go2rtc/ks.yaml
   - ./home-assistant/ks.yaml
+  - ./mmwave-configurator/ks.yaml
   # - ./scrypted/ks.yaml
   # - ./zigbee2mqtt/ks.yaml
 components:
