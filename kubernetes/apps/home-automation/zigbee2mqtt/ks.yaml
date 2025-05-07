@@ -1,0 +1,75 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &appname z2m-a
+  namespace: &namespace home-automation
+spec:
+  targetNamespace: *namespace
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *appname
+  interval: 30m
+  timeout: 5m
+  path: "./kubernetes/apps/home-automation/zigbee2mqtt/attic"
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  wait: false
+  dependsOn:
+    - name: onepassword-store
+      namespace: external-secrets
+    - name: emqx-cluster
+      namespace: database
+    - name: volsync
+      namespace: system
+  components:
+    - ../../../../components/volsync
+  postBuild:
+    substitute:
+      APP: *appname
+      VOLSYNC_CLAIM: zigbee2mqtt-attic-data
+    substituteFrom:
+      - kind: Secret
+        name: cluster-secrets
+
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &appname z2m-b
+  namespace: &namespace home-automation
+spec:
+  targetNamespace: *namespace
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *appname
+  interval: 30m
+  timeout: 5m
+  path: "./kubernetes/apps/home-automation/zigbee2mqtt/basement"
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  wait: false
+  dependsOn:
+    - name: onepassword-store
+      namespace: external-secrets
+    - name: emqx-cluster
+      namespace: database
+    - name: volsync
+      namespace: system
+  components:
+    - ../../../../components/volsync
+  postBuild:
+    substitute:
+      APP: *appname
+      VOLSYNC_CLAIM: zigbee2mqtt-basement-data
+    substituteFrom:
+      - kind: Secret
+        name: cluster-secrets
