@@ -35,3 +35,6 @@ spec:
       APP_GID: "65533"
       VOLSYNC_CLAIM: home-assistant-config
       VOLSYNC_CAPACITY: 8Gi
+    substituteFrom:
+      - kind: Secret
+        name: cluster-secrets
