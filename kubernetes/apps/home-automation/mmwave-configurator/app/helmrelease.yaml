@@ -20,7 +20,11 @@ spec:
           secret.reloader.stakater.com/reload: mmwave-configurator-secrets
 
         pod:
-          # securityContext removed to allow s6-overlay to function properly
+          securityContext:
+            runAsUser: 2000
+            runAsGroup: 2000
+            fsGroup: 2000
+            fsGroupChangePolicy: OnRootMismatch
 
         containers:
           app:
@@ -30,6 +34,8 @@ spec:
             env:
               - name: HA_URL
                 value: "home-assistant.home-automation.svc.cluster.local:8123"
+              - name: USER
+                value: "2000"
             envFrom:
               - secretRef:
                   name: mmwave-configurator-secrets
@@ -46,7 +52,12 @@ spec:
                 memory: 128Mi
               limits:
                 memory: 256Mi
-            # securityContext removed to allow s6-overlay to function properly
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: false
+              capabilities:
+                drop:
+                  - ALL
 
     service:
       main:
