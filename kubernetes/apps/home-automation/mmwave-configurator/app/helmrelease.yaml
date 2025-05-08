@@ -34,6 +34,10 @@ spec:
             env:
               - name: HA_URL
                 value: "home-assistant.home-automation.svc.cluster.local:8123"
+              - name: PUID
+                value: "2000"
+              - name: PGID
+                value: "2000"
             envFrom:
               - secretRef:
                   name: mmwave-configurator-secrets
