@@ -27,7 +27,7 @@ spec:
               tag: 1.1.3
             env:
               - name: HA_URL
-                value: "home-assistant.home-automation.svc.cluster.local:8123"
+                value: "http://home-assistant.home-automation.svc.cluster.local:8123"
             envFrom:
               - secretRef:
                   name: mmwave-configurator-secrets
