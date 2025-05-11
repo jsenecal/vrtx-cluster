@@ -1,0 +1,49 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: debug-node
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: debug-node
+  template:
+    metadata:
+      labels:
+        app: debug-node
+    spec:
+      hostPID: true
+      hostIPC: true
+      hostNetwork: true
+      containers:
+      - name: debug-container
+        image: ubuntu:latest
+        command: 
+        - "/bin/bash"
+        - "-c"
+        - |
+          # Set the hostname to include node name and install useful tools
+          apt-get update
+          apt-get install -y curl net-tools netcat-openbsd dnsutils iputils-ping procps iproute2 ethtool gdisk || true
+          # Verify installed tools
+          echo "Installed packages:"
+          dpkg -l | grep -E 'curl|net-tools|netcat|dnsutils|iputils|procps|iproute2|ethtool|gdisk'
+          echo "Node name: $NODE_NAME"
+          echo "Debug container for node $NODE_NAME is ready"
+          # Keep container running
+          sleep infinity
+        securityContext:
+          privileged: true
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        volumeMounts:
+        - name: host-root
+          mountPath: /host
+      volumes:
+      - name: host-root
+        hostPath:
+          path: /

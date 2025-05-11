@@ -8,6 +8,7 @@ components:
 resources:
   - ./cilium/ks.yaml
   - ./cilium/gateway/ks.yaml
+  - ./debug-ds/ks.yaml
   - ./descheduler/ks.yaml
   - ./coredns/ks.yaml
   - ./metrics-server/ks.yaml
