@@ -27,6 +27,12 @@ spec:
                 "namespace": "network",
                 "ips": ["192.168.252.250/24"],
                 "mac": "3e:59:e4:f7:43:08"
+              },
+              {
+                "name":"multus-lan",
+                "namespace": "network",
+                "ips": ["192.168.254.250/24"],
+                "mac": "3e:59:e4:f7:43:09"
               }]
           securityContext:
             runAsUser: 65534
