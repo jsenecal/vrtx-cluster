@@ -1,0 +1,13 @@
+endpoints:
+  - name: "${APP}"
+    group: IoT
+    url: "https://${GATUS_SUBDOMAIN:-${APP}}.k8s.mstrsmth.io${GATUS_PATH:-/}"
+    interval: 1m
+    ui:
+      hide-hostname: true
+      hide-url: true
+    client:
+      dns-resolver: tcp://192.168.168.1:53
+    conditions:
+      - "len([BODY]) != 0"
+      - "[STATUS] == ${GATUS_STATUS:=200}"
