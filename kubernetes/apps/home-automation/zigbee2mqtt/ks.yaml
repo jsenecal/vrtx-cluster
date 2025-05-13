@@ -25,7 +25,7 @@ spec:
     - name: emqx-cluster
       namespace: iot
     - name: volsync
-      namespace: system
+      namespace: volsync-system
   components:
     - ../../../../components/volsync
   postBuild:
@@ -63,7 +63,7 @@ spec:
 #     - name: emqx-cluster
 #       namespace: iot
 #     - name: volsync
-#       namespace: system
+#       namespace: volsync-system
 #   components:
 #     - ../../../../components/volsync
 #   postBuild:
