@@ -167,8 +167,8 @@ spec:
                     type: ReplacePrefixMatch
                     replacePrefixMatch: /
             backendRefs:
-              - name: "{{ .Release.Name }}"
+              - name: "z2m-a"
                 port: 12321
           - backendRefs:
-              - name: "{{ .Release.Name }}"
+              - name: "z2m-a"
                 port: *httpPort
