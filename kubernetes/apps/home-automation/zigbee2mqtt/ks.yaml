@@ -28,6 +28,7 @@ spec:
       namespace: volsync-system
   components:
     - ../../../../components/volsync
+    - ../../../../components/gatus/iot
   postBuild:
     substitute:
       APP: *appname

@@ -29,7 +29,6 @@ spec:
   postBuild:
     substitute:
       APP: *appname
-      VOLSYNC_CLAIM: mmwave-configurator-config
       VOLSYNC_CAPACITY: 1Gi
     substituteFrom:
       - kind: Secret
