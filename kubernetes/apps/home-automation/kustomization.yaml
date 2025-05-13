@@ -9,6 +9,6 @@ resources:
   - ./home-assistant/ks.yaml
   - ./mmwave-configurator/ks.yaml
   # - ./scrypted/ks.yaml
-  # - ./zigbee2mqtt/ks.yaml
+  - ./zigbee2mqtt/ks.yaml
 components:
   - ../../components/common
