@@ -31,7 +31,6 @@ spec:
   postBuild:
     substitute:
       APP: *appname
-      VOLSYNC_CLAIM: esphome-config
       VOLSYNC_CAPACITY: 5Gi
     substituteFrom:
       - kind: Secret
