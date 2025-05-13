@@ -32,7 +32,6 @@ spec:
   postBuild:
     substitute:
       APP: *appname
-      VOLSYNC_CLAIM: zigbee2mqtt-attic-data
     substituteFrom:
       - kind: Secret
         name: cluster-secrets
@@ -70,7 +69,6 @@ spec:
 #   postBuild:
 #     substitute:
 #       APP: *appname
-#       VOLSYNC_CLAIM: zigbee2mqtt-basement-data
 #     substituteFrom:
 #       - kind: Secret
 #         name: cluster-secrets

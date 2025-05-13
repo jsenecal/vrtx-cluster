@@ -139,7 +139,7 @@ spec:
 
     persistence:
       data:
-        existingClaim: zigbee2mqtt-attic-data
+        existingClaim: "{{ .Release.Name }}"
         advancedMounts:
           zigbee2mqtt:
             app:
