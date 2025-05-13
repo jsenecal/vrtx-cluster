@@ -139,7 +139,7 @@ spec:
 
     persistence:
       data:
-        existingClaim: "{{ .Release.Name }}"
+        existingClaim: "z2m-a"
         advancedMounts:
           zigbee2mqtt:
             app:
