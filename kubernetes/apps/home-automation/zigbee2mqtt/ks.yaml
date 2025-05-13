@@ -23,7 +23,7 @@ spec:
     - name: external-secrets-stores
       namespace: external-secrets
     - name: emqx-cluster
-      namespace: database
+      namespace: iot
     - name: volsync
       namespace: system
   components:
@@ -61,7 +61,7 @@ spec:
 #     - name: external-secrets-stores
 #       namespace: external-secrets
 #     - name: emqx-cluster
-#       namespace: database
+#       namespace: iot
 #     - name: volsync
 #       namespace: system
 #   components:
