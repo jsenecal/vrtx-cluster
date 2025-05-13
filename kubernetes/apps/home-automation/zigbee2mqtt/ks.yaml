@@ -20,7 +20,7 @@ spec:
     namespace: flux-system
   wait: false
   dependsOn:
-    - name: onepassword-store
+    - name: external-secrets-stores
       namespace: external-secrets
     - name: emqx-cluster
       namespace: database
@@ -58,7 +58,7 @@ spec:
 #     namespace: flux-system
 #   wait: false
 #   dependsOn:
-#     - name: onepassword-store
+#     - name: external-secrets-stores
 #       namespace: external-secrets
 #     - name: emqx-cluster
 #       namespace: database
