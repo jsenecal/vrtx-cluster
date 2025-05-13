@@ -54,6 +54,9 @@ nodes:
           - vlanId: 252
             dhcp: false
             mtu: 1500
+          - vlanId: 666
+            dhcp: false
+            mtu: 1500
         bond:
           mode: 802.3ad
           lacpRate: fast
@@ -98,6 +101,9 @@ nodes:
             vip:
               ip: "192.168.168.200"
           - vlanId: 252
+            dhcp: false
+            mtu: 1500
+          - vlanId: 666
             dhcp: false
             mtu: 1500
         bond:
@@ -146,6 +152,9 @@ nodes:
           - vlanId: 252
             dhcp: false
             mtu: 1500
+          - vlanId: 666
+            dhcp: false
+            mtu: 1500
         bond:
           mode: 802.3ad
           lacpRate: fast
@@ -187,6 +196,9 @@ nodes:
               - network: "0.0.0.0/0"
                 gateway: "192.168.168.1"
           - vlanId: 252
+            dhcp: false
+            mtu: 1500
+          - vlanId: 666
             dhcp: false
             mtu: 1500
         bond:
