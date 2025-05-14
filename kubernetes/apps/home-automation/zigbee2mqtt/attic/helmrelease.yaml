@@ -36,7 +36,7 @@ spec:
             env:
               Z2M_WATCHDOG: default
               ZIGBEE2MQTT_DATA: /data
-              ZIGBEE2MQTT_CONFIG_ADVANCED_CHANNEL: 11
+              ZIGBEE2MQTT_CONFIG_ADVANCED_CHANNEL: 20
               # ZIGBEE2MQTT_CONFIG_ADVANCED_EXT_PAN_ID:
               #   valueFrom:
               #     secretKeyRef:
