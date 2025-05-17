@@ -1,0 +1,27 @@
+---
+apiVersion: v1alpha1
+kind: EthernetConfig
+name: eno1
+rings:
+  rx: 2048
+
+---
+apiVersion: v1alpha1
+kind: EthernetConfig
+name: eno2
+rings:
+  rx: 2048
+
+---
+apiVersion: v1alpha1
+kind: EthernetConfig
+name: eno3
+rings:
+  rx: 2048
+
+---
+apiVersion: v1alpha1
+kind: EthernetConfig
+name: eno4
+rings:
+  rx: 2048
