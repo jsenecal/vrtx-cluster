@@ -68,6 +68,7 @@ nodes:
     # Talos manifests
     extraManifests:
       - "./manifests/global/lldp-config.yaml"
+      - "./manifests/global/ethernet-config.yaml"
 
   - hostname: "vrtx-bravo"
     ipAddress: "192.168.168.202"
@@ -117,6 +118,7 @@ nodes:
     # Talos manifests
     extraManifests:
       - "./manifests/global/lldp-config.yaml"
+      - "./manifests/global/ethernet-config.yaml"
 
   - hostname: "vrtx-charlie"
     ipAddress: "192.168.168.203"
@@ -166,6 +168,7 @@ nodes:
     # Talos manifests
     extraManifests:
       - "./manifests/global/lldp-config.yaml"
+      - "./manifests/global/ethernet-config.yaml"
   - hostname: "vrtx-delta"
     ipAddress: "192.168.168.204"
     installDiskSelector:
@@ -212,6 +215,7 @@ nodes:
     # Talos manifests
     extraManifests:
       - "./manifests/global/lldp-config.yaml"
+      - "./manifests/global/ethernet-config.yaml"
 
 
 # Global patches
