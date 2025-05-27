@@ -365,3 +365,72 @@ VolSync provides automated backup and replication for persistent volumes using r
 - Set appropriate resource limits and timeouts for backup jobs
 - Use volume snapshots when possible to reduce backup time
 - Regular repository maintenance with prune operations
+
+## VolSync Unlock Configuration
+
+For applications experiencing persistent repository locks, VolSync provides an unlock feature that must be configured correctly:
+
+### Component Structure
+
+Create a separate volsync component with unlock capability:
+
+```yaml
+# kubernetes/components/volsync/unlock/kustomization.yaml
+---
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+resources:
+  - ../local
+patches:
+  - target:
+      kind: ReplicationSource
+      name: "${APP}"
+    patch: |
+      - op: add
+        path: /spec/restic/unlock
+        value: "${VOLSYNC_UNLOCK}"
+```
+
+### Application Configuration
+
+For apps that need unlock functionality, use the unlock component and provide the unlock parameter:
+
+```yaml
+# In the app's ks.yaml
+spec:
+  components:
+    - ../../../../components/volsync/unlock  # Use unlock component instead of local
+  postBuild:
+    substitute:
+      VOLSYNC_UNLOCK: "unique-unlock-identifier"  # Must be a string value
+```
+
+### Important Notes
+
+- **Unlock parameter type**: Must be a string, not boolean
+- **Unique values**: Each unlock operation needs a different string value
+- **Component isolation**: Only apps that need unlock should use the unlock component
+- **Automatic execution**: VolSync will run `restic unlock` before backup operations
+
+### Troubleshooting Unlock Issues
+
+1. **Verify unlock parameter is applied**:
+   ```bash
+   kubectl -n <namespace> get replicationsource <name> -o jsonpath='{.spec.restic.unlock}'
+   ```
+
+2. **Check for unlock operation in logs**:
+   ```bash
+   kubectl -n <namespace> logs -l job-name=volsync-src-<name> | grep "Starting unlock"
+   ```
+
+3. **Force new unlock with different value**:
+   ```bash
+   kubectl -n <namespace> patch replicationsource <name> --type='merge' -p='{"spec":{"restic":{"unlock":"new-unlock-'$(date +%s)'"}}}'
+   ```
+
+4. **Manual repository unlock** (last resort):
+   ```bash
+   # Run restic unlock directly against the repository
+   restic unlock --remove-all
+   ```
