@@ -317,3 +317,51 @@ If "no healthy upstream" errors occur when accessing Grafana:
    kubectl -n kube-system get gateway internal
    ```
    Ensure the gateway is properly configured and has a "Ready" status.
+
+### VolSync Issues
+
+VolSync provides automated backup and replication for persistent volumes using restic. If volsync backups are failing:
+
+1. **Check ReplicationSource status**:
+   ```bash
+   kubectl -n <namespace> get replicationsource
+   kubectl -n <namespace> describe replicationsource <name>
+   ```
+   Look for sync status, last sync time, and any error conditions.
+
+2. **Check for stuck jobs**:
+   ```bash
+   kubectl -n <namespace> get jobs -l app.kubernetes.io/component=mover
+   kubectl -n <namespace> get pods -l job-name=volsync-src-<name>
+   ```
+   Long-running jobs (>1 hour) may indicate repository lock issues.
+
+3. **Repository lock issues**:
+   If you see "repository is already locked" errors in the job logs:
+   ```bash
+   # Delete the stuck job to clear the lock
+   kubectl -n <namespace> delete job volsync-src-<name>
+   
+   # Trigger a manual sync
+   kubectl -n <namespace> annotate replicationsource <name> volsync.backube/trigger-sync=$(date -Iseconds)
+   ```
+   
+4. **Monitor sync progress**:
+   ```bash
+   # Check overall status
+   kubectl -n <namespace> get replicationsource <name> -o custom-columns="NAME:.metadata.name,LAST_SYNC:.status.lastSyncTime,NEXT_SYNC:.status.nextSyncTime,STATUS:.status.conditions[?(@.type=='Synchronizing')].status"
+   
+   # Check job logs for detailed progress
+   kubectl -n <namespace> logs -l job-name=volsync-src-<name> -f
+   ```
+
+**Common VolSync Issues**:
+- **Stale repository locks**: Previous backup jobs that didn't complete cleanly can leave repository locks, preventing new backups
+- **Long-running jobs**: Large datasets or slow storage can cause jobs to run longer than expected
+- **Schedule conflicts**: Multiple jobs trying to access the same repository simultaneously
+
+**Best Practices**:
+- Monitor backup duration and adjust schedules if jobs consistently overlap
+- Set appropriate resource limits and timeouts for backup jobs
+- Use volume snapshots when possible to reduce backup time
+- Regular repository maintenance with prune operations
