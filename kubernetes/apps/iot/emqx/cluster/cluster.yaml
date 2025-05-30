@@ -46,7 +46,8 @@ spec:
           secret:
             secretName: emqx-init-user-secret
       volumeClaimTemplates:
-        - metadata:
+        emqx-data:
+          metadata:
             name: emqx-data
           spec:
             accessModes: ["ReadWriteOnce"]
