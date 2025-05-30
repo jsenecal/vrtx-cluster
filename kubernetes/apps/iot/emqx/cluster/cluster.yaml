@@ -45,16 +45,13 @@ spec:
         - name: init-user
           secret:
             secretName: emqx-init-user-secret
-  volumeClaimTemplates:
-    emqx-data:
-      metadata:
-        name: emqx-data
-      spec:
-        accessModes: ["ReadWriteOnce"]
+      volumeClaimTemplates:
         storageClassName: openebs-hostpath
         resources:
           requests:
             storage: 2Gi
+        accessModes:
+          - ReadWriteOnce
   listenersServiceTemplate:
     metadata:
       annotations:
