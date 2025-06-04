@@ -18,6 +18,15 @@ spec:
   blocks:
     - cidr: "192.168.252.0/24"
 ---
+apiVersion: cilium.io/v2alpha1
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: lab-pool
+spec:
+  allowFirstLastIPs: "No"
+  blocks:
+    - cidr: "192.168.8.0/24"
+---
 # yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/cilium.io/ciliuml2announcementpolicy_v2alpha1.json
 apiVersion: cilium.io/v2alpha1
 kind: CiliumL2AnnouncementPolicy
@@ -26,6 +35,7 @@ metadata:
 spec:
   loadBalancerIPs: true
   interfaces:
+    - bond0.8
     - bond0.168
     - bond0.252
   nodeSelector:
