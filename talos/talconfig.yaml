@@ -57,6 +57,11 @@ nodes:
           - vlanId: 666
             dhcp: false
             mtu: 1500
+          - vlanId: 8
+            dhcp: false
+            dhcpOptions:
+              routeMetric: 1024
+            mtu: 1500
         bond:
           mode: 802.3ad
           lacpRate: fast
@@ -106,6 +111,11 @@ nodes:
             mtu: 1500
           - vlanId: 666
             dhcp: false
+            mtu: 1500
+          - vlanId: 8
+            dhcp: false
+            dhcpOptions:
+              routeMetric: 1024
             mtu: 1500
         bond:
           mode: 802.3ad
@@ -157,6 +167,11 @@ nodes:
           - vlanId: 666
             dhcp: false
             mtu: 1500
+          - vlanId: 8
+            dhcp: false
+            dhcpOptions:
+              routeMetric: 1024
+            mtu: 1500
         bond:
           mode: 802.3ad
           lacpRate: fast
@@ -203,6 +218,11 @@ nodes:
             mtu: 1500
           - vlanId: 666
             dhcp: false
+            mtu: 1500
+          - vlanId: 8
+            dhcp: false
+            dhcpOptions:
+              routeMetric: 1024
             mtu: 1500
         bond:
           mode: 802.3ad

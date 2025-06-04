@@ -5,3 +5,4 @@ kind: Kustomization
 resources:
   - ./iot.yaml
   - ./lan.yaml
+  - ./lab.yaml
