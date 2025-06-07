@@ -24,7 +24,7 @@ spec:
           app:
             image:
               repository: everythingsmarthome/everything-presence-mmwave-configurator
-              tag: 1.1.3
+              tag: 1.1.4
             env:
               - name: HA_URL
                 value: "http://home-assistant.home-automation.svc.cluster.local:8123"
