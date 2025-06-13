@@ -12,4 +12,5 @@ machine:
     net.ipv4.tcp_wmem: "4096 65536 33554432" # 10Gb/s
     net.ipv4.tcp_window_scaling: "1" # 10Gb/s
     net.core.default_qdisc: fq # 10Gb/s
+    net.core.bpf_jit_harden: 1 # NVidia GPU
 
