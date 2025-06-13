@@ -75,6 +75,24 @@ nodes:
       - "./manifests/global/lldp-config.yaml"
       - "./manifests/global/ethernet-config.yaml"
 
+    # schematic:
+    #   customization:
+    #     systemExtensions:
+    #       officialExtensions:
+    #         - siderolabs/intel-ucode
+    #         - siderolabs/nonfree-kmod-nvidia-production
+    #         - siderolabs/nvidia-container-toolkit-production
+    #         - siderolabs/iscsi-tools
+    #         - siderolabs/lldpd
+    #         - siderolabs/bnx2-bnx2x
+    # patches:
+    #   - "@./patches/global/machine-files.yaml"
+    #   # - "@./patches/global/machine-kernel-nvidia.yaml"
+    #   - "@./patches/global/machine-kubelet.yaml"
+    #   - "@./patches/global/machine-network.yaml"
+    #   - "@./patches/global/machine-sysctls.yaml"
+    #   - "@./patches/global/machine-time.yaml"
+
   - hostname: "vrtx-bravo"
     ipAddress: "192.168.168.202"
     installDiskSelector:
@@ -130,6 +148,24 @@ nodes:
       - "./manifests/global/lldp-config.yaml"
       - "./manifests/global/ethernet-config.yaml"
 
+    # schematic:
+    #   customization:
+    #     systemExtensions:
+    #       officialExtensions:
+    #         - siderolabs/intel-ucode
+    #         - siderolabs/nonfree-kmod-nvidia-production
+    #         - siderolabs/nvidia-container-toolkit-production
+    #         - siderolabs/iscsi-tools
+    #         - siderolabs/lldpd
+    #         - siderolabs/bnx2-bnx2x
+    # patches:
+    #   - "@./patches/global/machine-files.yaml"
+    #   # - "@./patches/global/machine-kernel-nvidia.yaml"
+    #   - "@./patches/global/machine-kubelet.yaml"
+    #   - "@./patches/global/machine-network.yaml"
+    #   - "@./patches/global/machine-sysctls.yaml"
+    #   - "@./patches/global/machine-time.yaml"
+
   - hostname: "vrtx-charlie"
     ipAddress: "192.168.168.203"
     installDiskSelector:
@@ -184,6 +220,25 @@ nodes:
     extraManifests:
       - "./manifests/global/lldp-config.yaml"
       - "./manifests/global/ethernet-config.yaml"
+
+    # schematic:
+    #   customization:
+    #     systemExtensions:
+    #       officialExtensions:
+    #         - siderolabs/intel-ucode
+    #         # - siderolabs/nonfree-kmod-nvidia-production
+    #         # - siderolabs/nvidia-container-toolkit-production
+    #         - siderolabs/iscsi-tools
+    #         - siderolabs/lldpd
+    #         - siderolabs/bnx2-bnx2x
+    # patches:
+    #   - "@./patches/global/machine-files.yaml"
+    #   - "@./patches/global/machine-kernel-nvidia.yaml"
+    #   - "@./patches/global/machine-kubelet.yaml"
+    #   - "@./patches/global/machine-network.yaml"
+    #   - "@./patches/global/machine-sysctls.yaml"
+    #   - "@./patches/global/machine-time.yaml"
+
   - hostname: "vrtx-delta"
     ipAddress: "192.168.168.204"
     installDiskSelector:
@@ -237,10 +292,21 @@ nodes:
       - "./manifests/global/lldp-config.yaml"
       - "./manifests/global/ethernet-config.yaml"
 
+    # schematic:
+    #   customization:
+    #     systemExtensions:
+    #       officialExtensions:
+    #         - siderolabs/intel-ucode
+    #         # - siderolabs/nonfree-kmod-nvidia-production
+    #         # - siderolabs/nvidia-container-toolkit-production
+    #         - siderolabs/iscsi-tools
+    #         - siderolabs/lldpd
+    #         - siderolabs/bnx2-bnx2x
 
 # Global patches
 patches:
   - "@./patches/global/machine-files.yaml"
+  # - "@./patches/global/machine-kernel-nvidia.yaml"
   - "@./patches/global/machine-kubelet.yaml"
   - "@./patches/global/machine-network.yaml"
   - "@./patches/global/machine-sysctls.yaml"
