@@ -33,6 +33,13 @@ spec:
     remediation:
       retries: 3
   values:
+    # Disable observability stack that causes upgrade timeouts
+    alloy:
+      enabled: false
+    loki:
+      enabled: false
+    minio:
+      enabled: false
     localpv-provisioner:
       localpv:
         image:
