@@ -27,6 +27,18 @@ spec:
         ]
         no_match: "deny"
       }
+      listeners.ws.default {
+        bind = "0.0.0.0:8083"
+        mqtt.path = "/mqtt"
+      }
+      listeners.wss.default {
+        bind = "0.0.0.0:8084"
+        mqtt.path = "/mqtt"
+        ssl_options {
+          keyfile = "/opt/emqx/etc/certs/tls.key"
+          certfile = "/opt/emqx/etc/certs/tls.crt"
+        }
+      }
   coreTemplate:
     metadata:
       annotations:
@@ -41,10 +53,16 @@ spec:
           mountPath: /opt/init-user.json
           subPath: init-user.json
           readOnly: true
+        - name: tls-certs
+          mountPath: /opt/emqx/etc/certs
+          readOnly: true
       extraVolumes:
         - name: init-user
           secret:
             secretName: emqx-init-user-secret
+        - name: tls-certs
+          secret:
+            secretName: emqx-tls-secret
       volumeClaimTemplates:
         storageClassName: openebs-hostpath
         resources:
