@@ -23,7 +23,8 @@ spec:
       GATUS_PATH: /web/index.html
       VOLSYNC_CACHE_CAPACITY: 50Gi
       VOLSYNC_CAPACITY: 100Gi
-      VOLSYNC_UNLOCK: "2025-06-13-unlock-repo-lock-fix"
+      VOLSYNC_SCHEDULE: "0 2 * * *"
+      VOLSYNC_UNLOCK: "2025-06-26-daily-schedule-fix"
     substituteFrom:
       - name: cluster-secrets
         kind: Secret
