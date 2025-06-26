@@ -8,3 +8,5 @@ resources:
   - ./gatus.yaml
   - ./podmonitor.yaml
   - ./httproute.yaml
+  - ./certificate.yaml
+  - ./httproute-external.yaml
