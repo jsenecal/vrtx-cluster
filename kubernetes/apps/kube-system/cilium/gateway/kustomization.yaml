@@ -8,4 +8,6 @@ resources:
   - external.yaml
   - redirect.yaml
   - certificate.yaml
+  - certificate-two.yaml
+  - certificate-three.yaml
   - k8s-certificate.yaml
