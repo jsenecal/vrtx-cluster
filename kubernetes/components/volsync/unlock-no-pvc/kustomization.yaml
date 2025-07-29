@@ -1,0 +1,15 @@
+---
+# This component is for apps that already have existing PVCs
+# It includes volsync functionality with unlock but excludes PVC creation
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+resources:
+  - ../local
+patches:
+  - target:
+      kind: ReplicationSource
+      name: "${APP}"
+    patch: |
+      - op: add
+        path: /spec/restic/unlock
+        value: "${VOLSYNC_UNLOCK}"
