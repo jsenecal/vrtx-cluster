@@ -24,7 +24,7 @@ spec:
       VOLSYNC_CACHE_CAPACITY: 50Gi
       VOLSYNC_CAPACITY: 100Gi
       VOLSYNC_SCHEDULE: "0 2 * * *"
-      VOLSYNC_UNLOCK: "2025-06-26-daily-schedule-fix"
+      VOLSYNC_UNLOCK: "2025-07-29-stale-lock-fix"
     substituteFrom:
       - name: cluster-secrets
         kind: Secret
