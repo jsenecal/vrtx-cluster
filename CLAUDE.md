@@ -386,3 +386,174 @@ task volsync:logs NAMESPACE=home-automation APP=esphome
 ```
 
 The unlock command patches the ReplicationSource with a unique unlock value and triggers an immediate sync. This causes VolSync to run `restic unlock` before the backup operation.
+
+### VolSync Troubleshooting
+
+#### Stuck ReplicationSources (STATUS: True but not syncing)
+
+**Symptoms:**
+- `task volsync:status` shows STATUS: True (supposedly synchronizing)
+- Last sync times are days old
+- No volsync pods are actually running
+- Next sync time may be in the past
+
+**Diagnosis:**
+```bash
+# Check for stuck ReplicationSources
+task volsync:status
+
+# Look for running volsync pods
+kubectl get pods -A -l app.kubernetes.io/created-by=volsync
+
+# Check detailed status of a stuck ReplicationSource
+kubectl -n <namespace> describe replicationsource <name>
+```
+
+**Fix:**
+```bash
+# 1. Suspend the affected kustomization
+flux suspend kustomization -n <namespace> <app-name>
+
+# 2. Delete the stuck ReplicationSource
+kubectl -n <namespace> delete replicationsource <app-name>
+
+# 3. Resume the kustomization to recreate it
+flux resume kustomization -n <namespace> <app-name>
+
+# 4. Unlock and trigger a sync
+task volsync:unlock NAMESPACE=<namespace> APP=<app-name>
+```
+
+#### PVC Stuck in Terminating State
+
+**Symptoms:**
+- PVC shows "Terminating" status for extended periods
+- VolSync cannot create snapshots
+- Backup jobs fail with "cannot add finalizer on claim because it is being deleted"
+
+**Fix:**
+```bash
+# 1. Scale down the app using the PVC
+kubectl -n <namespace> scale deployment <app-name> --replicas=0
+
+# 2. Force remove finalizers from stuck PVC
+kubectl -n <namespace> patch pvc <pvc-name> --type json -p='[{"op": "remove", "path": "/metadata/finalizers"}]'
+
+# 3. Wait for PVC to be deleted
+kubectl -n <namespace> get pvc <pvc-name>
+```
+
+#### Restoring from Specific Backup Points
+
+When you need to restore data from a specific point in time:
+
+```bash
+# 1. Scale down the application
+kubectl -n <namespace> scale deployment <app-name> --replicas=0
+
+# 2. Delete existing PVC if present
+kubectl -n <namespace> delete pvc <app-name>
+
+# 3. Create restore configuration
+cat > restore-<app-name>.yaml <<EOF
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: <app-name>
+  namespace: <namespace>
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: <size>
+  storageClassName: ceph-block
+---
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationDestination
+metadata:
+  name: <app-name>-restore
+  namespace: <namespace>
+spec:
+  trigger:
+    manual: restore-$(date +%Y%m%d-%H%M%S)
+  restic:
+    destinationPVC: <app-name>
+    repository: <app-name>-volsync-secret
+    copyMethod: Direct
+    restoreAsOf: "2025-08-04T20:00:00Z"  # Specify the restore point
+    moverSecurityContext:
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000
+EOF
+
+# 4. Apply the restore configuration
+kubectl apply -f restore-<app-name>.yaml
+
+# 5. Wait for restore to complete
+kubectl -n <namespace> wait --for=condition=complete job/volsync-dst-<app-name>-restore --timeout=300s
+
+# 6. Check restore status
+kubectl -n <namespace> get replicationdestination <app-name>-restore -o jsonpath='{.status.latestMoverStatus}' | jq .
+
+# 7. Scale up the application
+kubectl -n <namespace> scale deployment <app-name> --replicas=1
+
+# 8. Clean up the restore ReplicationDestination
+kubectl -n <namespace> delete replicationdestination <app-name>-restore
+```
+
+#### Listing Available Snapshots
+
+To see what restore points are available:
+
+```bash
+# Create a helper pod to access the restic repository
+cat > restic-helper.yaml <<EOF
+apiVersion: v1
+kind: Pod
+metadata:
+  name: restic-list-snapshots
+  namespace: <namespace>
+spec:
+  securityContext:
+    fsGroup: 1000
+    runAsGroup: 1000
+    runAsUser: 1000
+  containers:
+  - name: restic
+    image: quay.io/backube/volsync:0.12.1
+    command: ["/bin/bash", "-c"]
+    args:
+    - |
+      export RESTIC_PASSWORD=\$(cat /secrets/RESTIC_PASSWORD)
+      restic -r /repository/<app-name> snapshots --no-lock
+      sleep 3600
+    volumeMounts:
+    - name: repository
+      mountPath: /repository
+    - name: secret
+      mountPath: /secrets
+  volumes:
+  - name: repository
+    nfs:
+      server: 192.168.168.4
+      path: /mnt/zpool/VolSync
+  - name: secret
+    secret:
+      secretName: <app-name>-volsync-secret
+EOF
+
+kubectl apply -f restic-helper.yaml
+kubectl -n <namespace> logs restic-list-snapshots
+kubectl -n <namespace> delete pod restic-list-snapshots
+```
+
+#### Common VolSync Issues
+
+1. **Repository locks**: Use `task volsync:unlock-all` to clear all locks
+2. **Failed backups after app changes**: Ensure the app's PVC name matches what volsync expects
+3. **Slow sync times**: Check if snapshot-based backups would be faster than direct copies
+4. **Missing backups**: Verify the schedule in ReplicationSource matches expectations
