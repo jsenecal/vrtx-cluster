@@ -27,7 +27,7 @@ spec:
     - name: volsync
       namespace: volsync-system
   components:
-    - ../../../../components/volsync/unlock
+    - ../../../../components/volsync/unlock-no-pvc
     - ../../../../components/gatus/iot
   postBuild:
     substitute:
