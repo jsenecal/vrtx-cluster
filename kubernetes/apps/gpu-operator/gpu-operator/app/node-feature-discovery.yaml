@@ -1,0 +1,17 @@
+---
+# yaml-language-server: $schema=https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/v1/#DaemonSet
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nfd-worker-config
+  namespace: gpu-operator
+data:
+  nfd-worker.conf: |
+    sources:
+      pci:
+        deviceClassWhitelist:
+          - "0300"  # VGA compatible controller
+          - "0302"  # 3D controller
+          - "0207"  # Co-processor
+        deviceLabelFields:
+          - vendor

@@ -1,0 +1,95 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/helmrelease-helm-v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: gpu-operator
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: gpu-operator
+      version: v25.0.0
+      sourceRef:
+        kind: HelmRepository
+        name: nvidia
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    operator:
+      defaultRuntime: containerd
+    
+    # Ensure components only run on delta node
+    nodeSelector:
+      kubernetes.io/hostname: vrtx-delta
+    
+    # Node Feature Discovery configuration
+    nfd:
+      enabled: true
+      nodeSelector:
+        kubernetes.io/hostname: vrtx-delta
+    
+    # DCGM configuration
+    dcgm:
+      enabled: true
+      nodeSelector:
+        kubernetes.io/hostname: vrtx-delta
+    
+    # DCGM Exporter for Prometheus metrics
+    dcgmExporter:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+      nodeSelector:
+        kubernetes.io/hostname: vrtx-delta
+    
+    # GPU Feature Discovery
+    gfd:
+      enabled: true
+      nodeSelector:
+        kubernetes.io/hostname: vrtx-delta
+    
+    # MIG Manager (if using Multi-Instance GPU)
+    migManager:
+      enabled: false
+    
+    # Driver configuration
+    driver:
+      enabled: false  # We're using Talos-provided drivers
+    
+    # Toolkit configuration
+    toolkit:
+      enabled: true
+      nodeSelector:
+        kubernetes.io/hostname: vrtx-delta
+    
+    # Device Plugin
+    devicePlugin:
+      enabled: true
+      nodeSelector:
+        kubernetes.io/hostname: vrtx-delta
+    
+    # Validator
+    validator:
+      nodeSelector:
+        kubernetes.io/hostname: vrtx-delta
+    
+    # Ensure GPU operator components respect the node selector
+    daemonsets:
+      priorityClassName: system-node-critical
+      tolerations:
+        - key: CriticalAddonsOnly
+          operator: Exists
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+          effect: NoSchedule

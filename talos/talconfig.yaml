@@ -245,7 +245,7 @@ nodes:
       wwid: "naa.6d0946600c45dc002f9cbecc28be9ad9"
     machineSpec:
       secureboot: false
-    talosImageURL: factory.talos.dev/installer/f7688c771633022d85ae7ac82588acb474c69f9a0f2b98131fe1cc9a555a84c4
+    talosImageURL: factory.talos.dev/installer/1c3e9bebb36044e86eb7564251f457139c1936c6d287269b12b9aa94ddd8b618
     controlPlane: false # Worker node
 
     # Bonded interface configuration
@@ -292,16 +292,26 @@ nodes:
       - "./manifests/global/lldp-config.yaml"
       - "./manifests/global/ethernet-config.yaml"
 
-    # schematic:
-    #   customization:
-    #     systemExtensions:
-    #       officialExtensions:
-    #         - siderolabs/intel-ucode
-    #         # - siderolabs/nonfree-kmod-nvidia-production
-    #         # - siderolabs/nvidia-container-toolkit-production
-    #         - siderolabs/iscsi-tools
-    #         - siderolabs/lldpd
-    #         - siderolabs/bnx2-bnx2x
+    schematic:
+      customization:
+        systemExtensions:
+          officialExtensions:
+            - siderolabs/intel-ucode
+            - siderolabs/nonfree-kmod-nvidia-production
+            - siderolabs/nvidia-container-toolkit-production
+            - siderolabs/iscsi-tools
+            - siderolabs/lldpd
+            - siderolabs/bnx2-bnx2x
+            - siderolabs/qlogic-firmware
+    
+    patches:
+      - "@./patches/global/machine-files.yaml"
+      - "@./patches/global/machine-kernel-nvidia.yaml"
+      - "@./patches/global/machine-kubelet.yaml"
+      - "@./patches/global/machine-network.yaml"
+      - "@./patches/global/machine-sysctls.yaml"
+      - "@./patches/global/machine-time.yaml"
+      - "@./patches/delta/machine-node-labels.yaml"
 
 # Global patches
 patches:

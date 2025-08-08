@@ -1,0 +1,5 @@
+machine:
+  nodeLabels:
+    nvidia.com/gpu: "true"
+    feature.node.kubernetes.io/gpu: "true"
+    node.kubernetes.io/instance-type: "gpu"
