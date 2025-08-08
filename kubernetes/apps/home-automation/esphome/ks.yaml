@@ -27,12 +27,11 @@ spec:
     - name: volsync
       namespace: volsync-system
   components:
-    - ../../../../components/volsync/unlock
+    - ../../../../components/volsync
   postBuild:
     substitute:
       APP: *appname
       VOLSYNC_CAPACITY: 5Gi
-      VOLSYNC_UNLOCK: "esphome-unlock-20250806"
     substituteFrom:
       - kind: Secret
         name: cluster-secrets
