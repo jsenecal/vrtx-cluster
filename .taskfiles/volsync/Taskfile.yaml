@@ -1,0 +1,102 @@
+---
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: '3'
+
+tasks:
+  unlock:
+    desc: Unlock a volsync repository by patching the ReplicationSource
+    summary: |
+      This task patches a ReplicationSource with a unique unlock value to trigger
+      restic unlock operation. This is useful when backups are failing due to
+      stale repository locks.
+      
+      Usage: task volsync:unlock NAMESPACE=<namespace> APP=<app>
+      Example: task volsync:unlock NAMESPACE=home-automation APP=esphome
+    vars:
+      TIMESTAMP:
+        sh: date +%Y%m%d-%H%M%S
+      UNLOCK_VALUE: "{{.APP}}-unlock-{{.TIMESTAMP}}"
+    cmds:
+      - |
+        kubectl -n {{.NAMESPACE}} patch replicationsource {{.APP}} --type='merge' \
+          -p='{"spec":{"restic":{"unlock":"{{.UNLOCK_VALUE}}"}}}' || exit 1
+        echo "✓ Patched {{.APP}} in {{.NAMESPACE}} with unlock value: {{.UNLOCK_VALUE}}"
+        echo "→ Triggering immediate sync..."
+        kubectl -n {{.NAMESPACE}} annotate replicationsource {{.APP}} \
+          volsync.backube/trigger-sync=$(date -Iseconds) --overwrite || exit 1
+        echo "✓ Sync triggered for {{.APP}}"
+    preconditions:
+      - test -n "{{.NAMESPACE}}"
+      - test -n "{{.APP}}"
+      - kubectl -n {{.NAMESPACE}} get replicationsource {{.APP}} >/dev/null 2>&1
+
+  unlock-all:
+    desc: Unlock all volsync repositories in home-automation and media-services
+    summary: |
+      This task patches all ReplicationSources in home-automation and media-services
+      namespaces with unique unlock values to clear any stale repository locks.
+    vars:
+      TIMESTAMP:
+        sh: date +%Y%m%d-%H%M%S
+    cmds:
+      - echo "Unlocking all ReplicationSources with timestamp {{.TIMESTAMP}}..."
+      - for: [esphome, home-assistant, mmwave-configurator, z2m-a]
+        task: unlock
+        vars:
+          NAMESPACE: home-automation
+          APP: "{{.ITEM}}"
+      - for: [overseerr, plex, prowlarr, radarr, sonarr, tautulli]
+        task: unlock
+        vars:
+          NAMESPACE: media-services
+          APP: "{{.ITEM}}"
+
+  status:
+    desc: Show volsync replication source status
+    summary: |
+      Shows the status of all volsync replication sources including last sync time,
+      next sync time, and current sync status.
+    cmds:
+      - |
+        kubectl get replicationsource -A \
+          -o custom-columns="NAMESPACE:.metadata.namespace,NAME:.metadata.name,LAST_SYNC:.status.lastSyncTime,NEXT_SYNC:.status.nextSyncTime,STATUS:.status.conditions[?(@.type=='Synchronizing')].status,RESULT:.status.latestMoverStatus.result" | \
+          grep -E "(NAMESPACE|home-automation|media-services)" | \
+          column -t
+
+  trigger:
+    desc: Trigger an immediate volsync backup
+    summary: |
+      Triggers an immediate backup for a specific application by annotating
+      the ReplicationSource.
+      
+      Usage: task volsync:trigger NAMESPACE=<namespace> APP=<app>
+      Example: task volsync:trigger NAMESPACE=home-automation APP=esphome
+    cmds:
+      - |
+        kubectl -n {{.NAMESPACE}} annotate replicationsource {{.APP}} \
+          volsync.backube/trigger-sync=$(date -Iseconds) --overwrite
+        echo "✓ Sync triggered for {{.APP}} in {{.NAMESPACE}}"
+    preconditions:
+      - test -n "{{.NAMESPACE}}"
+      - test -n "{{.APP}}"
+      - kubectl -n {{.NAMESPACE}} get replicationsource {{.APP}} >/dev/null 2>&1
+
+  logs:
+    desc: Show logs for a volsync job
+    summary: |
+      Shows logs for the most recent volsync job for a specific application.
+      
+      Usage: task volsync:logs NAMESPACE=<namespace> APP=<app>
+      Example: task volsync:logs NAMESPACE=home-automation APP=esphome
+    cmds:
+      - |
+        POD=$(kubectl -n {{.NAMESPACE}} get pods -l job-name=volsync-src-{{.APP}} \
+          --sort-by=.metadata.creationTimestamp -o name | tail -1)
+        if [ -z "$POD" ]; then
+          echo "No volsync pods found for {{.APP}} in {{.NAMESPACE}}"
+          exit 1
+        fi
+        kubectl -n {{.NAMESPACE}} logs $POD
+    preconditions:
+      - test -n "{{.NAMESPACE}}"
+      - test -n "{{.APP}}"
