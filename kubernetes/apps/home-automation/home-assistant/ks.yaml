@@ -27,7 +27,7 @@ spec:
     - name: volsync
       namespace: volsync-system
   components:
-    - ../../../../components/volsync
+    - ../../../../components/volsync/unlock
     - ../../../../components/gatus/iot
   postBuild:
     substitute:
@@ -35,6 +35,7 @@ spec:
       APP_UID: "65534"
       APP_GID: "65533"
       VOLSYNC_CAPACITY: 8Gi
+      VOLSYNC_UNLOCK: "home-assistant-unlock-20250806"
       GATUS_PATH: /auth/authorize
     substituteFrom:
       - kind: Secret
