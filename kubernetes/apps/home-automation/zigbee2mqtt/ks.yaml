@@ -27,13 +27,11 @@ spec:
     - name: volsync
       namespace: volsync-system
   components:
-    - ../../../../components/volsync/unlock
+    - ../../../../components/volsync
     - ../../../../components/gatus/iot
   postBuild:
     substitute:
       APP: *appname
-      VOLSYNC_CAPACITY: 5Gi
-      VOLSYNC_UNLOCK: "z2m-a-unlock-20250806"
     substituteFrom:
       - kind: Secret
         name: cluster-secrets

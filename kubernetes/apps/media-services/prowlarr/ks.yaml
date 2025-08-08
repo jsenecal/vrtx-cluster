@@ -11,7 +11,7 @@ spec:
       app.kubernetes.io/name: *app
   components:
     - ../../../../components/gatus/internal
-    - ../../../../components/volsync/unlock
+    - ../../../../components/volsync
   dependsOn:
     - name: rook-ceph-cluster
       namespace: rook-ceph
@@ -24,7 +24,6 @@ spec:
       APP: *app
       GATUS_PATH: /ping
       VOLSYNC_CAPACITY: 1Gi
-      VOLSYNC_UNLOCK: "prowlarr-unlock-20250709"
     substituteFrom:
       - name: cluster-secrets
         kind: Secret
