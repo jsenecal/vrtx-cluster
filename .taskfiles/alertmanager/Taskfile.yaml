@@ -1,0 +1,124 @@
+---
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: '3'
+
+tasks:
+  alerts:
+    desc: Show current firing alerts
+    summary: |
+      Displays all currently firing alerts from AlertManager.
+      Excludes the Watchdog alert which is always firing.
+    cmds:
+      - |
+        POD=$(kubectl -n observability get pod -l app.kubernetes.io/name=alertmanager -o name | head -1)
+        if [ -z "$POD" ]; then
+          echo "AlertManager pod not found"
+          exit 1
+        fi
+        echo "=== Current Firing Alerts ==="
+        kubectl -n observability exec ${POD##*/} -- amtool alert query --alertmanager.url=http://localhost:9093 | \
+          grep -v "^Watchdog" || echo "No alerts firing (except Watchdog)"
+
+  count:
+    desc: Show count of firing alerts
+    summary: |
+      Shows a quick count of firing alerts (excluding Watchdog).
+    cmds:
+      - |
+        POD=$(kubectl -n observability get pod -l app.kubernetes.io/name=alertmanager -o name | head -1)
+        if [ -z "$POD" ]; then
+          echo "AlertManager pod not found"
+          exit 1
+        fi
+        COUNT=$(kubectl -n observability exec ${POD##*/} -- amtool alert query --alertmanager.url=http://localhost:9093 2>/dev/null | \
+          grep -v "^Watchdog\|^Alertname" | grep -v "^$" | wc -l || echo "0")
+        echo "Firing alerts: $COUNT"
+
+  silence:
+    desc: Silence an alert
+    summary: |
+      Creates a silence for a specific alert.
+      
+      Usage: task alertmanager:silence ALERT=<alertname> DURATION=<duration>
+      Example: task alertmanager:silence ALERT=KubePodNotReady DURATION=2h
+    vars:
+      DURATION: '{{.DURATION | default "2h"}}'
+    cmds:
+      - |
+        POD=$(kubectl -n observability get pod -l app.kubernetes.io/name=alertmanager -o name | head -1)
+        if [ -z "$POD" ]; then
+          echo "AlertManager pod not found"
+          exit 1
+        fi
+        kubectl -n observability exec ${POD##*/} -- amtool silence add \
+          --alertmanager.url=http://localhost:9093 \
+          --duration={{.DURATION}} \
+          --comment="Silenced via task" \
+          alertname={{.ALERT}}
+        echo "✓ Alert {{.ALERT}} silenced for {{.DURATION}}"
+    preconditions:
+      - test -n "{{.ALERT}}"
+
+  silences:
+    desc: List active silences
+    summary: |
+      Shows all active silences in AlertManager.
+    cmds:
+      - |
+        POD=$(kubectl -n observability get pod -l app.kubernetes.io/name=alertmanager -o name | head -1)
+        if [ -z "$POD" ]; then
+          echo "AlertManager pod not found"
+          exit 1
+        fi
+        echo "=== Active Silences ==="
+        kubectl -n observability exec ${POD##*/} -- amtool silence query --alertmanager.url=http://localhost:9093
+
+  expire:
+    desc: Expire a silence
+    summary: |
+      Expires (deletes) a silence by ID.
+      
+      Usage: task alertmanager:expire ID=<silence-id>
+      Example: task alertmanager:expire ID=abc123de-f456-7890-abcd-ef1234567890
+    cmds:
+      - |
+        POD=$(kubectl -n observability get pod -l app.kubernetes.io/name=alertmanager -o name | head -1)
+        if [ -z "$POD" ]; then
+          echo "AlertManager pod not found"
+          exit 1
+        fi
+        kubectl -n observability exec ${POD##*/} -- amtool silence expire {{.ID}} --alertmanager.url=http://localhost:9093
+        echo "✓ Silence {{.ID}} expired"
+    preconditions:
+      - test -n "{{.ID}}"
+
+  rules:
+    desc: Show Prometheus alerting rules
+    summary: |
+      Displays all configured alerting rules and their current state.
+    cmds:
+      - |
+        echo "=== Prometheus Alert Rules ==="
+        kubectl -n observability exec prometheus-kube-prometheus-stack-0 -c prometheus -- \
+          wget -qO- http://localhost:9090/api/v1/rules | \
+          jq -r '.data.groups[].rules[] | select(.type=="alerting") | "\(.name) - State: \(.state) - Health: \(.health)"' | \
+          sort -u || echo "Failed to query rules"
+        echo ""
+        echo "=== Currently Firing Alerts ==="
+        kubectl -n observability exec prometheus-kube-prometheus-stack-0 -c prometheus -- \
+          wget -qO- http://localhost:9090/api/v1/alerts | \
+          jq -r '.data.alerts[] | select(.state=="firing") | "\(.labels.alertname) - \(.labels.severity // "unknown") - \(.labels.namespace // "cluster-wide")"' | \
+          sort -u || echo "No firing alerts found"
+
+  check:
+    desc: Check AlertManager configuration
+    summary: |
+      Validates the current AlertManager configuration.
+    cmds:
+      - |
+        POD=$(kubectl -n observability get pod -l app.kubernetes.io/name=alertmanager -o name | head -1)
+        if [ -z "$POD" ]; then
+          echo "AlertManager pod not found"
+          exit 1
+        fi
+        kubectl -n observability exec ${POD##*/} -- amtool config show --alertmanager.url=http://localhost:9093
