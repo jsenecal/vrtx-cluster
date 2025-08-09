@@ -1,28 +1,72 @@
-⛵ Cluster Template
+# 🖥️ VRTX Cluster
 
-Welcome to my minimalist template for deploying a single Kubernetes cluster. The goal of this project is to make it easier for people interested in using Kubernetes to deploy a cluster at home on bare-metal or VMs. This template closely mirrors my personal [home-ops](https://github.com/onedr0p/home-ops) repository. At a high level this project makes use of [makejinja](https://github.com/mirkolenz/makejinja) to read in configuration files ([cluster.yaml](./cluster.sample.yaml) & [nodes.yaml](./nodes.sample.yaml)). Makejinja will render out templates that will allow you to install a Kubernetes cluster with the features mentioned below.
+Welcome to my home Kubernetes cluster running on Dell VRTX hardware. This repository contains the GitOps configuration for my home infrastructure, forked from the excellent [onedr0p/cluster-template](https://github.com/onedr0p/cluster-template). The cluster runs on Talos Linux with Flux for GitOps automation.
 
 ## ✨ Features
 
 A Kubernetes cluster deployed with [Talos Linux](https://github.com/siderolabs/talos) and an opinionated implementation of [Flux](https://github.com/fluxcd/flux2) using [GitHub](https://github.com/) as the Git provider, [sops](https://github.com/getsops/sops) to manage secrets and [cloudflared](https://github.com/cloudflare/cloudflared) to access applications external to your local network.
 
-- **Required:** Some knowledge of [Containers](https://opencontainers.org/), [YAML](https://noyaml.com/), [Git](https://git-scm.com/), and a **Cloudflare account** with a **domain**.
-- **Included components:** [flux](https://github.com/fluxcd/flux2), [cilium](https://github.com/cilium/cilium), [cert-manager](https://github.com/cert-manager/cert-manager), [spegel](https://github.com/spegel-org/spegel), [reloader](https://github.com/stakater/Reloader), [ingress-nginx](https://github.com/kubernetes/ingress-nginx/), [external-dns](https://github.com/kubernetes-sigs/external-dns) and [cloudflared](https://github.com/cloudflare/cloudflared).
+### Core Infrastructure
+- **Platform:** [Talos Linux](https://github.com/siderolabs/talos) on Dell VRTX blade servers
+- **GitOps:** [Flux](https://github.com/fluxcd/flux2) with automated deployments
+- **Networking:** [Cilium](https://github.com/cilium/cilium) CNI with Gateway API support
+- **Storage:** [Rook-Ceph](https://github.com/rook/rook) for distributed storage
+- **Ingress:** Gateway API with Cilium, [cert-manager](https://github.com/cert-manager/cert-manager) for TLS
+- **External Access:** [Cloudflared](https://github.com/cloudflare/cloudflared) tunnels
+- **Secret Management:** [SOPS](https://github.com/getsops/sops) with age encryption, [External Secrets](https://github.com/external-secrets/external-secrets) with 1Password
+- **DNS:** [external-dns](https://github.com/kubernetes-sigs/external-dns) for automatic DNS management
 
-**Other features include:**
+### Observability & Backup
+- **Monitoring:** [kube-prometheus-stack](https://github.com/prometheus-community/helm-charts) with Prometheus, Grafana, and AlertManager
+- **Logging:** [Loki](https://github.com/grafana/loki) for log aggregation
+- **Backup:** [VolSync](https://github.com/backube/volsync) for persistent volume backups with restic
+- **SNMP Monitoring:** Dell VRTX chassis monitoring via SNMP exporter
 
+### Applications
+- **Media Services:** Plex, Sonarr, Radarr, Prowlarr, Overseerr, Tautulli
+- **Home Automation:** Home Assistant, ESPHome, Zigbee2MQTT
+- **Development:** Actions Runner Controller for self-hosted GitHub runners
+
+### Automation & Tooling
 - Dev env managed w/ [mise](https://mise.jdx.dev/)
 - Workflow automation w/ [GitHub Actions](https://github.com/features/actions)
 - Dependency automation w/ [Renovate](https://www.mend.io/renovate)
-- Flux `HelmRelease` and `Kustomization` diffs w/ [flux-local](https://github.com/allenporter/flux-local)
+- Task automation with [Taskfile](https://taskfile.dev/)
 - Network interface bonding for high availability networking
-- Multiple methods for network interface selection (MAC address, interface name, PCI device selectors)
 
-Does this sound cool to you? If so, continue to read on! 👇
+## 📋 Prerequisites
 
-## 🚀 Let's Go!
+- Dell VRTX chassis or similar hardware (3+ nodes recommended)
+- Basic knowledge of Kubernetes, GitOps, and Linux
+- A domain with Cloudflare (for external access)
+- 1Password account (for external secrets)
 
-There are **5 stages** outlined below for completing this project, make sure you follow the stages in order.
+## 🚀 Quick Start
+
+### Common Tasks
+
+```sh
+# Force Flux to reconcile changes
+task reconcile
+
+# Check cluster health
+flux check
+kubectl get nodes
+kubectl get pods -A
+
+# View current alerts
+task alertmanager:alerts
+
+# Check VolSync backup status
+task volsync:status
+
+# Unlock stuck VolSync backups
+task volsync:unlock-all
+```
+
+## 🔧 Initial Setup
+
+For setting up a new cluster from scratch, follow these stages:
 
 ### Stage 1: Machine Preparation
 
@@ -51,11 +95,11 @@ There are **5 stages** outlined below for completing this project, make sure you
 > [!TIP]
 > It is recommended to set the visibility of your repository to `Public` so you can easily request help if you get stuck.
 
-1. Create a new repository by clicking the green `Use this template` button at the top of this page, then clone the new repo you just created and `cd` into it. Alternatively you can us the [GitHub CLI](https://cli.github.com/) ...
+1. Clone this repository:
 
     ```sh
-    export REPONAME="home-ops"
-    gh repo create $REPONAME --template onedr0p/cluster-template --disable-wiki --public --clone && cd $REPONAME
+    git clone https://github.com/jsenecal/vrtx-cluster.git
+    cd vrtx-cluster
     ```
 
 2. **Install** and **activate** [mise](https://mise.jdx.dev/) following the instructions for your workstation [here](https://mise.jdx.dev/getting-started.html).
@@ -280,36 +324,63 @@ There might be a situation where you want to destroy your Kubernetes cluster. Th
 task talos:reset
 ```
 
-## 🛠️ Talos and Kubernetes Maintenance
+## 🛠️ Maintenance
 
-### ⚙️ Updating Talos node configuration
+### 📊 Monitoring & Alerts
+
+```sh
+# View current alerts (excluding Watchdog)
+task alertmanager:alerts
+
+# Count of firing alerts
+task alertmanager:count
+
+# View all Prometheus rules and their states
+task alertmanager:rules
+
+# Silence an alert for 2 hours
+task alertmanager:silence ALERT=KubePodNotReady DURATION=2h
+
+# List active silences
+task alertmanager:silences
+```
+
+### 💾 Backup Management (VolSync)
+
+```sh
+# Check backup status for all apps
+task volsync:status
+
+# Unlock a stuck backup
+task volsync:unlock NAMESPACE=media-services APP=plex
+
+# Unlock all backups
+task volsync:unlock-all
+
+# Trigger immediate backup
+task volsync:trigger NAMESPACE=media-services APP=plex
+
+# View backup logs
+task volsync:logs NAMESPACE=media-services APP=plex
+```
+
+### ⚙️ Talos Maintenance
 
 > [!TIP]
-> Ensure you have updated `talconfig.yaml` and any patches with your updated configuration. In some cases you **not only need to apply the configuration but also upgrade talos** to apply new configuration.
+> Ensure you have updated `talconfig.yaml` and any patches with your updated configuration.
 
 ```sh
 # (Re)generate the Talos config
 task talos:generate-config
-# Apply the config to the node
-task talos:apply-node IP=? MODE=?
-# e.g. task talos:apply-node IP=10.10.10.10 MODE=auto
-```
 
-### ⬆️ Updating Talos and Kubernetes versions
+# Apply config to a node
+task talos:apply-node IP=10.10.10.10 MODE=auto
 
-> [!TIP]
-> Ensure the `talosVersion` and `kubernetesVersion` in `talenv.yaml` are up-to-date with the version you wish to upgrade to.
+# Upgrade Talos version
+task talos:upgrade-node IP=10.10.10.10
 
-```sh
-# Upgrade node to a newer Talos version
-task talos:upgrade-node IP=?
-# e.g. task talos:upgrade-node IP=10.10.10.10
-```
-
-```sh
-# Upgrade cluster to a newer Kubernetes version
+# Upgrade Kubernetes version
 task talos:upgrade-k8s
-# e.g. task talos:upgrade-k8s
 ```
 
 ## 🤖 Renovate
@@ -429,20 +500,15 @@ If this repo is too hot to handle or too cold to hold check out these following 
 - [ricsanfre/pi-cluster](https://github.com/ricsanfre/pi-cluster) - _Pi Kubernetes Cluster. Homelab kubernetes cluster automated with Ansible and FluxCD_
 - [techno-tim/k3s-ansible](https://github.com/techno-tim/k3s-ansible) - _The easiest way to bootstrap a self-hosted High Availability Kubernetes cluster. A fully automated HA k3s etcd install with kube-vip, MetalLB, and more. Build. Destroy. Repeat._
 
-## ⭐ Stargazers
+## 📝 Documentation
 
-<div align="center">
+Additional documentation can be found in:
+- [CLAUDE.md](./CLAUDE.md) - AI assistant instructions and project-specific guidance
+- [Taskfile.yaml](./Taskfile.yaml) - All available automation tasks
+- Individual app configurations in `kubernetes/apps/`
 
-<a href="https://star-history.com/#onedr0p/cluster-template&Date">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=onedr0p/cluster-template&type=Date&theme=dark" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=onedr0p/cluster-template&type=Date" />
-    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=onedr0p/cluster-template&type=Date" />
-  </picture>
-</a>
+## 🤝 Acknowledgments
 
-</div>
-
-## 🤝 Thanks
-
-Big shout out to all the contributors, sponsors and everyone else who has helped on this project.
+This cluster setup is based on the excellent [onedr0p/cluster-template](https://github.com/onedr0p/cluster-template) and takes inspiration from:
+- [onedr0p/home-ops](https://github.com/onedr0p/home-ops) - For application configurations and best practices
+- The [Home Operations](https://discord.gg/home-operations) Discord community for their invaluable support
