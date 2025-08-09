@@ -19,6 +19,7 @@ env:
   TALOSCONFIG: '{{.TALOSCONFIG}}'
 
 includes:
+  alertmanager: .taskfiles/alertmanager
   bootstrap: .taskfiles/bootstrap
   talos: .taskfiles/talos
   volsync: .taskfiles/volsync

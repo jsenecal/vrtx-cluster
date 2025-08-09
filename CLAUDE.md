@@ -12,6 +12,16 @@ This repository follows a GitOps workflow using Flux:
 - `task reconcile` is only needed if you want to manually force immediate reconciliation (not typically required)
 - You need to push your changes for them to be applied
 
+## CRITICAL: VolSync PVC Requirements
+
+**IMPORTANT**: When apps use the volsync component, their PVCs MUST be created by Flux with the proper dataSourceRef. NEVER manually create PVCs for these apps. The correct process is:
+
+1. Delete the existing PVC if it exists
+2. Let Flux recreate the PVC through the volsync component
+3. The PVC will automatically include dataSourceRef pointing to the ReplicationDestination
+
+If you manually create a PVC without dataSourceRef, Flux will continuously fail trying to update it because PVC specs are immutable.
+
 ## Commands
 
 - `task init` - Initialize configuration files
