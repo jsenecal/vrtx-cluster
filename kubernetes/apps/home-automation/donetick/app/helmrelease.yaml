@@ -83,5 +83,5 @@ spec:
             sectionName: https
         rules:
           - backendRefs:
-              - name: donetick
+              - name: "{{ .Release.Name }}"
                 port: 2021
