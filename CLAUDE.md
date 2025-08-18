@@ -119,6 +119,56 @@ When creating ExternalSecrets for this cluster:
        - ./onepassword
      ```
 
+## App-Template Chart Configuration
+
+When using the bjw-s app-template chart for HelmReleases:
+
+### HTTPRoute Configuration
+
+**IMPORTANT**: The app-template chart does NOT support Helm template variables (like `{{ .Release.Name }}`) in the values section. Instead, use YAML anchors for referencing values:
+
+**Correct approach using YAML anchors:**
+```yaml
+metadata:
+  name: &app myapp
+spec:
+  values:
+    route:
+      app:
+        hostnames:
+          - "myapp.${SECRET_DOMAIN}"
+        parentRefs:
+          - name: external  # or internal
+            namespace: kube-system
+            sectionName: https
+        rules:
+          - backendRefs:
+              - name: *app  # Uses YAML anchor reference
+                port: 8080
+```
+
+**Incorrect approach (will cause YAML parsing errors):**
+```yaml
+metadata:
+  name: myapp
+spec:
+  values:
+    route:
+      app:
+        rules:
+          - backendRefs:
+              - name: "{{ .Release.Name }}"  # WILL FAIL!
+                port: 8080
+```
+
+### Common Patterns
+
+1. **Service naming**: By default, the service name matches the release name
+2. **Using anchors**: Define `&app` in metadata name and reference with `*app` throughout
+3. **External vs Internal gateways**:
+   - External: For public internet access (uses `external` gateway)
+   - Internal: For internal cluster access only (uses `internal` gateway with `*.k8s.${SECRET_DOMAIN}`)
+
 ## Gateway API Setup
 
 To use Gateway API resources (HTTPRoute, etc.) in the cluster:
