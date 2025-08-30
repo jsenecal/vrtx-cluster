@@ -30,17 +30,18 @@ spec:
 
         - alert: VolSyncJobRunningTooLong
           expr: |
-            (time() - kube_job_status_start_time{job_name=~"volsync-.*"} > 7200) AND
-            (time() - kube_job_status_start_time{job_name!~"volsync-src-plex.*"} > 7200 OR
-             time() - kube_job_status_start_time{job_name=~"volsync-src-plex.*"} > 43200)
+            (time() - kube_job_status_start_time{job_name=~"volsync-src-plex.*"} > 86400) OR
+            (time() - kube_job_status_start_time{job_name=~"volsync-.*", job_name!~"volsync-src-plex.*"} > 14400)
           annotations:
             summary: >-
-              VolSync job {{ $labels.namespace }}/{{ $labels.job_name }} has been running for {{ $value | humanizeDuration }}
+              VolSync job {{ $labels.namespace }}/{{ $labels.job_name }} has been running for too long
             description: >-
-              This may indicate a stuck lock or other issue. Check if the job is making progress:
+              Job runtime: {{ (time() - $labels.start_time) | humanizeDuration }}. 
+              Expected: < 4 hours (< 24 hours for Plex).
+              Check if the job is making progress:
               kubectl -n {{ $labels.namespace }} logs -l job-name={{ $labels.job_name }} --tail=20
               If stuck, run: task volsync:unlock NAMESPACE={{ $labels.namespace }} APP={{ $labels.job_name | reReplaceAll "volsync-src-(.*?)-.*" "${1}" }}
-          for: 5m
+          for: 15m
           labels:
             severity: warning
 
@@ -58,26 +59,28 @@ spec:
 
         - alert: VolSyncBackupNotRunning
           expr: |
-            time() - volsync_replication_source_next_sync_time > 3600
+            time() - volsync_replication_source_next_sync_time > 10800
           annotations:
             summary: >-
-              VolSync backup for {{ $labels.obj_namespace }}/{{ $labels.obj_name }} is overdue by more than 1 hour
+              VolSync backup for {{ $labels.obj_namespace }}/{{ $labels.obj_name }} is overdue by more than 3 hours
             description: >-
-              Next sync was scheduled for {{ $value | humanizeTimestamp }} but hasn't started
-          for: 15m
+              Next sync was scheduled {{ (time() - $value) | humanizeDuration }} ago but hasn't started.
+              Check: task volsync:status | grep {{ $labels.obj_name }}
+          for: 30m
           labels:
             severity: warning
 
         - alert: VolSyncJobStuck
           expr: |
-            (time() - kube_job_status_start_time{job_name=~"volsync-.*"} > 3600) AND
-            (rate(container_cpu_usage_seconds_total{pod=~"volsync-.*"}[5m]) < 0.001)
+            (time() - kube_job_status_start_time{job_name=~"volsync-.*"} > 7200) AND
+            (rate(container_cpu_usage_seconds_total{pod=~"volsync-.*"}[15m]) < 0.0001) AND
+            (rate(container_network_transmit_bytes_total{pod=~"volsync-.*"}[15m]) < 1000)
           annotations:
             summary: >-
-              VolSync job {{ $labels.namespace }}/{{ $labels.pod }} appears stuck (no CPU activity)
+              VolSync job {{ $labels.namespace }}/{{ $labels.pod }} appears stuck (no activity)
             description: >-
-              Job has been running for over 1 hour with no CPU activity in the last 5 minutes.
-              This likely indicates a deadlock or stuck lock. Check logs and consider unlocking.
-          for: 10m
+              Job has been running for over 2 hours with minimal CPU and network activity in the last 15 minutes.
+              This likely indicates a deadlock. Check logs: kubectl -n {{ $labels.namespace }} logs {{ $labels.pod }} --tail=50
+          for: 30m
           labels:
-            severity: critical
+            severity: warning
