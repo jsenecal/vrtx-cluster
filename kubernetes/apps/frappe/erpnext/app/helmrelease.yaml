@@ -39,11 +39,9 @@ spec:
     dbHost: mariadb-galera.db.svc.cluster.local
     dbPort: 3306
     dbRootUser: root
-    dbRootPassword:
-      valueFrom:
-        secretKeyRef:
-          name: erpnext-db-secret
-          key: root-password
+    # Reference to existing secret for DB password
+    dbExistingSecret: erpnext-db-secret
+    dbExistingSecretPasswordKey: root-password
     
     # External redis configuration
     redisQueueHost: redis-main.frappe.svc.cluster.local
@@ -54,11 +52,8 @@ spec:
     createSite:
       enabled: true
       siteName: erp.${SECRET_DOMAIN_2}
-      adminPassword:
-        valueFrom:
-          secretKeyRef:
-            name: erpnext-secret
-            key: admin-password
+      adminExistingSecret: erpnext-secret
+      adminExistingSecretKey: admin-password
       installApps:
         - "erpnext"
       dbType: mariadb
