@@ -28,10 +28,7 @@ spec:
     webhook:
       cert:
         certManager:
-          enabled: true
-          issuerRef:
-            name: cluster-issuer
-            kind: ClusterIssuer
+          enabled: false
     metrics:
       enabled: true
       serviceMonitor:
