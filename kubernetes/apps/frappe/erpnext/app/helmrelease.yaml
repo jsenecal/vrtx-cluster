@@ -60,9 +60,10 @@ spec:
       # The Helm chart will create a database named after the site
       
     persistence:
-      enabled: true
-      size: 20Gi
-      storageClass: ceph-filesystem
+      worker:
+        enabled: true
+        size: 20Gi
+        storageClass: ceph-filesystem
       
     # Ingress configuration
     ingress:
