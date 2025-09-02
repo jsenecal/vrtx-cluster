@@ -1,0 +1,97 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/batch/job_v1.json
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: erpnext-init
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: init
+          image: frappe/erpnext:v15.48.4
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -e
+              echo "Waiting for database to be ready..."
+              until mysql -h$DB_HOST -P$DB_PORT -u$DB_USER -p$DB_PASSWORD -e "SELECT 1"; do
+                echo "Database not ready, waiting..."
+                sleep 5
+              done
+              
+              echo "Database is ready!"
+              
+              # Check if site already exists
+              if [ -d "/home/frappe/frappe-bench/sites/$FRAPPE_SITE_NAME" ]; then
+                echo "Site $FRAPPE_SITE_NAME already exists, skipping creation"
+              else
+                echo "Creating new site $FRAPPE_SITE_NAME"
+                bench new-site $FRAPPE_SITE_NAME \
+                  --db-host $DB_HOST \
+                  --db-port $DB_PORT \
+                  --db-name $DB_NAME \
+                  --db-user $DB_USER \
+                  --db-password $DB_PASSWORD \
+                  --admin-password $ADMIN_PASSWORD \
+                  --install-app erpnext \
+                  --set-default
+              fi
+              
+              echo "Site initialization complete!"
+          env:
+            - name: FRAPPE_SITE_NAME
+              value: "erp.${SECRET_DOMAIN_2}"
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: erpnext-secret
+                  key: db-host
+            - name: DB_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: erpnext-secret
+                  key: db-port
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: erpnext-secret
+                  key: db-name
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: erpnext-secret
+                  key: db-user
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: erpnext-secret
+                  key: db-password
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: erpnext-secret
+                  key: admin-password
+            - name: REDIS_CACHE_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: erpnext-secret
+                  key: redis-cache-host
+            - name: REDIS_QUEUE_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: erpnext-secret
+                  key: redis-queue-host
+          volumeMounts:
+            - name: sites
+              mountPath: /home/frappe/frappe-bench/sites
+      volumes:
+        - name: sites
+          persistentVolumeClaim:
+            claimName: erpnext-sites

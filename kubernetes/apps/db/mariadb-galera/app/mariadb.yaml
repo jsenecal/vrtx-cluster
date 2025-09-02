@@ -1,0 +1,80 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/k8s.mariadb.com/mariadb_v1alpha1.json
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: MariaDB
+metadata:
+  name: mariadb-galera
+spec:
+  rootPasswordSecretKeyRef:
+    name: mariadb-galera-secret
+    key: root-password
+  
+  username: erpnext
+  passwordSecretKeyRef:
+    name: mariadb-galera-secret
+    key: mariadb-password
+  database: erpnext
+  
+  storage:
+    size: 50Gi
+    storageClassName: ceph-block
+    volumeClaimTemplate:
+      accessModes:
+        - ReadWriteOnce
+  
+  replicas: 3
+  
+  galera:
+    enabled: true
+    galeraLibPath: /usr/lib/galera/libgalera_smm.so
+    replicaThreads: 1
+    agent:
+      image: ghcr.io/mariadb-operator/mariadb-operator:v0.0.35
+      port: 5555
+      kubernetesAuth:
+        enabled: true
+      gracefulShutdownTimeout: 5s
+    recovery:
+      enabled: true
+      minClusterSize: 2
+      clusterMonitorInterval: 10s
+      clusterHealthyTimeout: 30s
+      clusterBootstrapTimeout: 10m
+    initContainer:
+      image: ghcr.io/mariadb-operator/mariadb-operator:v0.0.35
+    config:
+      reuseStorageVolume: true
+      volumeClaimTemplate:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 300Mi
+        storageClassName: ceph-block
+  
+  service:
+    type: ClusterIP
+    
+  podDisruptionBudget:
+    maxUnavailable: 1
+    
+  updateStrategy:
+    type: RollingUpdate
+    
+  metrics:
+    enabled: true
+    exporter:
+      image: prom/mysqld-exporter:v0.15.1
+      port: 9104
+    serviceMonitor:
+      enabled: true
+      
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/instance: mariadb-galera
+            topologyKey: kubernetes.io/hostname
