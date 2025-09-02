@@ -13,10 +13,7 @@ spec:
     - ../../../../components/gatus/public
     - ../../../../components/volsync
   dependsOn:
-    - name: rook-ceph-cluster
-      namespace: rook-ceph
     - name: external-secrets-stores
-      namespace: external-secrets
     - name: mariadb-galera
     - name: erpnext-redis
   interval: 1h
