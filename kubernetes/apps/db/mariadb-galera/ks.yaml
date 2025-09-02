@@ -12,10 +12,7 @@ spec:
   components:
     - ../../../../components/volsync
   dependsOn:
-    - name: rook-ceph-cluster
-      namespace: rook-ceph
     - name: external-secrets-stores
-      namespace: external-secrets
   interval: 1h
   path: ./kubernetes/apps/db/mariadb-galera/app
   postBuild:
