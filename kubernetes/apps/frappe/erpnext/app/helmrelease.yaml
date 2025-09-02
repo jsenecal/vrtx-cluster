@@ -44,9 +44,9 @@ spec:
     dbExistingSecretPasswordKey: root-password
     
     # External redis configuration
-    redisQueueHost: redis-main.frappe.svc.cluster.local
-    redisCacheHost: redis-main.frappe.svc.cluster.local
-    redisSocketIOHost: redis-main.frappe.svc.cluster.local
+    redisQueueHost: redis.frappe.svc.cluster.local
+    redisCacheHost: redis.frappe.svc.cluster.local
+    redisSocketIOHost: redis.frappe.svc.cluster.local
     
     # ERPNext site configuration
     createSite:
