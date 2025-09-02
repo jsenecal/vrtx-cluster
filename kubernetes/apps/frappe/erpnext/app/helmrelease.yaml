@@ -30,8 +30,10 @@ spec:
     # Use external redis
     redis-cache:
       enabled: false
+      host: redis.frappe.svc.cluster.local
     redis-queue:
       enabled: false
+      host: redis.frappe.svc.cluster.local
     redis-socketio:
       enabled: false
     
