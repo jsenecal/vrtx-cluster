@@ -62,6 +62,7 @@ spec:
       installApps:
         - "erpnext"
       dbType: mariadb
+      # The Helm chart will create a database named after the site
       
     persistence:
       enabled: true
