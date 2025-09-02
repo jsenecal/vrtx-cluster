@@ -9,7 +9,12 @@ spec:
     name: mariadb-galera-secret
     key: root-password
   
-  # Root user only - applications will create their own databases and users
+  # Default database and user (required fields, apps can create additional ones)
+  database: mariadb
+  username: mariadb
+  passwordSecretKeyRef:
+    name: mariadb-galera-secret
+    key: user-password
   
   storage:
     size: 50Gi
