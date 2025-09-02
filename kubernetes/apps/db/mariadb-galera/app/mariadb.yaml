@@ -9,11 +9,7 @@ spec:
     name: mariadb-galera-secret
     key: root-password
   
-  username: erpnext
-  passwordSecretKeyRef:
-    name: mariadb-galera-secret
-    key: mariadb-password
-  database: erpnext
+  # Root user only - applications will create their own databases and users
   
   storage:
     size: 50Gi
