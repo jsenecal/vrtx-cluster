@@ -1,0 +1,398 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/helm.toolkit.fluxcd.io/helmrelease_v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app erpnext
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: app-template
+      version: "3.6.0"
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  values:
+    controllers:
+      # Backend/Gunicorn
+      backend:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        replicas: 2
+        strategy: RollingUpdate
+        containers:
+          app:
+            image:
+              repository: frappe/erpnext
+              tag: v15.48.4
+            command: ["/home/frappe/frappe-bench/env/bin/gunicorn"]
+            args:
+              - "--bind"
+              - "0.0.0.0:8000"
+              - "--workers"
+              - "4"
+              - "--timeout"
+              - "120"
+              - "--worker-class"
+              - "gevent"
+              - "--worker-tmp-dir"
+              - "/dev/shm"
+              - "frappe.app:application"
+            env:
+              - name: FRAPPE_SITE_NAME
+                value: "erp.${SECRET_DOMAIN_2}"
+              - name: DB_HOST
+                valueFrom:
+                  secretKeyRef:
+                    name: erpnext-secret
+                    key: db-host
+              - name: DB_PORT
+                valueFrom:
+                  secretKeyRef:
+                    name: erpnext-secret
+                    key: db-port
+              - name: REDIS_CACHE_HOST
+                valueFrom:
+                  secretKeyRef:
+                    name: erpnext-secret
+                    key: redis-cache-host
+              - name: REDIS_QUEUE_HOST
+                valueFrom:
+                  secretKeyRef:
+                    name: erpnext-secret
+                    key: redis-queue-host
+              - name: SOCKETIO_PORT
+                value: "9000"
+            resources:
+              requests:
+                cpu: 100m
+                memory: 512Mi
+              limits:
+                memory: 2Gi
+            probes:
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /api/method/ping
+                    port: 8000
+                  initialDelaySeconds: 30
+                  periodSeconds: 30
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /api/method/ping
+                    port: 8000
+                  initialDelaySeconds: 30
+                  periodSeconds: 10
+      
+      # Frontend/Nginx
+      frontend:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        replicas: 2
+        strategy: RollingUpdate
+        containers:
+          app:
+            image:
+              repository: frappe/erpnext
+              tag: v15.48.4
+            command: ["nginx", "-g", "daemon off;"]
+            resources:
+              requests:
+                cpu: 10m
+                memory: 32Mi
+              limits:
+                memory: 128Mi
+            probes:
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /
+                    port: 8080
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /
+                    port: 8080
+      
+      # Worker - Default Queue
+      worker-default:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        replicas: 1
+        containers:
+          app:
+            image:
+              repository: frappe/erpnext
+              tag: v15.48.4
+            command: ["bench", "worker", "--queue", "default"]
+            env:
+              - name: FRAPPE_SITE_NAME
+                value: "erp.${SECRET_DOMAIN_2}"
+              - name: DB_HOST
+                valueFrom:
+                  secretKeyRef:
+                    name: erpnext-secret
+                    key: db-host
+              - name: DB_PORT
+                valueFrom:
+                  secretKeyRef:
+                    name: erpnext-secret
+                    key: db-port
+              - name: REDIS_CACHE_HOST
+                valueFrom:
+                  secretKeyRef:
+                    name: erpnext-secret
+                    key: redis-cache-host
+              - name: REDIS_QUEUE_HOST
+                valueFrom:
+                  secretKeyRef:
+                    name: erpnext-secret
+                    key: redis-queue-host
+            resources:
+              requests:
+                cpu: 50m
+                memory: 256Mi
+              limits:
+                memory: 1Gi
+      
+      # Worker - Long Queue
+      worker-long:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        replicas: 1
+        containers:
+          app:
+            image:
+              repository: frappe/erpnext
+              tag: v15.48.4
+            command: ["bench", "worker", "--queue", "long"]
+            env:
+              - name: FRAPPE_SITE_NAME
+                value: "erp.${SECRET_DOMAIN_2}"
+              - name: DB_HOST
+                valueFrom:
+                  secretKeyRef:
+                    name: erpnext-secret
+                    key: db-host
+              - name: DB_PORT
+                valueFrom:
+                  secretKeyRef:
+                    name: erpnext-secret
+                    key: db-port
+              - name: REDIS_CACHE_HOST
+                valueFrom:
+                  secretKeyRef:
+                    name: erpnext-secret
+                    key: redis-cache-host
+              - name: REDIS_QUEUE_HOST
+                valueFrom:
+                  secretKeyRef:
+                    name: erpnext-secret
+                    key: redis-queue-host
+            resources:
+              requests:
+                cpu: 50m
+                memory: 256Mi
+              limits:
+                memory: 1Gi
+      
+      # Worker - Short Queue
+      worker-short:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        replicas: 1
+        containers:
+          app:
+            image:
+              repository: frappe/erpnext
+              tag: v15.48.4
+            command: ["bench", "worker", "--queue", "short"]
+            env:
+              - name: FRAPPE_SITE_NAME
+                value: "erp.${SECRET_DOMAIN_2}"
+              - name: DB_HOST
+                valueFrom:
+                  secretKeyRef:
+                    name: erpnext-secret
+                    key: db-host
+              - name: DB_PORT
+                valueFrom:
+                  secretKeyRef:
+                    name: erpnext-secret
+                    key: db-port
+              - name: REDIS_CACHE_HOST
+                valueFrom:
+                  secretKeyRef:
+                    name: erpnext-secret
+                    key: redis-cache-host
+              - name: REDIS_QUEUE_HOST
+                valueFrom:
+                  secretKeyRef:
+                    name: erpnext-secret
+                    key: redis-queue-host
+            resources:
+              requests:
+                cpu: 50m
+                memory: 256Mi
+              limits:
+                memory: 1Gi
+      
+      # Scheduler
+      scheduler:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        replicas: 1
+        containers:
+          app:
+            image:
+              repository: frappe/erpnext
+              tag: v15.48.4
+            command: ["bench", "schedule"]
+            env:
+              - name: FRAPPE_SITE_NAME
+                value: "erp.${SECRET_DOMAIN_2}"
+              - name: DB_HOST
+                valueFrom:
+                  secretKeyRef:
+                    name: erpnext-secret
+                    key: db-host
+              - name: DB_PORT
+                valueFrom:
+                  secretKeyRef:
+                    name: erpnext-secret
+                    key: db-port
+              - name: REDIS_CACHE_HOST
+                valueFrom:
+                  secretKeyRef:
+                    name: erpnext-secret
+                    key: redis-cache-host
+              - name: REDIS_QUEUE_HOST
+                valueFrom:
+                  secretKeyRef:
+                    name: erpnext-secret
+                    key: redis-queue-host
+            resources:
+              requests:
+                cpu: 50m
+                memory: 256Mi
+              limits:
+                memory: 512Mi
+      
+      # WebSocket
+      websocket:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        replicas: 1
+        containers:
+          app:
+            image:
+              repository: frappe/erpnext
+              tag: v15.48.4
+            command: ["node", "/home/frappe/frappe-bench/apps/frappe/socketio.js"]
+            env:
+              - name: FRAPPE_SITE_NAME
+                value: "erp.${SECRET_DOMAIN_2}"
+              - name: REDIS_SOCKETIO_HOST
+                valueFrom:
+                  secretKeyRef:
+                    name: erpnext-secret
+                    key: redis-queue-host
+            resources:
+              requests:
+                cpu: 50m
+                memory: 128Mi
+              limits:
+                memory: 256Mi
+            probes:
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /socket.io
+                    port: 9000
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /socket.io
+                    port: 9000
+    
+    service:
+      backend:
+        controller: backend
+        ports:
+          http:
+            port: 8000
+      frontend:
+        controller: frontend
+        ports:
+          http:
+            port: 8080
+      websocket:
+        controller: websocket
+        ports:
+          http:
+            port: 9000
+    
+    persistence:
+      sites:
+        enabled: true
+        existingClaim: erpnext-sites
+        globalMounts:
+          - path: /home/frappe/frappe-bench/sites
+    
+    route:
+      app:
+        enabled: true
+        parentRefs:
+          - name: external
+            namespace: kube-system
+            sectionName: https
+        hostnames:
+          - "erp.${SECRET_DOMAIN_2}"
+        rules:
+          - matches:
+              - path:
+                  type: PathPrefix
+                  value: /socket.io
+            backendRefs:
+              - name: erpnext-websocket
+                port: 9000
+          - matches:
+              - path:
+                  type: PathPrefix
+                  value: /assets
+            backendRefs:
+              - name: erpnext-frontend
+                port: 8080
+          - matches:
+              - path:
+                  type: PathPrefix
+                  value: /files
+            backendRefs:
+              - name: erpnext-frontend
+                port: 8080
+          - backendRefs:
+              - name: erpnext-backend
+                port: 8000
