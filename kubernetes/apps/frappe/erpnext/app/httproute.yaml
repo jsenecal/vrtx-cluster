@@ -8,7 +8,7 @@ spec:
   parentRefs:
     - name: external
       namespace: kube-system
-      sectionName: https
+      sectionName: https-domain-two
   hostnames:
     - erp.${SECRET_DOMAIN_2}
   rules:
