@@ -13,5 +13,5 @@ spec:
     - erp.${SECRET_DOMAIN_2}
   rules:
     - backendRefs:
-        - name: erpnext-nginx
+        - name: erpnext
           port: 8080
