@@ -29,7 +29,7 @@ spec:
     galeraLibPath: /usr/lib/galera/libgalera_smm.so
     replicaThreads: 1
     agent:
-      image: ghcr.io/mariadb-operator/mariadb-operator:0.0.35
+      image: docker-registry3.mariadb.com/mariadb-operator/mariadb-operator:0.35.0
       port: 5555
       kubernetesAuth:
         enabled: true
@@ -41,7 +41,7 @@ spec:
       clusterHealthyTimeout: 30s
       clusterBootstrapTimeout: 10m
     initContainer:
-      image: ghcr.io/mariadb-operator/mariadb-operator:0.0.35
+      image: docker-registry3.mariadb.com/mariadb-operator/mariadb-operator:0.35.0
     config:
       reuseStorageVolume: true
       volumeClaimTemplate:
