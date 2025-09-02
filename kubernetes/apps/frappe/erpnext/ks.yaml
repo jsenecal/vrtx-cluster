@@ -4,7 +4,7 @@ apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
   name: &app erpnext
-  namespace: &namespace frappe
+  namespace: flux-system
 spec:
   commonMetadata:
     labels:
@@ -18,9 +18,7 @@ spec:
     - name: external-secrets-stores
       namespace: external-secrets
     - name: mariadb-galera
-      namespace: db
     - name: erpnext-redis
-      namespace: frappe
   interval: 1h
   path: ./kubernetes/apps/frappe/erpnext/app
   postBuild:
@@ -40,6 +38,6 @@ spec:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  targetNamespace: *namespace
+  targetNamespace: frappe
   timeout: 5m
   wait: false

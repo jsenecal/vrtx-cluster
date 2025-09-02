@@ -4,7 +4,7 @@ apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
   name: &app mariadb-galera
-  namespace: &namespace db
+  namespace: flux-system
 spec:
   commonMetadata:
     labels:
@@ -33,6 +33,6 @@ spec:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  targetNamespace: *namespace
+  targetNamespace: db
   timeout: 5m
   wait: false
