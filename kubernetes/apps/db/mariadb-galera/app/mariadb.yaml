@@ -66,8 +66,6 @@ spec:
     exporter:
       image: prom/mysqld-exporter:v0.15.1
       port: 9104
-    serviceMonitor:
-      enabled: true
       
   affinity:
     podAntiAffinity:
