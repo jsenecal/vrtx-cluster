@@ -6,6 +6,8 @@ resources:
   - gatewayclass.yaml
   - internal.yaml
   - external.yaml
+  - external-lab.yaml
+  - external-prod.yaml
   - redirect.yaml
   - certificate.yaml
   - certificate-two.yaml
