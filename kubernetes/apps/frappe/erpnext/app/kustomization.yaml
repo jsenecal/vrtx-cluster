@@ -7,7 +7,7 @@ resources:
   - ./externalsecret.yaml
   - ./externalsecret-db.yaml
   - ./httproute.yaml
-  - ./create-site-job.yaml
+  # - ./create-site-job.yaml  # Site already created, uncomment if needed for new deployment
 postBuild:
   substituteFrom:
     - name: cluster-secrets
