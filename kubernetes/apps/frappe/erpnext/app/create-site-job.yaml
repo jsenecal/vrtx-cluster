@@ -21,13 +21,13 @@ spec:
             cd /home/frappe/frappe-bench
             
             # Check if site already exists
-            if [ -d "sites/erp.${SECRET_DOMAIN_2}" ]; then
+            if [ -d "sites/erp.loopnetworks.ca" ]; then
               echo "Site already exists, skipping creation"
               exit 0
             fi
             
             # Create the site
-            bench new-site erp.${SECRET_DOMAIN_2} \
+            bench new-site erp.loopnetworks.ca \
               --mariadb-root-username root \
               --mariadb-root-password "$DB_ROOT_PASSWORD" \
               --admin-password "$ADMIN_PASSWORD" \
@@ -36,7 +36,7 @@ spec:
               --install-app erpnext
             
             # Set as default site
-            bench use erp.${SECRET_DOMAIN_2}
+            bench use erp.loopnetworks.ca
         env:
         - name: DB_ROOT_PASSWORD
           valueFrom:
