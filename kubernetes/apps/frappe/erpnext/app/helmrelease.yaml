@@ -53,13 +53,7 @@ spec:
     # Jobs configuration
     jobs:
       createSite:
-        enabled: true
-        siteName: erp.${SECRET_DOMAIN_2}
-        adminPassword: ${ERPNEXT_ADMIN_PASSWORD}
-        installApps:
-          - "erpnext"
-        dbType: mariadb
-        backoffLimit: 3
+        enabled: false  # Disable auto-creation, we'll handle it differently
       
     persistence:
       worker:

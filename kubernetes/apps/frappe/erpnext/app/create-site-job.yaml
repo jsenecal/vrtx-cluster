@@ -1,0 +1,65 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: erpnext-create-site
+  annotations:
+    helm.sh/hook: post-install
+    helm.sh/hook-weight: "1"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: create-site
+        image: frappe/erpnext:v15.39.1
+        command: ["/bin/bash", "-c"]
+        args:
+          - |
+            set -e
+            cd /home/frappe/frappe-bench
+            
+            # Check if site already exists
+            if [ -d "sites/erp.${SECRET_DOMAIN_2}" ]; then
+              echo "Site already exists, skipping creation"
+              exit 0
+            fi
+            
+            # Create the site
+            bench new-site erp.${SECRET_DOMAIN_2} \
+              --mariadb-root-username root \
+              --mariadb-root-password "$DB_ROOT_PASSWORD" \
+              --admin-password "$ADMIN_PASSWORD" \
+              --db-host mariadb-galera.db.svc.cluster.local \
+              --db-port 3306 \
+              --install-app erpnext
+            
+            # Set as default site
+            bench use erp.${SECRET_DOMAIN_2}
+        env:
+        - name: DB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: erpnext-db-secret
+              key: root-password
+        - name: ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: erpnext-secret
+              key: admin-password
+        volumeMounts:
+        - name: sites
+          mountPath: /home/frappe/frappe-bench/sites
+        - name: assets
+          mountPath: /home/frappe/frappe-bench/sites/assets
+        securityContext:
+          capabilities:
+            add:
+            - CAP_CHOWN
+      volumes:
+      - name: sites
+        persistentVolumeClaim:
+          claimName: erpnext
+      - name: assets
+        emptyDir: {}
