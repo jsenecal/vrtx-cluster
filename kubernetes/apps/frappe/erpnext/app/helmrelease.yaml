@@ -50,16 +50,16 @@ spec:
     redisCacheHost: redis.frappe.svc.cluster.local
     redisSocketIOHost: redis.frappe.svc.cluster.local
     
-    # ERPNext site configuration
-    createSite:
-      enabled: true
-      siteName: erp.${SECRET_DOMAIN_2}
-      adminExistingSecret: erpnext-secret
-      adminExistingSecretKey: admin-password
-      installApps:
-        - "erpnext"
-      dbType: mariadb
-      # The Helm chart will create a database named after the site
+    # Jobs configuration
+    jobs:
+      createSite:
+        enabled: true
+        siteName: erp.${SECRET_DOMAIN_2}
+        adminPassword: ${ERPNEXT_ADMIN_PASSWORD}
+        installApps:
+          - "erpnext"
+        dbType: mariadb
+        backoffLimit: 3
       
     persistence:
       worker:
