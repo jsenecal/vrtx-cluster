@@ -9,8 +9,8 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
-  components:
-    - ../../../../components/gatus/public
+  # components:
+    # - ../../../../components/gatus/public  # Using custom gatus config for domain 2
     # TODO: Enable volsync after ERPNext is working
     # - ../../../../components/volsync
   dependsOn:
