@@ -72,7 +72,7 @@ spec:
 
     route:
       app:
-        hostnames: ["{{ .Release.Name }}.k8s.${SECRET_DOMAIN}"]
+        hostnames: ["tautulli.k8s.${SECRET_DOMAIN}"]
         parentRefs:
           - name: internal
             namespace: kube-system
