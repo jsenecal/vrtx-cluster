@@ -5,7 +5,6 @@ kind: Kustomization
 resources:
   - gatewayclass.yaml
   - internal.yaml
-  - external.yaml
   - external-lab.yaml
   - external-prod.yaml
   - redirect.yaml
