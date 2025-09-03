@@ -3,7 +3,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: cloudflare-tunnel
+  name: cloudflare-tunnel-lab
 spec:
   interval: 1h
   chartRef:
@@ -18,7 +18,7 @@ spec:
       retries: 3
   values:
     controllers:
-      cloudflare-tunnel:
+      cloudflare-tunnel-lab:
         replicas: 2
         strategy: RollingUpdate
         annotations:
@@ -36,7 +36,7 @@ spec:
               TUNNEL_TRANSPORT_PROTOCOL: quic
             envFrom:
               - secretRef:
-                  name: cloudflare-tunnel-secret
+                  name: cloudflare-tunnel-lab-secret
             args: ["tunnel", "run"]
             probes:
               liveness: &probes
@@ -67,19 +67,19 @@ spec:
         runAsGroup: 1000
     service:
       app:
-        controller: cloudflare-tunnel
+        controller: cloudflare-tunnel-lab
         ports:
           http:
             port: *port
     serviceMonitor:
       app:
-        serviceName: cloudflare-tunnel
+        serviceName: cloudflare-tunnel-lab
         endpoints:
           - port: http
     persistence:
       config-file:
         type: configMap
-        name: cloudflare-tunnel-configmap
+        name: cloudflare-tunnel-lab-configmap
         globalMounts:
           - path: /etc/cloudflared/config.yaml
             subPath: config.yaml

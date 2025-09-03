@@ -1,0 +1,10 @@
+---
+originRequest:
+  originServerName: vrtx.${SECRET_DOMAIN_2}
+
+ingress:
+  - hostname: ${SECRET_DOMAIN_2}
+    service: &svc https://cilium-gateway-external.kube-system.svc.cluster.local
+  - hostname: "*.${SECRET_DOMAIN_2}"
+    service: *svc
+  - service: http_status:404
