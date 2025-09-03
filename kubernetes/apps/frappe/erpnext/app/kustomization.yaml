@@ -7,9 +7,8 @@ resources:
   - ./externalsecret.yaml
   - ./externalsecret-db.yaml
   - ./httproute.yaml
+  - ./create-site-job.yaml
 postBuild:
   substituteFrom:
     - name: cluster-secrets
-      kind: Secret
-    - name: erpnext-secret
       kind: Secret
