@@ -3,10 +3,12 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: erpnext-create-site
+  labels:
+    app.kubernetes.io/name: erpnext
+    app.kubernetes.io/component: site-creation
   annotations:
-    helm.sh/hook: post-install
-    helm.sh/hook-weight: "1"
-    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+    # This annotation tells Flux to ignore this resource after initial creation
+    kustomize.toolkit.fluxcd.io/reconcile: disabled
 spec:
   template:
     spec:
