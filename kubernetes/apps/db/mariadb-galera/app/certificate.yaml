@@ -7,8 +7,8 @@ metadata:
 spec:
   secretName: mariadb-galera-tls
   issuerRef:
-    name: cluster-issuer
-    kind: ClusterIssuer
+    name: mariadb-selfsigned-issuer
+    kind: Issuer
   commonName: mariadb-galera.db.svc.cluster.local
   dnsNames:
     - mariadb-galera.db.svc.cluster.local
