@@ -26,10 +26,10 @@ spec:
         containers:
           app:
             image:
-              repository: docker.io/redis
-              tag: 7.4.1-alpine
+              repository: docker.io/valkey/valkey
+              tag: 7.2.7-alpine
             command:
-              - redis-server
+              - valkey-server
             args:
               - --save
               - "900 1"
