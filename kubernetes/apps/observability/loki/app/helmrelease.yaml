@@ -35,9 +35,6 @@ spec:
   values:
     deploymentMode: SingleBinary
     loki:
-      image:
-        registry: cr.grafana.com
-        repository: oss-loki
       auth_enabled: false
       analytics:
         reporting_enabled: false
