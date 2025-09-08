@@ -31,6 +31,9 @@ spec:
     remediation:
       retries: 3
   values:
+    image:
+      registry: cr.grafana.com
+      repository: oss-promtail
     fullnameOverride: promtail
     config:
       clients:

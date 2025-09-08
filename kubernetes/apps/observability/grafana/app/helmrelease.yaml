@@ -33,6 +33,9 @@ spec:
     remediation:
       retries: 3
   values:
+    image:
+      registry: cr.grafana.com
+      repository: oss-grafana
     deploymentStrategy:
       type: Recreate
     admin:
