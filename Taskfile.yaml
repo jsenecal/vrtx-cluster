@@ -21,6 +21,7 @@ env:
 includes:
   alertmanager: .taskfiles/alertmanager
   bootstrap: .taskfiles/bootstrap
+  ceph: .taskfiles/ceph
   talos: .taskfiles/talos
   volsync: .taskfiles/volsync
 

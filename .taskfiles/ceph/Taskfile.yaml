@@ -1,0 +1,120 @@
+---
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: '3'
+
+tasks:
+
+  status:
+    desc: Show Ceph cluster health and status
+    cmds:
+      - kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- ceph status
+
+  health:
+    desc: Show detailed Ceph cluster health information
+    cmds:
+      - kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- ceph health detail
+
+  df:
+    desc: Show Ceph pool usage and available space
+    cmds:
+      - kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- ceph df
+
+  osd-tree:
+    desc: Show OSD tree and status
+    cmds:
+      - kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- ceph osd tree
+
+  osd-status:
+    desc: Show OSD status summary
+    cmds:
+      - kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- ceph osd status
+
+  osd-df:
+    desc: Show OSD disk usage and distribution
+    cmds:
+      - kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- ceph osd df
+
+  pools:
+    desc: List all Ceph pools
+    cmds:
+      - kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- ceph osd pool ls detail
+
+  pg-status:
+    desc: Show placement group status
+    cmds:
+      - kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- ceph pg stat
+
+  pg-dump:
+    desc: Show detailed placement group information
+    cmds:
+      - kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- ceph pg dump_stuck
+
+  mon-status:
+    desc: Show monitor status
+    cmds:
+      - kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- ceph mon stat
+
+  config-dump:
+    desc: Show running Ceph configuration
+    cmds:
+      - kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- ceph config dump
+
+  crushmap:
+    desc: Show CRUSH map structure
+    cmds:
+      - kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- ceph osd crush tree
+
+  versions:
+    desc: Show Ceph daemon versions
+    cmds:
+      - kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- ceph versions
+
+  iostat:
+    desc: Show real-time I/O statistics
+    cmds:
+      - kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- ceph iostat 5
+
+  perf:
+    desc: Show cluster performance statistics
+    cmds:
+      - kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- ceph osd pool stats
+
+  balancer-status:
+    desc: Show balancer status
+    cmds:
+      - kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- ceph balancer status
+
+  crash-ls:
+    desc: List recent crash reports
+    cmds:
+      - kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- ceph crash ls
+
+  crash-archive-all:
+    desc: Archive all crash reports
+    cmds:
+      - kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- ceph crash archive-all
+
+  tools-shell:
+    desc: Open interactive shell in Ceph tools container
+    cmds:
+      - kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- bash
+
+  dashboard-info:
+    desc: Show Ceph dashboard access information
+    cmds:
+      - |
+        echo "Dashboard URL: https://$(kubectl -n rook-ceph get httproute rook-ceph-dashboard -o jsonpath='{.spec.hostnames[0]}')"
+        echo "Username: admin"
+        echo -n "Password: "
+        kubectl -n rook-ceph get secret rook-ceph-dashboard-password -o jsonpath="{.data.password}" | base64 --decode
+        echo
+
+  auth-list:
+    desc: List all Ceph authentication keys
+    cmds:
+      - kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- ceph auth ls
+
+  mds-stat:
+    desc: Show metadata server status (if CephFS is enabled)
+    cmds:
+      - kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- ceph mds stat || echo "No MDS found (CephFS not enabled)"
