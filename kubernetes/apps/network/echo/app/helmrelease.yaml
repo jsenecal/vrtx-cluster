@@ -80,3 +80,13 @@ spec:
           - backendRefs:
               - name: *app
                 port: *port
+      internal:
+        hostnames: ["{{ .Release.Name }}.k8s.${SECRET_DOMAIN}"]
+        parentRefs:
+          - name: internal
+            namespace: kube-system
+            sectionName: https
+        rules:
+          - backendRefs:
+              - name: *app
+                port: *port
