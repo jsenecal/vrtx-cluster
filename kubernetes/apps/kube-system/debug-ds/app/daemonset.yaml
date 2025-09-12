@@ -18,7 +18,7 @@ spec:
       hostNetwork: true
       containers:
       - name: debug-container
-        image: quay.io/toolbx/ubuntu-toolbox:24.04
+        image: quay.io/toolbx/ubuntu-toolbox:24.10
         command: 
         - "/bin/bash"
         - "-c"
