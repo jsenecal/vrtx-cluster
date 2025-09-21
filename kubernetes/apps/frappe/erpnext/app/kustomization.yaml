@@ -5,7 +5,6 @@ kind: Kustomization
 resources:
   - ./helmrelease.yaml
   - ./externalsecret.yaml
-  - ./externalsecret-db.yaml
   - ./httproute.yaml
   - ./gatus-ep.yaml
   # - ./create-site-job.yaml  # Site already created, uncomment if needed for new deployment
