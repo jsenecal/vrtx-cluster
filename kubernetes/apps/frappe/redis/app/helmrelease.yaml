@@ -27,7 +27,7 @@ spec:
           app:
             image:
               repository: docker.io/redis
-              tag: 7.4.5-alpine
+              tag: 8.2.1-alpine
             command:
               - redis-server
             args:
