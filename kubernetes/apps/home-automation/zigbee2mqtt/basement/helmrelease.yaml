@@ -28,6 +28,26 @@ spec:
             fsGroup: 2000
             fsGroupChangePolicy: OnRootMismatch
 
+        initContainers:
+          restore-backup:
+            image:
+              repository: busybox
+              tag: 1.36
+            command:
+              - /bin/sh
+              - -c
+              - |
+                if [ ! -f /data/configuration.yaml ]; then
+                  echo "Restoring z2m-b backup..."
+                  cd /backup
+                  base64 -d database.db.b64 > /data/database.db
+                  base64 -d coordinator_backup.json.b64 > /data/coordinator_backup.json
+                  base64 -d state.json.b64 > /data/state.json
+                  echo "Backup restored successfully"
+                else
+                  echo "Configuration already exists, skipping restore"
+                fi
+
         containers:
           app:
             image:
@@ -36,40 +56,40 @@ spec:
             env:
               Z2M_WATCHDOG: default
               ZIGBEE2MQTT_DATA: /data
-              ZIGBEE2MQTT_CONFIG_ADVANCED_CHANNEL: 20
-              ZIGBEE2MQTT_CONFIG_ADVANCED_EXT_PAN_ID:
-                valueFrom:
-                  secretKeyRef:
-                    name: zigbee2mqtt-secret
-                    key: zigbee_ext_pan_id
+              ZIGBEE2MQTT_CONFIG_ADVANCED_CHANNEL: 25
+              # ZIGBEE2MQTT_CONFIG_ADVANCED_EXT_PAN_ID:
+              #   valueFrom:
+              #     secretKeyRef:
+              #       name: z2m-b-secrets
+              #       key: zigbee_ext_pan_id
               ZIGBEE2MQTT_CONFIG_ADVANCED_LAST_SEEN: ISO_8601
               ZIGBEE2MQTT_CONFIG_ADVANCED_LEGACY_API: false
               ZIGBEE2MQTT_CONFIG_ADVANCED_LEGACY_AVAILABILITY_PAYLOAD: false
               ZIGBEE2MQTT_CONFIG_ADVANCED_LOG_LEVEL: info
               ZIGBEE2MQTT_CONFIG_ADVANCED_LOG_OUTPUT: '["console"]'
-              ZIGBEE2MQTT_CONFIG_ADVANCED_NETWORK_KEY:
-                valueFrom:
-                  secretKeyRef:
-                    name: zigbee2mqtt-secret
-                    key: zigbee_network_key
-              ZIGBEE2MQTT_CONFIG_ADVANCED_PAN_ID:
-                valueFrom:
-                  secretKeyRef:
-                    name: zigbee2mqtt-secret
-                    key: zigbee_pan_id
+              # ZIGBEE2MQTT_CONFIG_ADVANCED_NETWORK_KEY:
+              #   valueFrom:
+              #     secretKeyRef:
+              #       name: z2m-b-secrets
+              #       key: zigbee_network_key
+              # ZIGBEE2MQTT_CONFIG_ADVANCED_PAN_ID:
+              #   valueFrom:
+              #     secretKeyRef:
+              #       name: z2m-b-secrets
+              #       key: zigbee_pan_id
               ZIGBEE2MQTT_CONFIG_AVAILABILITY_ACTIVE_TIMEOUT: 60
               ZIGBEE2MQTT_CONFIG_AVAILABILITY_PASSIVE_TIMEOUT: 2000
               ZIGBEE2MQTT_CONFIG_DEVICE_OPTIONS_LEGACY: false
               ZIGBEE2MQTT_CONFIG_DEVICE_OPTIONS_RETAIN: true
               ZIGBEE2MQTT_CONFIG_EXPERIMENTAL_NEW_API: true
               ZIGBEE2MQTT_CONFIG_FRONTEND_PORT: &httpPort 8080
-              ZIGBEE2MQTT_CONFIG_FRONTEND_URL: "https://{{ .Release.Name }}.k8s.${SECRET_DOMAIN}"
+              ZIGBEE2MQTT_CONFIG_FRONTEND_URL: "https://z2m-b.k8s.${SECRET_DOMAIN}"
               ZIGBEE2MQTT_CONFIG_HOMEASSISTANT_DISCOVERY_TOPIC: homeassistant
               ZIGBEE2MQTT_CONFIG_HOMEASSISTANT_EXPERIMENTAL_EVENT_ENTITIES: true
               ZIGBEE2MQTT_CONFIG_HOMEASSISTANT_LEGACY_ENTITY_ATTRIBUTES: false
               ZIGBEE2MQTT_CONFIG_HOMEASSISTANT_LEGACY_TRIGGERS: false
               ZIGBEE2MQTT_CONFIG_HOMEASSISTANT_STATUS_TOPIC: homeassistant/status
-              ZIGBEE2MQTT_CONFIG_MQTT_BASE_TOPIC: "{{ .Release.Name }}"
+              ZIGBEE2MQTT_CONFIG_MQTT_BASE_TOPIC: "z2m-b"
               ZIGBEE2MQTT_CONFIG_MQTT_INCLUDE_DEVICE_INFORMATION: true
               ZIGBEE2MQTT_CONFIG_MQTT_KEEPALIVE: 60
               ZIGBEE2MQTT_CONFIG_MQTT_REJECT_UNAUTHORIZED: true
@@ -78,18 +98,19 @@ spec:
               ZIGBEE2MQTT_CONFIG_MQTT_USER:
                 valueFrom:
                   secretKeyRef:
-                    name: zigbee2mqtt-secret
+                    name: z2m-b-secrets
                     key: mqtt_user
               ZIGBEE2MQTT_CONFIG_MQTT_PASSWORD:
                 valueFrom:
                   secretKeyRef:
-                    name: zigbee2mqtt-secret
+                    name: z2m-b-secrets
                     key: mqtt_password
               ZIGBEE2MQTT_CONFIG_PERMIT_JOIN: false
-              ZIGBEE2MQTT_CONFIG_SERIAL_ADAPTER: ember
-              ZIGBEE2MQTT_CONFIG_SERIAL_PORT: tcp://10.1.3.46:6638
-              ZIGBEE2MQTT_CONFIG_SERIAL_BAUDRATE: 115200
+              ZIGBEE2MQTT_CONFIG_SERIAL_ADAPTER: zstack
+              ZIGBEE2MQTT_CONFIG_SERIAL_PORT: tcp://192.168.252.251:6638
+              ZIGBEE2MQTT_CONFIG_SERIAL_BAUDRATE: 460800
               ZIGBEE2MQTT_CONFIG_SERIAL_DISABLE_LED: false
+              ZIGBEE2MQTT_CONFIG_ADVANCED_TRANSMIT_POWER: 5
             resources:
               requests:
                 cpu: 50m
@@ -138,18 +159,27 @@ spec:
 
     persistence:
       data:
-        existingClaim: zigbee2mqtt-data
+        existingClaim: "z2m-b"
         advancedMounts:
           zigbee2mqtt:
             app:
               - path: /data
             code-server:
               - path: /data
+            restore-backup:
+              - path: /data
+      backup:
+        type: configMap
+        name: z2m-b-backup-data
+        advancedMounts:
+          zigbee2mqtt:
+            restore-backup:
+              - path: /backup
 
     route:
       app:
         hostnames:
-          - zigbee2mqtt.${SECRET_DOMAIN}
+          - "{{ .Release.Name }}.k8s.${SECRET_DOMAIN}"
         parentRefs:
           - name: internal
             namespace: kube-system
@@ -166,8 +196,8 @@ spec:
                     type: ReplacePrefixMatch
                     replacePrefixMatch: /
             backendRefs:
-              - name: zigbee2mqtt
+              - name: "z2m-b"
                 port: 12321
           - backendRefs:
-              - name: zigbee2mqtt
+              - name: "z2m-b"
                 port: *httpPort
