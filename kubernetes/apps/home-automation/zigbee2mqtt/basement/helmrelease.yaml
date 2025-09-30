@@ -40,6 +40,7 @@ spec:
                 if [ ! -f /data/configuration.yaml ]; then
                   echo "Restoring z2m-b backup..."
                   cd /backup
+                  base64 -d configuration.yaml.b64 > /data/configuration.yaml
                   base64 -d database.db.b64 > /data/database.db
                   base64 -d coordinator_backup.json.b64 > /data/coordinator_backup.json
                   base64 -d state.json.b64 > /data/state.json
