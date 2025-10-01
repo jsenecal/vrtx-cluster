@@ -52,6 +52,12 @@ spec:
                 else
                   echo "Database already exists, skipping restore"
                 fi
+                
+                # Always remove any existing configuration.yaml with onboarding enabled
+                if [ -f /data/configuration.yaml ] && grep -q "onboarding: true" /data/configuration.yaml; then
+                  echo "Removing configuration with onboarding enabled"
+                  rm /data/configuration.yaml
+                fi
 
         containers:
           app:
