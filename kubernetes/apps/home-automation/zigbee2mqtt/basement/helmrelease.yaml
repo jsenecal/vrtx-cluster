@@ -53,9 +53,9 @@ spec:
                   echo "Database already exists, skipping restore"
                 fi
                 
-                # Always remove any existing configuration.yaml with onboarding enabled
-                if [ -f /data/configuration.yaml ] && grep -q "onboarding: true" /data/configuration.yaml; then
-                  echo "Removing configuration with onboarding enabled"
+                # Always remove any existing configuration.yaml to ensure env vars are used
+                if [ -f /data/configuration.yaml ]; then
+                  echo "Removing existing configuration.yaml to use environment variables"
                   rm /data/configuration.yaml
                 fi
 
