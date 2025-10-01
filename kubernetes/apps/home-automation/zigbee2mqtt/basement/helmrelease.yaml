@@ -44,7 +44,15 @@ spec:
                   base64 -d database.db.b64 > /data/database.db
                   base64 -d coordinator_backup.json.b64 > /data/coordinator_backup.json
                   base64 -d state.json.b64 > /data/state.json
-                  echo "Backup restored successfully"
+                  
+                  # Fix MQTT settings to match the cluster configuration
+                  echo "Updating MQTT configuration..."
+                  sed -i 's/base_topic: z2m-haos/base_topic: z2m-b/g' /data/configuration.yaml
+                  sed -i 's/server: mqtt:\/\/core-mosquitto:1883/server: mqtt:\/\/emqx-listeners.iot.svc.cluster.local:1883/g' /data/configuration.yaml
+                  sed -i 's/user: addons/user: z2m/g' /data/configuration.yaml
+                  sed -i '/password: ioJiinaeT/d' /data/configuration.yaml
+                  
+                  echo "Backup restored and configuration updated successfully"
                 else
                   echo "Configuration already exists, skipping restore"
                 fi
