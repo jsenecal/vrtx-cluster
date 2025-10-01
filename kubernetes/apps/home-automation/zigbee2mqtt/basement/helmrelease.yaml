@@ -37,24 +37,20 @@ spec:
               - /bin/sh
               - -c
               - |
-                if [ ! -f /data/configuration.yaml ]; then
-                  echo "Restoring z2m-b backup..."
+                if [ ! -f /data/database.db ]; then
+                  echo "Restoring z2m-b backup (database files only)..."
                   cd /backup
-                  base64 -d configuration.yaml.b64 > /data/configuration.yaml
+                  
+                  # Only restore database files, not configuration.yaml
+                  # Environment variables will handle all configuration
                   base64 -d database.db.b64 > /data/database.db
                   base64 -d coordinator_backup.json.b64 > /data/coordinator_backup.json
                   base64 -d state.json.b64 > /data/state.json
                   
-                  # Fix MQTT settings to match the cluster configuration
-                  echo "Updating MQTT configuration..."
-                  sed -i 's/base_topic: z2m-haos/base_topic: z2m-b/g' /data/configuration.yaml
-                  sed -i 's/server: mqtt:\/\/core-mosquitto:1883/server: mqtt:\/\/emqx-listeners.iot.svc.cluster.local:1883/g' /data/configuration.yaml
-                  sed -i 's/user: addons/user: z2m/g' /data/configuration.yaml
-                  sed -i '/password: ioJiinaeT/d' /data/configuration.yaml
-                  
-                  echo "Backup restored and configuration updated successfully"
+                  echo "Backup database files restored successfully"
+                  echo "Configuration will be generated from environment variables"
                 else
-                  echo "Configuration already exists, skipping restore"
+                  echo "Database already exists, skipping restore"
                 fi
 
         containers:
@@ -66,26 +62,26 @@ spec:
               Z2M_WATCHDOG: default
               ZIGBEE2MQTT_DATA: /data
               ZIGBEE2MQTT_CONFIG_ADVANCED_CHANNEL: 25
-              # ZIGBEE2MQTT_CONFIG_ADVANCED_EXT_PAN_ID:
-              #   valueFrom:
-              #     secretKeyRef:
-              #       name: z2m-b-secrets
-              #       key: zigbee_ext_pan_id
+              ZIGBEE2MQTT_CONFIG_ADVANCED_EXT_PAN_ID:
+                valueFrom:
+                  secretKeyRef:
+                    name: z2m-b-secrets
+                    key: zigbee_ext_pan_id
               ZIGBEE2MQTT_CONFIG_ADVANCED_LAST_SEEN: ISO_8601
               ZIGBEE2MQTT_CONFIG_ADVANCED_LEGACY_API: false
               ZIGBEE2MQTT_CONFIG_ADVANCED_LEGACY_AVAILABILITY_PAYLOAD: false
               ZIGBEE2MQTT_CONFIG_ADVANCED_LOG_LEVEL: info
               ZIGBEE2MQTT_CONFIG_ADVANCED_LOG_OUTPUT: '["console"]'
-              # ZIGBEE2MQTT_CONFIG_ADVANCED_NETWORK_KEY:
-              #   valueFrom:
-              #     secretKeyRef:
-              #       name: z2m-b-secrets
-              #       key: zigbee_network_key
-              # ZIGBEE2MQTT_CONFIG_ADVANCED_PAN_ID:
-              #   valueFrom:
-              #     secretKeyRef:
-              #       name: z2m-b-secrets
-              #       key: zigbee_pan_id
+              ZIGBEE2MQTT_CONFIG_ADVANCED_NETWORK_KEY:
+                valueFrom:
+                  secretKeyRef:
+                    name: z2m-b-secrets
+                    key: zigbee_network_key
+              ZIGBEE2MQTT_CONFIG_ADVANCED_PAN_ID:
+                valueFrom:
+                  secretKeyRef:
+                    name: z2m-b-secrets
+                    key: zigbee_pan_id
               ZIGBEE2MQTT_CONFIG_AVAILABILITY_ACTIVE_TIMEOUT: 60
               ZIGBEE2MQTT_CONFIG_AVAILABILITY_PASSIVE_TIMEOUT: 2000
               ZIGBEE2MQTT_CONFIG_DEVICE_OPTIONS_LEGACY: false
