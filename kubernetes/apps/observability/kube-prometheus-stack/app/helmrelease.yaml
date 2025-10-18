@@ -37,6 +37,10 @@ spec:
         enabled: true
         forceConflicts: true
     cleanPrometheusOperatorObjectNames: true
+    defaultRules:
+      rules:
+        kubeApiserverAvailability: false  # Disable expensive 30d rules
+        kubeApiserverBurnrate: true       # Keep burnrate but it will use shorter windows
     alertmanager:
       route:
         main:
@@ -84,13 +88,20 @@ spec:
         walCompression: true
         enableFeatures:
           - memory-snapshot-on-shutdown
+          - promql-experimental-functions
         retention: 60d
         retentionSize: 50GB
         resources:
           requests:
-            cpu: 100m
+            cpu: 200m
+            memory: 3Gi
           limits:
-            memory: 2000Mi
+            memory: 4Gi
+        evaluationInterval: 30s
+        scrapeInterval: 30s
+        queryTimeout: 2m
+        queryMaxConcurrency: 20
+        queryMaxSamples: 50000000
         storageSpec:
           volumeClaimTemplate:
             spec:
