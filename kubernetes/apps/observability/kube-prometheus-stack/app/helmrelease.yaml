@@ -190,6 +190,10 @@ spec:
               - alert: HighDiskUtilization
                 annotations:
                   summary: Disk {{$labels.device}} on {{$labels.instance}} is {{$value | printf "%.1f"}}% utilized
+                  description: >-
+                    Disk {{$labels.device}} on {{$labels.instance}} is {{$value | printf "%.1f"}}% utilized.
+                    For RBD devices, check which pod is using it:
+                    kubectl get pv -o custom-columns=PV:.metadata.name,DEVICE:.spec.csi.volumeAttributes.imageName,CLAIM:.spec.claimRef.name,NAMESPACE:.spec.claimRef.namespace | grep -E "rbd|{{$labels.device}}"
                 expr: (rate(node_disk_io_time_seconds_total[5m]) * 100) > 80
                 for: 5m
                 labels:
