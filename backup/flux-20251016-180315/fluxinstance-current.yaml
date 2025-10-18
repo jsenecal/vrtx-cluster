@@ -1,0 +1,156 @@
+apiVersion: fluxcd.controlplane.io/v1
+kind: FluxInstance
+metadata:
+  annotations:
+    meta.helm.sh/release-name: flux-instance
+    meta.helm.sh/release-namespace: flux-system
+    reconcile.fluxcd.io/requestedAt: "2025-10-08T19:07:27.391849895Z"
+  creationTimestamp: "2025-04-19T02:33:07Z"
+  finalizers:
+  - fluxcd.controlplane.io/finalizer
+  generation: 6
+  labels:
+    app.kubernetes.io/instance: flux-instance
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: flux-instance
+    app.kubernetes.io/version: v0.28.0
+    helm.sh/chart: flux-instance-0.28.0_c525abaf0e88
+    helm.toolkit.fluxcd.io/name: flux-instance
+    helm.toolkit.fluxcd.io/namespace: flux-system
+  name: flux
+  namespace: flux-system
+  resourceVersion: "160537859"
+  uid: 5bc3eee1-5b3d-4a3e-b5e5-dc696c16953e
+spec:
+  cluster:
+    domain: cluster.local
+    multitenant: false
+    networkPolicy: false
+    tenantDefaultServiceAccount: default
+    type: kubernetes
+  components:
+  - source-controller
+  - kustomize-controller
+  - helm-controller
+  - notification-controller
+  distribution:
+    artifact: oci://ghcr.io/controlplaneio-fluxcd/flux-operator-manifests:latest
+    registry: ghcr.io/fluxcd
+    version: 2.6.4
+  kustomize:
+    patches: []
+  migrateResources: true
+  sync:
+    interval: 1m
+    kind: GitRepository
+    path: kubernetes/flux/cluster
+    pullSecret: github-deploy-key
+    ref: refs/heads/main
+    url: ssh://git@github.com/jsenecal/vrtx-cluster.git
+  wait: true
+status:
+  components:
+  - digest: sha256:11c8e14df885eff86586533d9941293ec8a1e9fff71bacf119edc79fdf3c63e3
+    name: source-controller
+    repository: ghcr.io/fluxcd/source-controller
+    tag: v1.6.2
+  - digest: sha256:1a50730537bafb7827365b9af95c4eb71ca3d9b0bed9bc9bc765880e976972ef
+    name: kustomize-controller
+    repository: ghcr.io/fluxcd/kustomize-controller
+    tag: v1.6.1
+  - digest: sha256:db55d9d9f9b5106acd8c21da6916b8e285fcfc5572f214361ececd1a8571a4f0
+    name: helm-controller
+    repository: ghcr.io/fluxcd/helm-controller
+    tag: v1.3.0
+  - digest: sha256:80174ff676407af7a6feff67b0c2f100de9f7f89df4c26fc871e4d4c4006544d
+    name: notification-controller
+    repository: ghcr.io/fluxcd/notification-controller
+    tag: v1.6.0
+  conditions:
+  - lastTransitionTime: "2025-10-16T21:39:32Z"
+    message: Reconciliation finished in 3s
+    observedGeneration: 6
+    reason: ReconciliationSucceeded
+    status: "True"
+    type: Ready
+  history:
+  - digest: sha256:03818ef71964219a2c6b531e7961b1f9255336ea895c34c9d26d12cdc1b83705
+    firstReconciled: "2025-08-20T03:05:40Z"
+    lastReconciled: "2025-10-16T21:39:32Z"
+    lastReconciledDuration: 2.646398924s
+    lastReconciledStatus: ReconciliationSucceeded
+    metadata:
+      flux: v2.6.4
+    totalReconciliations: 1202
+  - digest: sha256:3c4b38cab59b8bf90ff53ce7e2976469e8badf041d4e26d35c05453035f05f2a
+    firstReconciled: "2025-10-09T01:58:53Z"
+    lastReconciled: "2025-10-09T02:23:54Z"
+    lastReconciledDuration: 545.909103ms
+    lastReconciledStatus: BuildFailed
+    totalReconciliations: 2
+  inventory:
+    entries:
+    - id: _alerts.notification.toolkit.fluxcd.io_apiextensions.k8s.io_CustomResourceDefinition
+      v: v1
+    - id: _buckets.source.toolkit.fluxcd.io_apiextensions.k8s.io_CustomResourceDefinition
+      v: v1
+    - id: _gitrepositories.source.toolkit.fluxcd.io_apiextensions.k8s.io_CustomResourceDefinition
+      v: v1
+    - id: _helmcharts.source.toolkit.fluxcd.io_apiextensions.k8s.io_CustomResourceDefinition
+      v: v1
+    - id: _helmreleases.helm.toolkit.fluxcd.io_apiextensions.k8s.io_CustomResourceDefinition
+      v: v1
+    - id: _helmrepositories.source.toolkit.fluxcd.io_apiextensions.k8s.io_CustomResourceDefinition
+      v: v1
+    - id: _kustomizations.kustomize.toolkit.fluxcd.io_apiextensions.k8s.io_CustomResourceDefinition
+      v: v1
+    - id: _ocirepositories.source.toolkit.fluxcd.io_apiextensions.k8s.io_CustomResourceDefinition
+      v: v1
+    - id: _providers.notification.toolkit.fluxcd.io_apiextensions.k8s.io_CustomResourceDefinition
+      v: v1
+    - id: _receivers.notification.toolkit.fluxcd.io_apiextensions.k8s.io_CustomResourceDefinition
+      v: v1
+    - id: _flux-system__Namespace
+      v: v1
+    - id: _crd-controller-flux-system_rbac.authorization.k8s.io_ClusterRole
+      v: v1
+    - id: _flux-edit-flux-system_rbac.authorization.k8s.io_ClusterRole
+      v: v1
+    - id: _flux-view-flux-system_rbac.authorization.k8s.io_ClusterRole
+      v: v1
+    - id: _cluster-reconciler-flux-system_rbac.authorization.k8s.io_ClusterRoleBinding
+      v: v1
+    - id: _crd-controller-flux-system_rbac.authorization.k8s.io_ClusterRoleBinding
+      v: v1
+    - id: flux-system_critical-pods-flux-system__ResourceQuota
+      v: v1
+    - id: flux-system_helm-controller__ServiceAccount
+      v: v1
+    - id: flux-system_kustomize-controller__ServiceAccount
+      v: v1
+    - id: flux-system_notification-controller__ServiceAccount
+      v: v1
+    - id: flux-system_source-controller__ServiceAccount
+      v: v1
+    - id: flux-system_notification-controller__Service
+      v: v1
+    - id: flux-system_source-controller__Service
+      v: v1
+    - id: flux-system_webhook-receiver__Service
+      v: v1
+    - id: flux-system_helm-controller_apps_Deployment
+      v: v1
+    - id: flux-system_kustomize-controller_apps_Deployment
+      v: v1
+    - id: flux-system_notification-controller_apps_Deployment
+      v: v1
+    - id: flux-system_source-controller_apps_Deployment
+      v: v1
+    - id: flux-system_flux-system_kustomize.toolkit.fluxcd.io_Kustomization
+      v: v1
+    - id: flux-system_flux-system_source.toolkit.fluxcd.io_GitRepository
+      v: v1
+  lastAppliedRevision: v2.6.4@sha256:03818ef71964219a2c6b531e7961b1f9255336ea895c34c9d26d12cdc1b83705
+  lastArtifactRevision: sha256:e0875e02215373ed07114f0d59990fbce75de8f4e24be888c8089484ceae4dfe
+  lastAttemptedRevision: v2.6.4@sha256:03818ef71964219a2c6b531e7961b1f9255336ea895c34c9d26d12cdc1b83705
+  lastHandledReconcileAt: "2025-10-08T19:07:27.391849895Z"
