@@ -10,7 +10,3 @@ resources:
   - ./mariadb/app
   - ./erpnext/app
   - ./redis/app
-postBuild:
-  substituteFrom:
-    - name: cluster-secrets
-      kind: Secret
