@@ -158,3 +158,49 @@ spec:
                 expr: node_zfs_zpool_state{state!="online"} > 0
                 labels:
                   severity: critical
+      io-monitoring-rules:
+        groups:
+          - name: io-monitoring
+            rules:
+              - alert: HighNodeIOWait
+                annotations:
+                  summary: High IO wait ({{$value | printf "%.1f"}}%) on node {{$labels.instance}}
+                expr: (avg by (instance) (rate(node_cpu_seconds_total{mode="iowait"}[5m])) * 100) > 20
+                for: 5m
+                labels:
+                  severity: warning
+              - alert: HighNodeIOWaitCritical
+                annotations:
+                  summary: Critical IO wait ({{$value | printf "%.1f"}}%) on node {{$labels.instance}}
+                expr: (avg by (instance) (rate(node_cpu_seconds_total{mode="iowait"}[5m])) * 100) > 40
+                for: 5m
+                labels:
+                  severity: critical
+              - alert: HighDiskUtilization
+                annotations:
+                  summary: Disk {{$labels.device}} on {{$labels.instance}} is {{$value | printf "%.1f"}}% utilized
+                expr: (rate(node_disk_io_time_seconds_total[5m]) * 100) > 80
+                for: 5m
+                labels:
+                  severity: warning
+              - alert: PrometheusHighCompactionTime
+                annotations:
+                  summary: Prometheus compaction taking {{$value | printf "%.0f"}} seconds (99th percentile)
+                expr: histogram_quantile(0.99, rate(prometheus_tsdb_compaction_duration_seconds_bucket[10m])) > 60
+                for: 10m
+                labels:
+                  severity: warning
+              - alert: CephOSDHighReadIOPS
+                annotations:
+                  summary: OSD {{$labels.ceph_daemon}} has high read IOPS ({{$value | printf "%.0f"}} ops/sec)
+                expr: sum by (ceph_daemon) (rate(ceph_osd_op_r[5m])) > 1000
+                for: 5m
+                labels:
+                  severity: warning
+              - alert: CephOSDUnbalancedLoad
+                annotations:
+                  summary: Ceph OSD load is unbalanced (max is {{$value | printf "%.1f"}}x higher than min)
+                expr: (max(sum by (ceph_daemon) (rate(ceph_osd_op_r[5m]))) / ignoring(ceph_daemon) group_left min(sum by (ceph_daemon) (rate(ceph_osd_op_r[5m]))) > 0.1) > 5
+                for: 10m
+                labels:
+                  severity: warning
