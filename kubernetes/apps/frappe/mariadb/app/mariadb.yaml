@@ -1,0 +1,120 @@
+---
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: MariaDB
+metadata:
+  name: mariadb-galera
+spec:
+  # Root password from secret
+  rootPasswordSecretKeyRef:
+    name: mariadb-secret
+    key: root-password
+    generate: false
+
+  # Database to be created on init
+  databases:
+    - name: erpnext_db
+      characterSet: utf8mb4
+      collate: utf8mb4_unicode_ci
+
+  # Users configuration
+  users:
+    - name: erpnext
+      passwordSecretKeyRef:
+        name: mariadb-secret
+        key: erpnext-password
+        generate: false
+      host: "%"
+      grantOption: true
+      grants:
+        - database: "erpnext_db"
+          privileges:
+            - ALL PRIVILEGES
+
+  # Galera configuration
+  galera:
+    enabled: true
+    primary:
+      automaticFailover: true
+      podIndex: 0
+    sst: mariabackup
+    recovery:
+      enabled: true
+      clusterHealthyTimeout: 5m
+    config:
+      reuseStorageVolume: false
+      volumeClaimTemplate:
+        storageClassName: ceph-block-single-replica
+        resources:
+          requests:
+            storage: 10Gi
+        accessModes:
+          - ReadWriteOnce
+
+  # General replication configuration
+  replicas: 3
+
+  # Update strategy
+  updateStrategy:
+    type: ReplicasFirstPrimaryLast
+
+  # Storage configuration
+  storage:
+    storageClassName: ceph-block-single-replica
+    size: 10Gi
+    performDeletions: false
+
+  # Service configuration
+  service:
+    type: ClusterIP
+    port: 3306
+
+  # Resources
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 2Gi
+
+  # Pod disruption budget
+  podDisruptionBudget:
+    maxUnavailable: 1
+
+  # Metrics
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+
+  # MariaDB configuration
+  myCnf: |
+    [mariadb]
+    bind-address=*
+    default_storage_engine=InnoDB
+    binlog_format=ROW
+    innodb_autoinc_lock_mode=2
+    innodb_buffer_pool_size=1G
+    max_connections=500
+    
+    # Galera specific
+    wsrep_on=ON
+    wsrep_provider=/usr/lib/galera/libgalera_smm.so
+    wsrep_cluster_name="mariadb-galera"
+    wsrep_sst_method=mariabackup
+    
+    # ERPNext specific optimizations
+    character-set-server=utf8mb4
+    collation-server=utf8mb4_unicode_ci
+    
+    # Performance tuning
+    query_cache_size=0
+    query_cache_type=0
+    innodb_file_per_table=1
+    innodb_flush_log_at_trx_commit=2
+    innodb_log_file_size=256M
+
+  # Affinity to spread replicas across nodes
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - topologyKey: kubernetes.io/hostname

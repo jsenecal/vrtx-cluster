@@ -16,7 +16,7 @@ spec:
   dependsOn:
     - name: external-secrets-stores
       namespace: external-secrets
-    - name: mariadb-galera
+    - name: mariadb
     - name: erpnext-redis
   interval: 1h
   path: ./kubernetes/apps/frappe/erpnext/app

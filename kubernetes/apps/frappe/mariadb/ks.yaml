@@ -1,0 +1,44 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app mariadb-operator
+  namespace: flux-system
+spec:
+  targetNamespace: frappe
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  interval: 10m
+  path: ./kubernetes/apps/frappe/mariadb/operator
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: vrtx-cluster
+  wait: true
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &app mariadb
+  namespace: flux-system
+spec:
+  targetNamespace: frappe
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *app
+  interval: 10m
+  path: ./kubernetes/apps/frappe/mariadb/app
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: vrtx-cluster
+  wait: true
+  dependsOn:
+    - name: mariadb-operator
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
