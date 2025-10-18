@@ -34,5 +34,5 @@ spec:
         certManager:
           enabled: true
           issuerRef:
-            name: letsencrypt-production
-            kind: ClusterIssuer
+            name: self-signed
+            kind: Issuer
