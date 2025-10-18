@@ -2,23 +2,12 @@
 apiVersion: k8s.mariadb.com/v1alpha1
 kind: MariaDB
 metadata:
-  name: mariadb-galera
+  name: mariadb
 spec:
   # Root password from secret
   rootPasswordSecretKeyRef:
     name: mariadb-secret
     key: root-password
-
-  # Start with single instance for testing
-  galera:
-    enabled: false
-
-  # General replication configuration
-  replicas: 1
-
-  # Update strategy
-  updateStrategy:
-    type: ReplicasFirstPrimaryLast
 
   # Storage configuration
   storage:
@@ -37,10 +26,6 @@ spec:
     limits:
       memory: 2Gi
 
-  # Pod disruption budget
-  podDisruptionBudget:
-    maxUnavailable: 1
-
   # Metrics
   metrics:
     enabled: true
@@ -51,7 +36,6 @@ spec:
     bind-address=*
     default_storage_engine=InnoDB
     binlog_format=ROW
-    innodb_autoinc_lock_mode=2
     innodb_buffer_pool_size=1G
     max_connections=500
     
@@ -65,20 +49,6 @@ spec:
     innodb_file_per_table=1
     innodb_flush_log_at_trx_commit=2
     innodb_log_file_size=256M
-
-  # Affinity to spread replicas across nodes
-  affinity:
-    podAntiAffinity:
-      preferredDuringSchedulingIgnoredDuringExecution:
-        - weight: 100
-          podAffinityTerm:
-            labelSelector:
-              matchExpressions:
-                - key: app.kubernetes.io/instance
-                  operator: In
-                  values:
-                    - mariadb-galera
-            topologyKey: kubernetes.io/hostname
 ---
 apiVersion: k8s.mariadb.com/v1alpha1
 kind: Database
@@ -86,7 +56,7 @@ metadata:
   name: erpnext-db
 spec:
   mariaDbRef:
-    name: mariadb-galera
+    name: mariadb
   name: erpnext_db
   characterSet: utf8mb4
   collate: utf8mb4_unicode_ci
@@ -97,7 +67,7 @@ metadata:
   name: erpnext
 spec:
   mariaDbRef:
-    name: mariadb-galera
+    name: mariadb
   name: erpnext
   passwordSecretKeyRef:
     name: mariadb-secret
@@ -110,7 +80,7 @@ metadata:
   name: erpnext-grant
 spec:
   mariaDbRef:
-    name: mariadb-galera
+    name: mariadb
   username: erpnext
   database: erpnext_db
   privileges:
