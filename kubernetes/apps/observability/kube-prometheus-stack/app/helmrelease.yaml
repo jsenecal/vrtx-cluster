@@ -84,7 +84,7 @@ spec:
         walCompression: true
         enableFeatures:
           - memory-snapshot-on-shutdown
-        retention: 14d
+        retention: 60d
         retentionSize: 50GB
         resources:
           requests:
