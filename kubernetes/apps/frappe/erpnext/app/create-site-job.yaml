@@ -21,13 +21,13 @@ spec:
           - |
             set -e
             cd /home/frappe/frappe-bench
-            
+
             # Check if site already exists
             if [ -d "sites/erp.loopnetworks.ca" ]; then
               echo "Site already exists, skipping creation"
               exit 0
             fi
-            
+
             # Create the site
             bench new-site erp.loopnetworks.ca \
               --mariadb-root-username root \
@@ -36,15 +36,15 @@ spec:
               --db-host mariadb-galera.frappe.svc.cluster.local \
               --db-port 3306 \
               --install-app erpnext
-            
+
             # Fix database permissions to allow access from any pod IP
             # Get the database name from site config
             DB_NAME=$(cd sites/erp.loopnetworks.ca && cat site_config.json | grep db_name | cut -d'"' -f4)
             DB_PASS=$(cd sites/erp.loopnetworks.ca && cat site_config.json | grep db_password | cut -d'"' -f4)
-            
+
             # Grant permissions from any pod in the cluster
             mysql -h mariadb-galera.frappe.svc.cluster.local -uroot -p"$DB_ROOT_PASSWORD" -e "GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_NAME}'@'10.42.%' IDENTIFIED BY '${DB_PASS}'; FLUSH PRIVILEGES;"
-            
+
             # Set as default site
             bench use erp.loopnetworks.ca
         env:
