@@ -1,0 +1,85 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  annotations:
+    reconcile.fluxcd.io/requestedAt: "2025-10-16T17:37:52.13282254-04:00"
+  creationTimestamp: "2025-04-19T02:34:23Z"
+  finalizers:
+  - finalizers.fluxcd.io
+  generation: 5
+  labels:
+    app.kubernetes.io/name: flux-instance
+    kustomize.toolkit.fluxcd.io/name: flux-instance
+    kustomize.toolkit.fluxcd.io/namespace: flux-system
+  name: flux-instance
+  namespace: flux-system
+  resourceVersion: "160553725"
+  uid: 03a3d9ba-679f-4ce5-a72b-72386db543da
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: flux-instance
+  dependsOn:
+  - name: flux-operator
+    namespace: flux-system
+  install:
+    remediation:
+      retries: -1
+  interval: 1h
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+      strategy: rollback
+  valuesFrom:
+  - kind: ConfigMap
+    name: flux-instance-values-t4gt4dhf7t
+status:
+  conditions:
+  - lastTransitionTime: "2025-10-09T01:58:53Z"
+    message: Helm upgrade succeeded for release flux-system/flux-instance.v11 with
+      chart flux-instance@0.28.0+c525abaf0e88
+    observedGeneration: 5
+    reason: UpgradeSucceeded
+    status: "True"
+    type: Ready
+  - lastTransitionTime: "2025-10-09T01:58:53Z"
+    message: Helm upgrade succeeded for release flux-system/flux-instance.v11 with
+      chart flux-instance@0.28.0+c525abaf0e88
+    observedGeneration: 5
+    reason: UpgradeSucceeded
+    status: "True"
+    type: Released
+  history:
+  - appVersion: v0.28.0
+    chartName: flux-instance
+    chartVersion: 0.28.0+c525abaf0e88
+    configDigest: sha256:44ce05b1adb635d64c28496b847b4d949e9b6c1bd05c6db219b2b0034df1cc24
+    digest: sha256:a9c1968a81973e13b1b2503bcf8a30a05bbfc953d5dcdb3de8998aa304a2fc25
+    firstDeployed: "2025-04-19T02:33:07Z"
+    lastDeployed: "2025-10-09T01:58:53Z"
+    name: flux-instance
+    namespace: flux-system
+    ociDigest: sha256:c525abaf0e883f3da4ea294d89ffa00c4d5f2c6f39e3939191f003991792fbde
+    status: deployed
+    version: 11
+  - appVersion: v0.28.0
+    chartName: flux-instance
+    chartVersion: 0.28.0+c525abaf0e88
+    configDigest: sha256:fb0ef53841f8319718087a320fdb20d7480f72801b8524ba403adfda2cfa5314
+    digest: sha256:71b96fa31f1f93796bd4eaa1a954b9b8aab331df4e4f054bbc03dc5c5b85589d
+    firstDeployed: "2025-04-19T02:33:07Z"
+    lastDeployed: "2025-08-20T03:05:56Z"
+    name: flux-instance
+    namespace: flux-system
+    ociDigest: sha256:c525abaf0e883f3da4ea294d89ffa00c4d5f2c6f39e3939191f003991792fbde
+    status: superseded
+    version: 10
+  lastAttemptedConfigDigest: sha256:44ce05b1adb635d64c28496b847b4d949e9b6c1bd05c6db219b2b0034df1cc24
+  lastAttemptedGeneration: 5
+  lastAttemptedReleaseAction: upgrade
+  lastAttemptedRevision: 0.28.0+c525abaf0e88
+  lastAttemptedRevisionDigest: sha256:c525abaf0e883f3da4ea294d89ffa00c4d5f2c6f39e3939191f003991792fbde
+  lastHandledReconcileAt: "2025-10-16T17:37:52.13282254-04:00"
+  observedGeneration: 5
+  storageNamespace: flux-system

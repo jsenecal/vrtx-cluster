@@ -3,10 +3,12 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: frappe
+components:
+  - ../../components/common
 resources:
   # Pre Flux-Kustomizations
   - ./namespace.yaml
-  # Applications
-  - ./mariadb/app
-  - ./erpnext/app
-  - ./redis/app
+  # Flux-Kustomizations
+  - ./mariadb/ks.yaml
+  - ./erpnext/ks.yaml
+  - ./redis/ks.yaml

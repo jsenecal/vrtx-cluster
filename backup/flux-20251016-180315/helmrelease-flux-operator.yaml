@@ -1,0 +1,82 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  annotations:
+    reconcile.fluxcd.io/requestedAt: "2025-06-08T00:17:25.228915982-04:00"
+  creationTimestamp: "2025-04-19T02:33:53Z"
+  finalizers:
+  - finalizers.fluxcd.io
+  generation: 1
+  labels:
+    app.kubernetes.io/name: flux-operator
+    kustomize.toolkit.fluxcd.io/name: flux-operator
+    kustomize.toolkit.fluxcd.io/namespace: flux-system
+  name: flux-operator
+  namespace: flux-system
+  resourceVersion: "160521654"
+  uid: 2eb32fbe-68c8-4f57-954a-47794096b5e2
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: flux-operator
+  install:
+    remediation:
+      retries: -1
+  interval: 1h
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+      strategy: rollback
+  valuesFrom:
+  - kind: ConfigMap
+    name: flux-operator-values-fb7h5gm7k8
+status:
+  conditions:
+  - lastTransitionTime: "2025-08-20T03:05:31Z"
+    message: Helm upgrade succeeded for release flux-system/flux-operator.v7 with
+      chart flux-operator@0.28.0+9ee42975ae78
+    observedGeneration: 1
+    reason: UpgradeSucceeded
+    status: "True"
+    type: Ready
+  - lastTransitionTime: "2025-08-20T03:05:31Z"
+    message: Helm upgrade succeeded for release flux-system/flux-operator.v7 with
+      chart flux-operator@0.28.0+9ee42975ae78
+    observedGeneration: 1
+    reason: UpgradeSucceeded
+    status: "True"
+    type: Released
+  history:
+  - appVersion: v0.28.0
+    chartName: flux-operator
+    chartVersion: 0.28.0+9ee42975ae78
+    configDigest: sha256:07d8a3c2a374d37b06062070cd983f52838cdd26af2330d91f794575d4f892fd
+    digest: sha256:6320c6d5ed63c434030290ab63b075c3f645d309e9b697d2a267ed57b75ad152
+    firstDeployed: "2025-04-19T02:32:48Z"
+    lastDeployed: "2025-08-20T03:05:16Z"
+    name: flux-operator
+    namespace: flux-system
+    ociDigest: sha256:9ee42975ae78d465c7006fd98431f3e2971326f16f79940f747d997aa1984b94
+    status: deployed
+    version: 7
+  - appVersion: v0.27.0
+    chartName: flux-operator
+    chartVersion: 0.27.0+b647abc01708
+    configDigest: sha256:07d8a3c2a374d37b06062070cd983f52838cdd26af2330d91f794575d4f892fd
+    digest: sha256:a409df3f218b221ef8e8d6f562edcbbfc303261d5b8e4e6abbb4999272eeb665
+    firstDeployed: "2025-04-19T02:32:48Z"
+    lastDeployed: "2025-08-09T03:53:12Z"
+    name: flux-operator
+    namespace: flux-system
+    ociDigest: sha256:b647abc0170872d59506d16b5f4418f3428bb2395d4fca53ec686c55b68fba04
+    status: superseded
+    version: 6
+  lastAttemptedConfigDigest: sha256:07d8a3c2a374d37b06062070cd983f52838cdd26af2330d91f794575d4f892fd
+  lastAttemptedGeneration: 1
+  lastAttemptedReleaseAction: upgrade
+  lastAttemptedRevision: 0.28.0+9ee42975ae78
+  lastAttemptedRevisionDigest: sha256:9ee42975ae78d465c7006fd98431f3e2971326f16f79940f747d997aa1984b94
+  lastHandledReconcileAt: "2025-06-08T00:17:25.228915982-04:00"
+  observedGeneration: 1
+  storageNamespace: flux-system

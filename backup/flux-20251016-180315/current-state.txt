@@ -1,0 +1,11 @@
+Current Flux System State:
+=========================
+
+Flux Operator Version:
+0.28.0
+
+Flux Instance Version:
+0.28.0
+
+Flux Distribution Version:
+2.6.4

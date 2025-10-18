@@ -8,7 +8,6 @@ spec:
   rootPasswordSecretKeyRef:
     name: mariadb-secret
     key: root-password
-    generate: false
 
   # Galera configuration
   galera:
@@ -117,7 +116,6 @@ spec:
   passwordSecretKeyRef:
     name: mariadb-secret
     key: erpnext-password
-    generate: false
   host: "%"
 ---
 apiVersion: k8s.mariadb.com/v1alpha1

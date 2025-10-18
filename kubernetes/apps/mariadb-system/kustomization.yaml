@@ -2,8 +2,11 @@
 # yaml-language-server: $schema=https://json.schemastore.org/kustomization
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+namespace: mariadb-system
+components:
+  - ../../components/common
 resources:
   # Pre Flux-Kustomizations
   - ./namespace.yaml
-  # Applications
-  - ./mariadb-operator/app
+  # Flux-Kustomizations
+  - ./mariadb-operator/ks.yaml
