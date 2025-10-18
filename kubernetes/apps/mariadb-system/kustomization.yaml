@@ -6,7 +6,5 @@ namespace: mariadb-system
 components:
   - ../../components/common
 resources:
-  # Pre Flux-Kustomizations
-  - ./namespace.yaml
   # Flux-Kustomizations
   - ./mariadb-operator/ks.yaml
