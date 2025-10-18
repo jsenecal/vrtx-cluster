@@ -617,3 +617,92 @@ kubectl -n <namespace> delete pod restic-list-snapshots
 2. **Failed backups after app changes**: Ensure the app's PVC name matches what volsync expects
 3. **Slow sync times**: Check if snapshot-based backups would be faster than direct copies
 4. **Missing backups**: Verify the schedule in ReplicationSource matches expectations
+
+### HTTPRoute Not Attached to Gateway
+
+If services return 503 errors and the HTTPRoute exists but isn't working:
+
+**Symptoms:**
+- Service returns 503 error through external gateway/Cloudflare
+- HTTPRoute exists and appears configured correctly
+- Service works internally with proper Host header
+
+**Diagnosis:**
+```bash
+# Check if HTTPRoute is attached to the Gateway
+kubectl get gateway -n kube-system <gateway-name> -o jsonpath='{.status.listeners[*].attachedRoutes}'
+
+# If it shows 0 for all listeners, the routes aren't attached
+```
+
+**Fix:**
+```bash
+# Restart the Cilium operator to force HTTPRoute reprocessing
+kubectl rollout restart deployment/cilium-operator -n kube-system
+
+# Wait for the operator to restart
+kubectl rollout status deployment/cilium-operator -n kube-system --timeout=60s
+
+# Verify routes are now attached
+kubectl get gateway -n kube-system <gateway-name> -o jsonpath='{.status.listeners[*].attachedRoutes}'
+```
+
+This issue occurs when the Cilium Gateway controller doesn't properly process new HTTPRoutes. Restarting the operator forces it to rescan all routes.
+
+### Redis Cache Issues with ERPNext/Frappe
+
+If ERPNext shows 500 errors with ModuleNotFoundError related to pickle/cache:
+
+**Symptoms:**
+- 500 Internal Server Error when accessing the site
+- Logs show: `ModuleNotFoundError: No module named 'frappe.types.frappedict'`
+- Error occurs when loading from Redis cache
+
+**Fix:**
+```bash
+# Clear the site cache
+kubectl exec -n frappe deployment/erpnext-gunicorn -- bench --site <site-name> clear-cache
+
+# Restart all ERPNext deployments
+kubectl rollout restart deployment -n frappe -l app.kubernetes.io/name=erpnext
+
+# Wait for rollout to complete
+kubectl wait --for=condition=available deployment -n frappe -l app.kubernetes.io/name=erpnext --timeout=120s
+```
+
+This occurs when Redis contains pickled Python objects from a different code version.
+
+### Cloudflare Tunnel Configuration
+
+The cluster uses Cloudflare tunnels for external access:
+
+1. **Tunnel Setup**: `cloudflare-tunnel-prod` in the `network` namespace forwards traffic to `cilium-gateway-external-prod`
+2. **DNS Configuration**: Domains using Cloudflare tunnels have CNAME records pointing to `<tunnel-id>.cfargotunnel.com`
+3. **Traffic Flow**: Cloudflare → cloudflared pods → Cilium Gateway → HTTPRoute → Service
+
+### Flux Kustomization Structure
+
+**Important**: Flux Kustomization resources should be in their respective app namespaces, not in flux-system:
+
+```yaml
+# Correct: kubernetes/apps/frappe/mariadb/ks.yaml
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: mariadb
+  namespace: frappe  # NOT flux-system
+```
+
+This keeps the Flux resources organized and prevents cluttering the flux-system namespace.
+
+### MariaDB Deployment Best Practices
+
+When deploying MariaDB with the mariadb-operator:
+
+1. **Start Simple**: Begin with a single instance before enabling Galera clustering
+2. **Storage**: Use single-replica storage class to avoid unnecessary data replication
+3. **Secrets**: Use SOPS for database credentials with properly generated passwords:
+   ```bash
+   openssl rand -base64 32  # For generating passwords
+   ```
+4. **Service Names**: Update all references when changing from galera to single instance
