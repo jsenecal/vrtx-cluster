@@ -3,24 +3,18 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: &app mariadb
+  name: &app mariadb-operator
   namespace: flux-system
 spec:
-  targetNamespace: frappe
+  targetNamespace: mariadb-system
   commonMetadata:
     labels:
       app.kubernetes.io/name: *app
   interval: 10m
-  path: ./kubernetes/apps/frappe/mariadb/app
+  path: ./kubernetes/apps/mariadb-system/mariadb-operator/app
   prune: true
   sourceRef:
     kind: GitRepository
     name: flux-system
   wait: true
-  dependsOn:
-    - name: mariadb-operator
-      namespace: flux-system
-  decryption:
-    provider: sops
-    secretRef:
-      name: sops-age
+  timeout: 5m
