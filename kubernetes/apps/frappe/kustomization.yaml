@@ -6,5 +6,6 @@ resources:
   # Pre Flux-Kustomizations
   - ./namespace.yaml
   # Flux-Kustomizations
+  - ./mariadb/ks.yaml
   - ./erpnext/ks.yaml
   - ./redis/ks.yaml
