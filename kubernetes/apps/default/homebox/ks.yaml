@@ -12,8 +12,8 @@ spec:
     labels:
       app.kubernetes.io/name: *app
   dependsOn:
-    - name: external-secrets-stores
     - name: volsync
+      namespace: volsync-system
   path: ./kubernetes/apps/default/homebox/app
   prune: true
   sourceRef:
