@@ -6,8 +6,6 @@ namespace: frappe
 components:
   - ../../components/common
 resources:
-  # Pre Flux-Kustomizations
-  - ./namespace.yaml
   # Flux-Kustomizations
   - ./mariadb/ks.yaml
   - ./erpnext/ks.yaml
