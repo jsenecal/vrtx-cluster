@@ -10,25 +10,8 @@ spec:
     key: root-password
 
   # Start with single instance for testing
-  # Galera will be enabled later
-  # galera:
-  #   enabled: true
-  #   primary:
-  #     automaticFailover: true
-  #     podIndex: 0
-  #   sst: mariabackup
-  #   recovery:
-  #     enabled: true
-  #     clusterHealthyTimeout: 5m
-  #   config:
-  #     reuseStorageVolume: false
-  #     volumeClaimTemplate:
-  #       storageClassName: ceph-block-single-replica
-  #       resources:
-  #         requests:
-  #           storage: 10Gi
-  #       accessModes:
-  #         - ReadWriteOnce
+  galera:
+    enabled: false
 
   # General replication configuration
   replicas: 1
