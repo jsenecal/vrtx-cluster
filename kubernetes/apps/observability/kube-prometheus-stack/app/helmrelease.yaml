@@ -94,9 +94,9 @@ spec:
         resources:
           requests:
             cpu: 200m
-            memory: 3Gi
-          limits:
             memory: 4Gi
+          limits:
+            memory: 8Gi
         evaluationInterval: 30s
         scrapeInterval: 30s
         queryTimeout: 2m
