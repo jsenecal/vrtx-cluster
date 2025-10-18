@@ -4,7 +4,7 @@ kind: Backup
 metadata:
   name: mariadb-galera-backup
 spec:
-  mariaDBRef:
+  mariaDbRef:
     name: mariadb-galera
   schedule:
     cron: "0 2 * * *"  # Daily at 2 AM
