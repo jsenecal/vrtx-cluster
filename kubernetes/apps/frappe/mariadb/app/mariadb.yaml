@@ -10,26 +10,6 @@ spec:
     key: root-password
     generate: false
 
-  # Database to be created on init
-  databases:
-    - name: erpnext_db
-      characterSet: utf8mb4
-      collate: utf8mb4_unicode_ci
-
-  # Users configuration
-  users:
-    - name: erpnext
-      passwordSecretKeyRef:
-        name: mariadb-secret
-        key: erpnext-password
-        generate: false
-      host: "%"
-      grantOption: true
-      grants:
-        - database: "erpnext_db"
-          privileges:
-            - ALL PRIVILEGES
-
   # Galera configuration
   galera:
     enabled: true
@@ -61,12 +41,10 @@ spec:
   storage:
     storageClassName: ceph-block-single-replica
     size: 10Gi
-    performDeletions: false
 
   # Service configuration
   service:
     type: ClusterIP
-    port: 3306
 
   # Resources
   resources:
@@ -83,8 +61,6 @@ spec:
   # Metrics
   metrics:
     enabled: true
-    serviceMonitor:
-      enabled: true
 
   # MariaDB configuration
   myCnf: |
@@ -118,3 +94,41 @@ spec:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
         - topologyKey: kubernetes.io/hostname
+---
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: Database
+metadata:
+  name: erpnext-db
+spec:
+  mariaDbRef:
+    name: mariadb-galera
+  name: erpnext_db
+  characterSet: utf8mb4
+  collate: utf8mb4_unicode_ci
+---
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: User
+metadata:
+  name: erpnext
+spec:
+  mariaDbRef:
+    name: mariadb-galera
+  name: erpnext
+  passwordSecretKeyRef:
+    name: mariadb-secret
+    key: erpnext-password
+    generate: false
+  host: "%"
+---
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: Grant
+metadata:
+  name: erpnext-grant
+spec:
+  mariaDbRef:
+    name: mariadb-galera
+  username: erpnext
+  database: erpnext_db
+  privileges:
+    - ALL PRIVILEGES
+  grantOption: true
