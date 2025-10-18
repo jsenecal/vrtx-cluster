@@ -9,28 +9,29 @@ spec:
     name: mariadb-secret
     key: root-password
 
-  # Galera configuration
-  galera:
-    enabled: true
-    primary:
-      automaticFailover: true
-      podIndex: 0
-    sst: mariabackup
-    recovery:
-      enabled: true
-      clusterHealthyTimeout: 5m
-    config:
-      reuseStorageVolume: false
-      volumeClaimTemplate:
-        storageClassName: ceph-block-single-replica
-        resources:
-          requests:
-            storage: 10Gi
-        accessModes:
-          - ReadWriteOnce
+  # Start with single instance for testing
+  # Galera will be enabled later
+  # galera:
+  #   enabled: true
+  #   primary:
+  #     automaticFailover: true
+  #     podIndex: 0
+  #   sst: mariabackup
+  #   recovery:
+  #     enabled: true
+  #     clusterHealthyTimeout: 5m
+  #   config:
+  #     reuseStorageVolume: false
+  #     volumeClaimTemplate:
+  #       storageClassName: ceph-block-single-replica
+  #       resources:
+  #         requests:
+  #           storage: 10Gi
+  #       accessModes:
+  #         - ReadWriteOnce
 
   # General replication configuration
-  replicas: 3
+  replicas: 1
 
   # Update strategy
   updateStrategy:
@@ -71,12 +72,6 @@ spec:
     innodb_buffer_pool_size=1G
     max_connections=500
     
-    # Galera specific
-    wsrep_on=ON
-    wsrep_provider=/usr/lib/galera/libgalera_smm.so
-    wsrep_cluster_name="mariadb-galera"
-    wsrep_sst_method=mariabackup
-    
     # ERPNext specific optimizations
     character-set-server=utf8mb4
     collation-server=utf8mb4_unicode_ci
@@ -91,8 +86,16 @@ spec:
   # Affinity to spread replicas across nodes
   affinity:
     podAntiAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        - topologyKey: kubernetes.io/hostname
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app.kubernetes.io/instance
+                  operator: In
+                  values:
+                    - mariadb-galera
+            topologyKey: kubernetes.io/hostname
 ---
 apiVersion: k8s.mariadb.com/v1alpha1
 kind: Database
