@@ -2,10 +2,15 @@
 # yaml-language-server: $schema=https://json.schemastore.org/kustomization
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+namespace: frappe
 resources:
   # Pre Flux-Kustomizations
   - ./namespace.yaml
-  # Flux-Kustomizations
-  - ./mariadb/ks.yaml
-  - ./erpnext/ks.yaml
-  - ./redis/ks.yaml
+  # Applications
+  - ./mariadb/app
+  - ./erpnext/app
+  - ./redis/app
+postBuild:
+  substituteFrom:
+    - name: cluster-secrets
+      kind: Secret
