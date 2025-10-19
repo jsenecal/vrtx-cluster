@@ -21,6 +21,11 @@ spec:
       - name: restic-info
         image: quay.io/backube/volsync:0.13.0
         imagePullPolicy: IfNotPresent
+        env:
+        - name: RESTIC_CACHE_DIR
+          value: /tmp/restic-cache
+        - name: HOME
+          value: /tmp
         command:
         - /bin/bash
         - -c
@@ -49,7 +54,8 @@ spec:
           
           # Show detailed stats for the last 5 snapshots
           echo "=== Size Details for Last 5 Snapshots ==="
-          SNAPSHOT_IDS=$(restic -r "$REPO" snapshots --no-lock --json | jq -r '.[-5:] | .[].id')
+          # Get the last 5 snapshot IDs using tail
+          SNAPSHOT_IDS=$(restic -r "$REPO" snapshots --no-lock | grep -E '^[0-9a-f]{8}' | tail -5 | awk '{print $1}')
           
           for snapshot_id in $SNAPSHOT_IDS; do
             echo ""
