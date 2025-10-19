@@ -92,6 +92,7 @@ spec:
     wsrep_on=ON
     wsrep_provider=/usr/lib/galera/libgalera_smm.so
     wsrep_cluster_name="frappe-galera-cluster"
+    wsrep_cluster_address=gcomm://
     wsrep_sst_method=mariabackup
     wsrep_slave_threads=4
     wsrep_log_conflicts=ON
