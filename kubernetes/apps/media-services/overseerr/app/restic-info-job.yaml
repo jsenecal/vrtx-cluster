@@ -1,0 +1,92 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/batch/job_v1.json
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: overseerr-restic-info
+  namespace: media-services
+spec:
+  ttlSecondsAfterFinished: 3600  # Clean up after 1 hour
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: overseerr-restic-info
+    spec:
+      restartPolicy: Never
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+      - name: restic-info
+        image: quay.io/backube/volsync:0.13.0
+        imagePullPolicy: IfNotPresent
+        command:
+        - /bin/bash
+        - -c
+        - |
+          set -e
+          echo "=== Restic Repository Information for Overseerr ==="
+          echo ""
+          
+          # Export password from secret
+          export RESTIC_PASSWORD=$(cat /secrets/RESTIC_PASSWORD)
+          
+          # Repository path
+          REPO="/repository/overseerr"
+          echo "Repository path: $REPO"
+          echo ""
+          
+          # Check repository stats
+          echo "=== Repository Statistics ==="
+          restic -r "$REPO" stats --no-lock
+          echo ""
+          
+          # List all snapshots with details
+          echo "=== All Snapshots ==="
+          restic -r "$REPO" snapshots --no-lock
+          echo ""
+          
+          # Show detailed stats for the last 5 snapshots
+          echo "=== Size Details for Last 5 Snapshots ==="
+          SNAPSHOT_IDS=$(restic -r "$REPO" snapshots --no-lock --json | jq -r '.[-5:] | .[].id')
+          
+          for snapshot_id in $SNAPSHOT_IDS; do
+            echo ""
+            echo "--- Snapshot: $snapshot_id ---"
+            restic -r "$REPO" stats --no-lock "$snapshot_id"
+          done
+          
+          echo ""
+          echo "=== Repository Cache Size ==="
+          if [ -d "$REPO/cache" ]; then
+            du -sh "$REPO/cache" 2>/dev/null || echo "Cache directory not accessible"
+          else
+            echo "No cache directory found"
+          fi
+          
+          echo ""
+          echo "=== Total Repository Size on Disk ==="
+          du -sh "$REPO"
+          
+        volumeMounts:
+        - name: repository
+          mountPath: /repository
+        - name: secret
+          mountPath: /secrets
+          readOnly: true
+        resources:
+          requests:
+            memory: 256Mi
+            cpu: 100m
+          limits:
+            memory: 1Gi
+            cpu: 1000m
+      volumes:
+      - name: repository
+        nfs:
+          server: 192.168.168.4
+          path: /mnt/zpool/VolSync
+      - name: secret
+        secret:
+          secretName: overseerr-volsync-secret
