@@ -88,19 +88,10 @@ spec:
     innodb_flush_log_at_trx_commit=2
     innodb_log_file_size=256M
     
-    # Galera specific settings
-    wsrep_on=ON
-    wsrep_provider=/usr/lib/galera/libgalera_smm.so
-    wsrep_cluster_name="frappe-galera-cluster"
-    wsrep_cluster_address=gcomm://
-    wsrep_sst_method=mariabackup
+    # Galera performance tuning (operator manages other wsrep settings)
     wsrep_slave_threads=4
     wsrep_log_conflicts=ON
-    
-    # Galera performance tuning
     wsrep_provider_options="gcache.size=1G; gcache.page_size=300M"
-    innodb_locks_unsafe_for_binlog=1
-    innodb_autoinc_lock_mode=2
 ---
 apiVersion: k8s.mariadb.com/v1alpha1
 kind: Database
