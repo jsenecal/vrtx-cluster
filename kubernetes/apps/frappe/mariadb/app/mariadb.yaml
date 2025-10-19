@@ -11,7 +11,7 @@ spec:
 
   # Storage configuration
   storage:
-    storageClassName: ceph-block-single-replica
+    storageClassName: openebs-hostpath
     size: 10Gi
 
   # Service configuration
