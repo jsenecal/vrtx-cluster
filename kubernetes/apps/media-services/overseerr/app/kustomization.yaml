@@ -7,3 +7,16 @@ resources:
   - ./pvc.yaml
   - ./externalsecret.yaml
 
+configMapGenerator:
+  - name: overseerr-loki-rules
+    files:
+      - overseerr.yaml=./lokirule.yaml
+    options:
+      labels:
+        loki_rule: "true"
+
+generatorOptions:
+  disableNameSuffixHash: true
+  annotations:
+    kustomize.toolkit.fluxcd.io/substitute: disabled
+

@@ -1,0 +1,111 @@
+---
+groups:
+  - name: overseerr
+    rules:
+      # Database health monitoring
+      - alert: OverseerrDatabaseIsLocked
+        expr: |
+          sum by (app) (count_over_time({app="overseerr"} |~ "(?i)(database is locked|SQLITE_BUSY)"[5m])) > 0
+        for: 5m
+        annotations:
+          summary: >-
+            {{ $labels.app }} is experiencing database lock issues
+        labels:
+          severity: critical
+
+      - alert: OverseerrDatabaseIsMalformed
+        expr: |
+          sum by (app) (count_over_time({app="overseerr"} |~ "(?i)(database disk image is malformed|SQLITE_CORRUPT)"[5m])) > 0
+        for: 5m
+        annotations:
+          summary: >-
+            {{ $labels.app }} database is corrupted
+        labels:
+          severity: critical
+
+      - alert: OverseerrDatabaseError
+        expr: |
+          sum by (app) (count_over_time({app="overseerr"} |~ "(?i)(sqlite.*error|database.*error)"[5m])) > 5
+        for: 5m
+        annotations:
+          summary: >-
+            {{ $labels.app }} is experiencing database errors
+        labels:
+          severity: warning
+
+      # Setup/Initialization detection
+      - alert: OverseerrInSetupMode
+        expr: |
+          sum by (app) (count_over_time({app="overseerr"} |~ "(?i)(setup|initialization|first.*time.*setup|welcome)"[5m])) > 2
+        for: 5m
+        annotations:
+          summary: >-
+            {{ $labels.app }} appears to be in setup mode - database may have been reset
+        labels:
+          severity: critical
+
+      # Migration issues
+      - alert: OverseerrMigrationFailed
+        expr: |
+          sum by (app) (count_over_time({app="overseerr"} |~ "(?i)(migration.*failed|error.*migrating|failed.*to.*migrate)"[5m])) > 0
+        for: 2m
+        annotations:
+          summary: >-
+            {{ $labels.app }} database migration has failed
+        labels:
+          severity: critical
+
+      # Connection and service health
+      - alert: OverseerrConnectionErrors
+        expr: |
+          sum by (app) (count_over_time({app="overseerr"} |~ "(?i)(ECONNREFUSED|ETIMEDOUT|ENOTFOUND|connection.*refused)"[5m])) > 10
+        for: 5m
+        annotations:
+          summary: >-
+            {{ $labels.app }} is experiencing connection errors to external services
+        labels:
+          severity: warning
+
+      # Plex integration issues
+      - alert: OverseerrPlexConnectionFailed
+        expr: |
+          sum by (app) (count_over_time({app="overseerr"} |~ "(?i)(plex.*failed|plex.*error|failed.*to.*connect.*plex)"[5m])) > 5
+        for: 5m
+        annotations:
+          summary: >-
+            {{ $labels.app }} cannot connect to Plex server
+        labels:
+          severity: warning
+
+      # Notification failures
+      - alert: OverseerrNotificationsFailing
+        expr: |
+          sum by (app) (count_over_time({app="overseerr"} |~ "(?i)error.*sending.*notification"[5m])) > 10
+        for: 10m
+        annotations:
+          summary: >-
+            {{ $labels.app }} notification system is failing
+        labels:
+          severity: warning
+
+      # Critical application errors
+      - alert: OverseerrCriticalError
+        expr: |
+          sum by (app) (count_over_time({app="overseerr"} |~ "(?i)(FATAL|CRITICAL|PANIC|unhandled.*exception)"[5m])) > 0
+        for: 2m
+        annotations:
+          summary: >-
+            {{ $labels.app }} has encountered a critical error
+        labels:
+          severity: critical
+
+      # Disk space issues
+      - alert: OverseerrDiskSpaceError
+        expr: |
+          sum by (app) (count_over_time({app="overseerr"} |~ "(?i)(ENOSPC|no.*space.*left|disk.*full)"[5m])) > 0
+        for: 2m
+        annotations:
+          summary: >-
+            {{ $labels.app }} is out of disk space
+        labels:
+          severity: critical
