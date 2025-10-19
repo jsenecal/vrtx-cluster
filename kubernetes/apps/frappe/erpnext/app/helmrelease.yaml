@@ -38,7 +38,7 @@ spec:
       enabled: false
     
     # External database configuration
-    dbHost: mariadb.frappe.svc.cluster.local
+    dbHost: mariadb-galera.frappe.svc.cluster.local
     dbPort: 3306
     dbRootUser: root
     # Reference to existing secret for DB password
