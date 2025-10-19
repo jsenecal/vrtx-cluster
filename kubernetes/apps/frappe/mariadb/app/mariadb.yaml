@@ -2,17 +2,41 @@
 apiVersion: k8s.mariadb.com/v1alpha1
 kind: MariaDB
 metadata:
-  name: mariadb
+  name: mariadb-galera
 spec:
   # Root password from secret
   rootPasswordSecretKeyRef:
     name: mariadb-secret
     key: root-password
 
+  # Galera configuration
+  galera:
+    enabled: true
+    primary:
+      podIndex: 0
+      automaticFailover: true
+    sst: mariabackup
+    replicaThreads: 1
+    config:
+      reuseStorageVolume: false
+      volumeClaimTemplate:
+        storageClassName: openebs-hostpath
+        resources:
+          requests:
+            storage: 10Gi
+        accessModes:
+          - ReadWriteOnce
+
+  # Number of replicas for Galera cluster
+  replicas: 3
+
   # Storage configuration
   storage:
     storageClassName: openebs-hostpath
     size: 10Gi
+    volumeClaimTemplate:
+      accessModes:
+        - ReadWriteOnce
 
   # Service configuration
   service:
@@ -21,10 +45,24 @@ spec:
   # Resources
   resources:
     requests:
-      cpu: 100m
-      memory: 256Mi
+      cpu: 500m
+      memory: 1Gi
     limits:
-      memory: 2Gi
+      memory: 4Gi
+
+  # Pod disruption budget
+  podDisruptionBudget:
+    maxUnavailable: 1
+
+  # Anti-affinity to spread nodes
+  affinity:
+    antiAffinityEnabled: true
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchLabels:
+              app.kubernetes.io/instance: mariadb-galera
+          topologyKey: kubernetes.io/hostname
 
   # Metrics
   metrics:
@@ -36,7 +74,7 @@ spec:
     bind-address=*
     default_storage_engine=InnoDB
     binlog_format=ROW
-    innodb_buffer_pool_size=1G
+    innodb_buffer_pool_size=2G
     max_connections=500
     
     # ERPNext specific optimizations
@@ -49,6 +87,19 @@ spec:
     innodb_file_per_table=1
     innodb_flush_log_at_trx_commit=2
     innodb_log_file_size=256M
+    
+    # Galera specific settings
+    wsrep_on=ON
+    wsrep_provider=/usr/lib/galera/libgalera_smm.so
+    wsrep_cluster_name="frappe-galera-cluster"
+    wsrep_sst_method=mariabackup
+    wsrep_slave_threads=4
+    wsrep_log_conflicts=ON
+    
+    # Galera performance tuning
+    wsrep_provider_options="gcache.size=1G; gcache.page_size=300M"
+    innodb_locks_unsafe_for_binlog=1
+    innodb_autoinc_lock_mode=2
 ---
 apiVersion: k8s.mariadb.com/v1alpha1
 kind: Database
@@ -56,7 +107,7 @@ metadata:
   name: erpnext-db
 spec:
   mariaDbRef:
-    name: mariadb
+    name: mariadb-galera
   name: erpnext_db
   characterSet: utf8mb4
   collate: utf8mb4_unicode_ci
@@ -67,7 +118,7 @@ metadata:
   name: erpnext
 spec:
   mariaDbRef:
-    name: mariadb
+    name: mariadb-galera
   name: erpnext
   passwordSecretKeyRef:
     name: mariadb-secret
@@ -80,7 +131,7 @@ metadata:
   name: erpnext-grant
 spec:
   mariaDbRef:
-    name: mariadb
+    name: mariadb-galera
   username: erpnext
   database: erpnext_db
   privileges:
