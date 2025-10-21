@@ -195,7 +195,7 @@ spec:
                     For RBD devices, check which pod is using it:
                     kubectl get pv -o custom-columns=PV:.metadata.name,DEVICE:.spec.csi.volumeAttributes.imageName,CLAIM:.spec.claimRef.name,NAMESPACE:.spec.claimRef.namespace | grep -E "rbd|{{$labels.device}}"
                 expr: (rate(node_disk_io_time_seconds_total[5m]) * 100) > 80
-                for: 5m
+                for: 15m
                 labels:
                   severity: warning
               - alert: PrometheusHighCompactionTime
