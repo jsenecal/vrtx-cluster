@@ -215,7 +215,7 @@ spec:
               - alert: CephOSDUnbalancedLoad
                 annotations:
                   summary: Ceph OSD load is unbalanced (max is {{$value | printf "%.1f"}}x higher than min)
-                expr: (max(sum by (ceph_daemon) (rate(ceph_osd_op_r[5m]))) / ignoring(ceph_daemon) group_left min(sum by (ceph_daemon) (rate(ceph_osd_op_r[5m]))) > 0.1) > 5
-                for: 10m
+                expr: (max(sum by (ceph_daemon) (rate(ceph_osd_op_r[5m]))) / ignoring(ceph_daemon) group_left min(sum by (ceph_daemon) (rate(ceph_osd_op_r[5m]))) > 0.1) > 10
+                for: 20m
                 labels:
                   severity: warning
