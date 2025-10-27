@@ -5,4 +5,4 @@ kind: Kustomization
 resources:
   - ./helmrelease.yaml
   - ./httproute.yaml
-  - ./single-replica-pool.yaml
+  # - ./single-replica-pool.yaml  # Removed - unused pool causing health warnings
