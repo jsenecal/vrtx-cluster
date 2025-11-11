@@ -15,7 +15,7 @@ spec:
       restartPolicy: Never
       containers:
       - name: create-site
-        image: frappe/erpnext:v15.85.1
+        image: frappe/erpnext:v15.87.2
         command: ["/bin/bash", "-c"]
         args:
           - |
