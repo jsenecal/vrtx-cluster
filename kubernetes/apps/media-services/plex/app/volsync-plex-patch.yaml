@@ -1,0 +1,12 @@
+---
+# Patch for plex ReplicationSource to handle 1TB volume properly
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationSource
+metadata:
+  name: plex
+  namespace: media-services
+spec:
+  restic:
+    pruneIntervalDays: 30  # Reduce prune frequency
+    moverPodSpec:
+      activeDeadlineSeconds: 14400  # 4 hour timeout
