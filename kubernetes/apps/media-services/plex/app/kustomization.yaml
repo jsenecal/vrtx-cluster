@@ -5,6 +5,11 @@ kind: Kustomization
 resources:
   - ./pvc.yaml
   - ./helmrelease.yaml
+patches:
+  - path: ./volsync-plex-patch.yaml
+    target:
+      kind: ReplicationSource
+      name: plex
 configMapGenerator:
   - name: plex-loki-rules
     files:
