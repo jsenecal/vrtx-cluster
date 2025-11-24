@@ -23,7 +23,7 @@ spec:
       GATUS_PATH: /web/index.html
       VOLSYNC_CACHE_CAPACITY: 50Gi
       VOLSYNC_CAPACITY: 1Ti
-      VOLSYNC_SCHEDULE: "0 */3 * * *"
+      VOLSYNC_SCHEDULE: "0 */6 * * *"
     substituteFrom:
       - name: cluster-secrets
         kind: Secret
