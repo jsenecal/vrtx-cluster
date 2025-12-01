@@ -136,7 +136,7 @@ spec:
           - name: internal
             namespace: kube-system
             sectionName: https
-          - name: external
+          - name: external-prod
             namespace: kube-system
             sectionName: https
         rules:
