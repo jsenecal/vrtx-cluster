@@ -127,12 +127,36 @@ spec:
                 subPath: nonexistent
 
     route:
-      app:
+      internal:
         hostnames:
           - "{{ .Release.Name }}.k8s.${SECRET_DOMAIN}"
           - "haus.k8s.${SECRET_DOMAIN}"
         parentRefs:
           - name: internal
+            namespace: kube-system
+            sectionName: https
+        rules:
+          - matches:
+              - path:
+                  type: PathPrefix
+                  value: /code/
+            filters:
+              - type: URLRewrite
+                urlRewrite:
+                  path:
+                    type: ReplacePrefixMatch
+                    replacePrefixMatch: /
+            backendRefs:
+              - name: home-assistant
+                port: 12321
+          - backendRefs:
+              - name: home-assistant
+                port: 8123
+      app:
+        hostnames:
+          - "haus.${SECRET_DOMAIN}"
+        parentRefs:
+          - name: external-lab
             namespace: kube-system
             sectionName: https
         rules:
