@@ -131,12 +131,8 @@ spec:
         hostnames:
           - "{{ .Release.Name }}.k8s.${SECRET_DOMAIN}"
           - "haus.k8s.${SECRET_DOMAIN}"
-          - "haus.${SECRET_DOMAIN}"
         parentRefs:
           - name: internal
-            namespace: kube-system
-            sectionName: https
-          - name: external-lab
             namespace: kube-system
             sectionName: https
         rules:
