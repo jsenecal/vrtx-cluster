@@ -111,6 +111,16 @@ spec:
           esphome:
             app:
               - path: /cache
+      tmpfs:
+        type: emptyDir
+        advancedMounts:
+          esphome:
+            app:
+              - path: /tmp
+                subPath: esphome-tmp
+            code-server:
+              - path: /tmp
+                subPath: code-server-tmp
       deploy-key:
         type: secret
         name: esphome-deploykey
