@@ -28,7 +28,6 @@ spec:
       namespace: volsync-system
   components:
     - ../../../../components/volsync
-    - ../../../../components/gatus/iot
     - ../../../../components/gatus/public
   postBuild:
     substitute:
