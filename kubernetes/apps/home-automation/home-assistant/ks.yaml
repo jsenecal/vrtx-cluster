@@ -29,6 +29,7 @@ spec:
   components:
     - ../../../../components/volsync
     - ../../../../components/gatus/iot
+    - ../../../../components/gatus/public
   postBuild:
     substitute:
       APP: *appname
@@ -36,6 +37,7 @@ spec:
       APP_GID: "65533"
       VOLSYNC_CAPACITY: 8Gi
       GATUS_PATH: /auth/authorize
+      GATUS_SUBDOMAIN: haus
     substituteFrom:
       - kind: Secret
         name: cluster-secrets
