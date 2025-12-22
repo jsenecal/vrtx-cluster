@@ -80,10 +80,14 @@ spec:
         nodes:
           - name: vrtx-bravo
             devices:
-              - name: "/dev/sdd"  # Existing OSD.0
+              # Dual paths to same disk for redundancy
+              - name: "/dev/disk/by-path/pci-0000:09:00.0-scsi-0:2:1:0"  # OSD.0
+              - name: "/dev/disk/by-path/pci-0000:14:00.0-scsi-0:2:1:0"  # OSD.0 (same disk)
           - name: vrtx-charlie
             devices:
-              - name: "/dev/sdd"  # Existing OSD.2
+              # Dual paths to same disk for redundancy
+              - name: "/dev/disk/by-path/pci-0000:09:00.0-scsi-0:2:2:0"  # OSD.2
+              - name: "/dev/disk/by-path/pci-0000:14:00.0-scsi-0:2:2:0"  # OSD.2 (same disk)
           # vrtx-alpha excluded until ready with new storage
       resources:
         osd:
