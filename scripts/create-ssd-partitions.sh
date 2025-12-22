@@ -15,8 +15,11 @@ PARTITION_SIZE="124G"
 NODE_NAME="vrtx-alpha"
 
 # Expected SSD devices (will be verified)
-SSD1="/dev/sde"
-SSD2="/dev/sdf"
+# Using primary paths for the multipathed SSDs
+# pci-0000:09:00.0-scsi-0:2:4:0 -> sdh (WWID naa.6c81f660f27c950030dace89951c10b6)
+# pci-0000:09:00.0-scsi-0:2:5:0 -> sdc (WWID naa.6c81f660f27c950030dacf219e327e65)
+SSD1="/dev/sdh"  # VD 4, WWID naa.6c81f660f27c950030dace89951c10b6
+SSD2="/dev/sdc"  # VD 5, WWID naa.6c81f660f27c950030dacf219e327e65
 
 echo "SSD Partition Creation for Ceph WAL/DB"
 echo "======================================"
@@ -121,12 +124,12 @@ lsblk $SSD1 $SSD2
 echo ""
 echo "Partition mapping for Ceph OSDs:"
 echo "--------------------------------"
-echo "HDD1 (VD 0:0:6)  -> WAL/DB: ${SSD1}1"
-echo "HDD2 (VD 0:0:7)  -> WAL/DB: ${SSD1}2"
-echo "HDD3 (VD 0:0:8)  -> WAL/DB: ${SSD1}3"
-echo "HDD4 (VD 0:0:9)  -> WAL/DB: ${SSD2}1"
-echo "HDD5 (VD 0:0:10) -> WAL/DB: ${SSD2}2"
-echo "HDD6 (VD 0:0:11) -> WAL/DB: ${SSD2}3"
+echo "HDD1 (VD 0:0:7, sdd/sdf)  -> WAL/DB: ${SSD1}1"
+echo "HDD2 (VD 0:0:8, sdi/sdo)  -> WAL/DB: ${SSD1}2"
+echo "HDD3 (VD 0:0:13, sdj/sdp) -> WAL/DB: ${SSD1}3"
+echo "HDD4 (VD 0:0:14, sdk/sdq) -> WAL/DB: ${SSD2}1"
+echo "HDD5 (VD 0:0:15, sdl/sdr) -> WAL/DB: ${SSD2}2"
+echo "HDD6 (VD 0:0:3, sdg/sdm)  -> WAL/DB: ${SSD2}3"
 
 echo ""
 echo "Next steps:"
