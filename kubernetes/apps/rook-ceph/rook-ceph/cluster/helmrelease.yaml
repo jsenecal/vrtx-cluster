@@ -88,7 +88,27 @@ spec:
               # Dual paths to same disk for redundancy
               - name: "/dev/disk/by-path/pci-0000:09:00.0-scsi-0:2:2:0"  # OSD.2
               - name: "/dev/disk/by-path/pci-0000:14:00.0-scsi-0:2:2:0"  # OSD.2 (same disk)
-          # vrtx-alpha excluded until ready with new storage
+          - name: vrtx-alpha
+            devices:
+              # All available VDs on vrtx-alpha (dual paths each)
+              # SSDs - VD 3, 4, 5 (399GB)
+              - name: "/dev/disk/by-path/pci-0000:09:00.0-scsi-0:2:3:0"
+              - name: "/dev/disk/by-path/pci-0000:14:00.0-scsi-0:2:3:0"
+              - name: "/dev/disk/by-path/pci-0000:09:00.0-scsi-0:2:4:0"
+              - name: "/dev/disk/by-path/pci-0000:14:00.0-scsi-0:2:4:0"
+              - name: "/dev/disk/by-path/pci-0000:09:00.0-scsi-0:2:5:0"
+              - name: "/dev/disk/by-path/pci-0000:14:00.0-scsi-0:2:5:0"
+              # HDDs - VD 7, 8, 13, 14, 15 (1.2TB)
+              - name: "/dev/disk/by-path/pci-0000:09:00.0-scsi-0:2:7:0"
+              - name: "/dev/disk/by-path/pci-0000:14:00.0-scsi-0:2:7:0"
+              - name: "/dev/disk/by-path/pci-0000:09:00.0-scsi-0:2:8:0"
+              - name: "/dev/disk/by-path/pci-0000:14:00.0-scsi-0:2:8:0"
+              - name: "/dev/disk/by-path/pci-0000:09:00.0-scsi-0:2:13:0"
+              - name: "/dev/disk/by-path/pci-0000:14:00.0-scsi-0:2:13:0"
+              - name: "/dev/disk/by-path/pci-0000:09:00.0-scsi-0:2:14:0"
+              - name: "/dev/disk/by-path/pci-0000:14:00.0-scsi-0:2:14:0"
+              - name: "/dev/disk/by-path/pci-0000:09:00.0-scsi-0:2:15:0"
+              - name: "/dev/disk/by-path/pci-0000:14:00.0-scsi-0:2:15:0"
       resources:
         osd:
           limits:

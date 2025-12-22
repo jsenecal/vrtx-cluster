@@ -1,0 +1,84 @@
+# SSD Partition Scheme for vrtx-alpha
+# 2 SSDs x 3 partitions = 6 WAL/DB devices for 6 HDDs
+# Each SSD: 372GB usable space / 3 partitions = 124GB per partition
+
+# Partition Layout:
+# SSD1 (VD 0:0:4):
+#   Partition 1: 124GB - WAL/DB for HDD1 (VD 0:0:6)
+#   Partition 2: 124GB - WAL/DB for HDD2 (VD 0:0:7)
+#   Partition 3: 124GB - WAL/DB for HDD3 (VD 0:0:8)
+#
+# SSD2 (VD 0:0:5):
+#   Partition 1: 124GB - WAL/DB for HDD4 (VD 0:0:9)
+#   Partition 2: 124GB - WAL/DB for HDD5 (VD 0:0:10)
+#   Partition 3: 124GB - WAL/DB for HDD6 (VD 0:0:11)
+
+# Device mapping for vrtx-alpha:
+devices:
+  ssds:
+    - vd_id: "0:0:4"
+      device: "/dev/sde"  # First SSD
+      partitions:
+        - number: 1
+          size: 124G
+          for_osd: "0:0:6"
+        - number: 2
+          size: 124G
+          for_osd: "0:0:7"
+        - number: 3
+          size: 124G
+          for_osd: "0:0:8"
+    - vd_id: "0:0:5"
+      device: "/dev/sdf"  # Second SSD
+      partitions:
+        - number: 1
+          size: 124G
+          for_osd: "0:0:9"
+        - number: 2
+          size: 124G
+          for_osd: "0:0:10"
+        - number: 3
+          size: 124G
+          for_osd: "0:0:11"
+  
+  hdds:
+    - vd_id: "0:0:6"
+      device: "/dev/sdg"
+      wal_db_device: "/dev/sde1"
+    - vd_id: "0:0:7"
+      device: "/dev/sdh"
+      wal_db_device: "/dev/sde2"
+    - vd_id: "0:0:8"
+      device: "/dev/sdi"
+      wal_db_device: "/dev/sde3"
+    - vd_id: "0:0:9"
+      device: "/dev/sdj"
+      wal_db_device: "/dev/sdf1"
+    - vd_id: "0:0:10"
+      device: "/dev/sdk"
+      wal_db_device: "/dev/sdf2"
+    - vd_id: "0:0:11"
+      device: "/dev/sdl"
+      wal_db_device: "/dev/sdf3"
+
+# Commands to create partitions (run on vrtx-alpha after VDs are assigned):
+partition_commands: |
+  # Wipe any existing partition tables
+  for dev in /dev/sde /dev/sdf; do
+    sgdisk --zap-all $dev
+  done
+  
+  # Create partitions on first SSD (/dev/sde)
+  sgdisk -n 1:0:+124G -c 1:"ceph-db-0:0:6" /dev/sde
+  sgdisk -n 2:0:+124G -c 2:"ceph-db-0:0:7" /dev/sde
+  sgdisk -n 3:0:+124G -c 3:"ceph-db-0:0:8" /dev/sde
+  
+  # Create partitions on second SSD (/dev/sdf)
+  sgdisk -n 1:0:+124G -c 1:"ceph-db-0:0:9" /dev/sdf
+  sgdisk -n 2:0:+124G -c 2:"ceph-db-0:0:10" /dev/sdf
+  sgdisk -n 3:0:+124G -c 3:"ceph-db-0:0:11" /dev/sdf
+  
+  # Verify partitions
+  lsblk /dev/sde /dev/sdf
+  sgdisk -p /dev/sde
+  sgdisk -p /dev/sdf

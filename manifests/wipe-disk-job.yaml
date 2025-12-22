@@ -1,0 +1,37 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: wipe-osd-bravo
+  namespace: rook-ceph
+spec:
+  template:
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: vrtx-bravo
+      containers:
+      - name: disk-wipe
+        image: busybox:1.36
+        command: 
+        - sh
+        - -c
+        - |
+          echo "Wiping OSD disk /dev/sdc..."
+          dd if=/dev/zero of=/dev/sdc bs=1M count=100 status=progress
+          echo "Wiping end of disk..."
+          # Get disk size
+          SIZE=$(blockdev --getsize64 /dev/sdc)
+          SEEK=$((SIZE - 104857600))  # 100MB from end
+          dd if=/dev/zero of=/dev/sdc bs=1 count=104857600 seek=$SEEK status=progress
+          echo "Disk wiped successfully"
+        volumeMounts:
+        - name: dev
+          mountPath: /dev
+        securityContext:
+          privileged: true
+      volumes:
+      - name: dev
+        hostPath:
+          path: /dev
+      restartPolicy: Never
+      hostNetwork: true
+      hostPID: true
