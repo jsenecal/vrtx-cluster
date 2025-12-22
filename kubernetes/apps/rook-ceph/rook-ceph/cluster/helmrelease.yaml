@@ -82,8 +82,8 @@ spec:
           limits:
             memory: 16Gi
           requests:
-            cpu: "8"
-            memory: 16Gi
+            cpu: "2"
+            memory: 4Gi
     cephBlockPools:
       - name: ceph-blockpool
         spec:
