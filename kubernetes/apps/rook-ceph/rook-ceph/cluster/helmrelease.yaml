@@ -72,77 +72,11 @@ spec:
         connections:
           requireMsgr2: true
       storage:
-        useAllNodes: false  # Can't use true since we need to exclude alpha
+        useAllNodes: true
         useAllDevices: false
         devicePathFilter: "^/dev/disk/by-path/pci-0000:(09|14):.*"
         config:
           osdsPerDevice: "1"
-        nodes:
-          - name: vrtx-bravo
-            devices:
-              # Dual paths to same disk for redundancy
-              - name: "/dev/disk/by-path/pci-0000:09:00.0-scsi-0:2:1:0"  # OSD.0
-              - name: "/dev/disk/by-path/pci-0000:14:00.0-scsi-0:2:1:0"  # OSD.0 (same disk)
-          - name: vrtx-charlie
-            devices:
-              # Dual paths to same disk for redundancy
-              - name: "/dev/disk/by-path/pci-0000:09:00.0-scsi-0:2:2:0"  # OSD.2
-              - name: "/dev/disk/by-path/pci-0000:14:00.0-scsi-0:2:2:0"  # OSD.2 (same disk)
-          - name: vrtx-alpha
-            config:
-              # Use storeType to enable BlueStore with dedicated WAL/DB
-              storeType: bluestore
-            devices:
-              # HDD OSDs with dedicated WAL/DB on SSD partitions
-              # Each OSD gets a 124GB partition for WAL/DB
-              
-              # OSD on HDD1 (VD 3, sdg/sdm) with WAL/DB on SSD1 partition 1
-              - name: "/dev/disk/by-path/pci-0000:09:00.0-scsi-0:2:3:0"  # HDD VD 0:0:3
-                config:
-                  metadataDevice: "/dev/disk/by-path/pci-0000:09:00.0-scsi-0:2:5:0-part1"  # SSD1 partition 1
-              - name: "/dev/disk/by-path/pci-0000:14:00.0-scsi-0:2:3:0"  # HDD VD 0:0:3 (alt path)
-                config:
-                  metadataDevice: "/dev/disk/by-path/pci-0000:14:00.0-scsi-0:2:5:0-part1"  # SSD1 partition 1 (alt path)
-              
-              # OSD on HDD2 (VD 4, sdh/sdn) with WAL/DB on SSD1 partition 2
-              - name: "/dev/disk/by-path/pci-0000:09:00.0-scsi-0:2:4:0"  # HDD VD 0:0:4
-                config:
-                  metadataDevice: "/dev/disk/by-path/pci-0000:09:00.0-scsi-0:2:5:0-part2"  # SSD1 partition 2
-              - name: "/dev/disk/by-path/pci-0000:14:00.0-scsi-0:2:4:0"  # HDD VD 0:0:4 (alt path)
-                config:
-                  metadataDevice: "/dev/disk/by-path/pci-0000:14:00.0-scsi-0:2:5:0-part2"  # SSD1 partition 2 (alt path)
-              
-              # OSD on HDD3 (VD 8, sdi/sdo) with WAL/DB on SSD1 partition 3
-              - name: "/dev/disk/by-path/pci-0000:09:00.0-scsi-0:2:8:0"  # HDD VD 0:0:8
-                config:
-                  metadataDevice: "/dev/disk/by-path/pci-0000:09:00.0-scsi-0:2:5:0-part3"  # SSD1 partition 3
-              - name: "/dev/disk/by-path/pci-0000:14:00.0-scsi-0:2:8:0"  # HDD VD 0:0:8 (alt path)
-                config:
-                  metadataDevice: "/dev/disk/by-path/pci-0000:14:00.0-scsi-0:2:5:0-part3"  # SSD1 partition 3 (alt path)
-              
-              # OSD on HDD4 (VD 13, sdj/sdp) with WAL/DB on SSD2 partition 1
-              - name: "/dev/disk/by-path/pci-0000:09:00.0-scsi-0:2:13:0"  # HDD VD 0:0:13
-                config:
-                  metadataDevice: "/dev/disk/by-path/pci-0000:09:00.0-scsi-0:2:7:0-part1"  # SSD2 partition 1
-              - name: "/dev/disk/by-path/pci-0000:14:00.0-scsi-0:2:13:0"  # HDD VD 0:0:13 (alt path)
-                config:
-                  metadataDevice: "/dev/disk/by-path/pci-0000:14:00.0-scsi-0:2:7:0-part1"  # SSD2 partition 1 (alt path)
-              
-              # OSD on HDD5 (VD 14, sdk/sdq) with WAL/DB on SSD2 partition 2
-              - name: "/dev/disk/by-path/pci-0000:09:00.0-scsi-0:2:14:0"  # HDD VD 0:0:14
-                config:
-                  metadataDevice: "/dev/disk/by-path/pci-0000:09:00.0-scsi-0:2:7:0-part2"  # SSD2 partition 2
-              - name: "/dev/disk/by-path/pci-0000:14:00.0-scsi-0:2:14:0"  # HDD VD 0:0:14 (alt path)
-                config:
-                  metadataDevice: "/dev/disk/by-path/pci-0000:14:00.0-scsi-0:2:7:0-part2"  # SSD2 partition 2 (alt path)
-              
-              # OSD on HDD6 (VD 15, sdl/sdr) with WAL/DB on SSD2 partition 3
-              - name: "/dev/disk/by-path/pci-0000:09:00.0-scsi-0:2:15:0"  # HDD VD 0:0:15
-                config:
-                  metadataDevice: "/dev/disk/by-path/pci-0000:09:00.0-scsi-0:2:7:0-part3"  # SSD2 partition 3
-              - name: "/dev/disk/by-path/pci-0000:14:00.0-scsi-0:2:15:0"  # HDD VD 0:0:15 (alt path)
-                config:
-                  metadataDevice: "/dev/disk/by-path/pci-0000:14:00.0-scsi-0:2:7:0-part3"  # SSD2 partition 3 (alt path)
       resources:
         osd:
           limits:

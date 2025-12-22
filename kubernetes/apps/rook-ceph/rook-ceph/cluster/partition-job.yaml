@@ -1,0 +1,116 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: create-ssd-partitions
+  namespace: rook-ceph
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      hostNetwork: true
+      hostPID: true
+      nodeSelector:
+        kubernetes.io/hostname: vrtx-alpha
+      containers:
+      - name: partition-creator
+        image: ubuntu:22.04
+        securityContext:
+          privileged: true
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          
+          # Install required tools
+          apt-get update && apt-get install -y gdisk parted
+          
+          # Configuration
+          PARTITION_SIZE="124G"
+          SSD1="/dev/sdc"  # WWID naa.6c81f660f27c950030dace89951c10b6
+          SSD2="/dev/sdd"  # WWID naa.6c81f660f27c950030dacf219e327e65
+          
+          echo "SSD Partition Creation for Ceph WAL/DB"
+          echo "======================================"
+          echo ""
+          echo "Partition size: $PARTITION_SIZE per partition"
+          echo "SSDs: $SSD1, $SSD2"
+          echo ""
+          
+          # Verify both SSDs exist
+          echo "Verifying SSD devices..."
+          if [ ! -b "$SSD1" ] || [ ! -b "$SSD2" ]; then
+              echo "Error: Missing SSD devices"
+              exit 1
+          fi
+          
+          # Show current device information
+          echo "Current device information:"
+          echo "---------------------------"
+          for dev in $SSD1 $SSD2; do
+              echo "Device: $dev"
+              lsblk "$dev" 2>/dev/null || echo "  No partition table"
+              echo ""
+          done
+          
+          # Wipe existing partition tables
+          echo "Wiping existing partition tables..."
+          for dev in $SSD1 $SSD2; do
+              echo -n "Wiping $dev... "
+              sgdisk --zap-all "$dev"
+              echo "Done"
+          done
+          
+          # Create partitions on first SSD
+          echo ""
+          echo "Creating partitions on $SSD1..."
+          sgdisk -n 1:0:+$PARTITION_SIZE -c 1:"ceph-db-hdd1" -t 1:8300 "$SSD1"
+          sgdisk -n 2:0:+$PARTITION_SIZE -c 2:"ceph-db-hdd2" -t 2:8300 "$SSD1"
+          sgdisk -n 3:0:+$PARTITION_SIZE -c 3:"ceph-db-hdd3" -t 3:8300 "$SSD1"
+          
+          # Create partitions on second SSD
+          echo ""
+          echo "Creating partitions on $SSD2..."
+          sgdisk -n 1:0:+$PARTITION_SIZE -c 1:"ceph-db-hdd4" -t 1:8300 "$SSD2"
+          sgdisk -n 2:0:+$PARTITION_SIZE -c 2:"ceph-db-hdd5" -t 2:8300 "$SSD2"
+          sgdisk -n 3:0:+$PARTITION_SIZE -c 3:"ceph-db-hdd6" -t 3:8300 "$SSD2"
+          
+          # Reload partition tables
+          echo ""
+          echo "Reloading partition tables..."
+          partprobe $SSD1 $SSD2
+          
+          # Wait for devices to settle
+          sleep 2
+          
+          # Verify partitions were created
+          echo ""
+          echo "Verifying partition creation..."
+          echo ""
+          echo "SSD1 ($SSD1) partitions:"
+          sgdisk -p "$SSD1" | grep -E "^   [0-9]"
+          echo ""
+          echo "SSD2 ($SSD2) partitions:"
+          sgdisk -p "$SSD2" | grep -E "^   [0-9]"
+          
+          # Show final layout
+          echo ""
+          echo "Partition creation completed!"
+          echo ""
+          echo "Final partition layout:"
+          echo "----------------------"
+          lsblk $SSD1 $SSD2
+          
+          # Generate partition mapping
+          echo ""
+          echo "Partition mapping for Ceph OSDs:"
+          echo "--------------------------------"
+          echo "HDD1 (VD 0:0:3, sdg/sdm)  -> WAL/DB: ${SSD1}1"
+          echo "HDD2 (VD 0:0:4, sdh/sdn)  -> WAL/DB: ${SSD1}2"
+          echo "HDD3 (VD 0:0:8, sdi/sdo)  -> WAL/DB: ${SSD1}3"
+          echo "HDD4 (VD 0:0:13, sdj/sdp) -> WAL/DB: ${SSD2}1"
+          echo "HDD5 (VD 0:0:14, sdk/sdq) -> WAL/DB: ${SSD2}2"
+          echo "HDD6 (VD 0:0:15, sdl/sdr) -> WAL/DB: ${SSD2}3"
+          
+          echo ""
+          echo "SUCCESS: Partitions created successfully!"
