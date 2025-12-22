@@ -23,7 +23,7 @@ nodes:
   - hostname: "vrtx-alpha"
     ipAddress: "192.168.168.201"
     installDiskSelector:
-      wwid: "naa.6d0946600c455c002f9bc187053833b4"
+      wwid: "naa.6848f690ee3fcb002f95b3a418dad9b1"
     machineSpec:
       secureboot: false
     talosImageURL: factory.talos.dev/installer/caf5b14c38258456400d7f4988569406daa804103ac374c21a8938067cec9370

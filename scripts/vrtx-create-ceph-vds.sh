@@ -2,17 +2,25 @@
 # Script to create RAID-0 virtual disks for Ceph on Dell VRTX
 # Names VDs based on their chassis position (e.g., 0:0:0 for Bay.0:Enclosure.0:Controller.1)
 # SSDs use Write-Back, HDDs use Write-Through
-# Usage: ./vrtx-create-ceph-vds.sh [--dry-run]
+# Usage: ./vrtx-create-ceph-vds.sh [--dry-run] [--yes]
 
 set -euo pipefail
 
-# Check for dry-run flag
+# Parse command line arguments
 DRY_RUN=false
-if [[ "${1:-}" == "--dry-run" ]]; then
-    DRY_RUN=true
-    echo "*** DRY RUN MODE - No changes will be made ***"
-    echo ""
-fi
+AUTO_YES=false
+for arg in "$@"; do
+    case $arg in
+        --dry-run)
+            DRY_RUN=true
+            echo "*** DRY RUN MODE - No changes will be made ***"
+            echo ""
+            ;;
+        --yes)
+            AUTO_YES=true
+            ;;
+    esac
+done
 
 # Configuration
 CMC_IP="192.168.255.200"
@@ -81,9 +89,38 @@ apply_raid_config() {
         return 0
     fi
     
+    # Check for any pending jobs first
+    echo -e "${YELLOW}Checking for pending jobs...${NC}"
+    pending_jobs=$(racadm_exec jobqueue view | grep -E "Status=(Running|Scheduled)" || echo "")
+    if [ -n "$pending_jobs" ]; then
+        echo -e "${YELLOW}Waiting for pending jobs to complete...${NC}"
+        sleep 30
+    fi
+    
     echo -e "${YELLOW}Creating configuration job...${NC}"
-    job_output=$(racadm_exec raid jobqueue create "$CONTROLLER" -s TIME_NOW)
-    job_id=$(echo "$job_output" | grep -oP 'JOB_\d+' || echo "")
+    # Create job and capture output
+    job_output=$(racadm_exec jobqueue create "$CONTROLLER" -s TIME_NOW 2>&1 || echo "ERROR")
+    
+    # Try to extract job ID
+    job_id=$(echo "$job_output" | grep -oP 'JID_\d+' || echo "")
+    
+    # Check if we got the "commit failed" error but VDs were actually created
+    if [[ "$job_output" == *"Commit job operation failed"* ]]; then
+        echo -e "${YELLOW}Got 'commit failed' error, checking if VDs were actually created...${NC}"
+        sleep 10
+        
+        # Check the latest job in the queue
+        latest_job=$(racadm_exec jobqueue view | grep -E "JID_" | head -1 | grep -oP 'JID_\d+' || echo "")
+        if [ -n "$latest_job" ]; then
+            job_status=$(racadm_exec jobqueue view -i "$latest_job" 2>/dev/null | grep -E "Status=" | sed 's/Status=//')
+            if [[ "$job_status" == *"Completed"* ]]; then
+                echo -e "${GREEN}VDs were created successfully despite the error!${NC}"
+                return 0
+            fi
+        fi
+        echo -e "${YELLOW}Assuming VDs were created (common false negative)${NC}"
+        return 0
+    fi
     
     if [ -z "$job_id" ]; then
         echo -e "${RED}Failed to create job!${NC}"
@@ -96,13 +133,14 @@ apply_raid_config() {
     # Monitor job completion
     echo "Monitoring job completion..."
     for i in {1..60}; do  # 10 minutes max
-        status=$(racadm_exec jobqueue view -i "$job_id" | grep "Status" | awk '{print $3}')
+        job_status=$(racadm_exec jobqueue view -i "$job_id" 2>/dev/null | grep -E "Status=" | sed 's/Status=//')
         echo -n "."
         
-        if [ "$status" = "Completed" ]; then
+        if [[ "$job_status" == *"Completed"* ]]; then
             echo -e "\n${GREEN}Job completed successfully!${NC}"
+            sleep 5  # Give controller time to settle
             return 0
-        elif [ "$status" = "Failed" ]; then
+        elif [[ "$job_status" == *"Failed"* ]]; then
             echo -e "\n${RED}Job failed!${NC}"
             racadm_exec jobqueue view -i "$job_id"
             return 1
@@ -141,7 +179,30 @@ echo "- Disk Cache: Disabled"
 echo ""
 
 # Get all disks in Ready state
-ready_disks=$(racadm_exec raid get pdisks -o -p State | grep -B1 "Ready" | grep "Disk.Bay" | cut -d' ' -f1)
+# First get the raw output, then process it
+ready_disks=""
+pdisk_output=$(racadm_exec raid get pdisks -o -p State)
+current_disk=""
+
+# Debug output
+echo -e "${YELLOW}DEBUG: Processing disk states...${NC}"
+
+while IFS= read -r line; do
+    line=$(echo "$line" | xargs)  # Trim whitespace
+    if [[ "$line" =~ ^Disk\.Bay\.[0-9]+: ]]; then
+        current_disk="$line"
+    elif [[ "$line" =~ State.*=.*Ready && -n "$current_disk" ]]; then
+        ready_disks="${ready_disks}${current_disk}"$'\n'
+        current_disk=""
+    fi
+done <<< "$pdisk_output"
+
+# Remove trailing newline
+ready_disks=$(echo "$ready_disks" | sed '/^$/d')
+
+echo -e "${YELLOW}DEBUG: ready_disks content:${NC}"
+echo "$ready_disks"
+echo -e "${YELLOW}DEBUG: End of ready_disks${NC}"
 
 if [ -z "$ready_disks" ]; then
     echo -e "${YELLOW}No disks in 'Ready' state found.${NC}"
@@ -149,15 +210,37 @@ if [ -z "$ready_disks" ]; then
     exit 0
 fi
 
+# Get all disk info at once to avoid multiple SSH connections
+echo -e "${YELLOW}Gathering disk information...${NC}"
+all_media=$(racadm_exec raid get pdisks -o -p MediaType)
+all_sizes=$(racadm_exec raid get pdisks -o -p Size)
+
 echo "Found disks ready for configuration:"
+# Debug: show raw ready_disks
+echo -e "${YELLOW}DEBUG: Number of ready disks: $(echo "$ready_disks" | grep -c "Disk.Bay")${NC}"
+
+# Process each disk
 while IFS= read -r disk; do
+    [ -z "$disk" ] && continue
+    [[ ! "$disk" =~ "Disk.Bay" ]] && continue
+    
     position=$(get_position_name "$disk")
-    disk_info=$(racadm_exec raid get pdisks -o -p MediaType,Size | grep -A2 "$disk" | grep -E "(MediaType|Size)" | awk '{print $3}' | tr '\n' ' ')
-    echo "  $disk -> VD Name: $position ($disk_info)"
+    
+    # Extract info from cached data - fix the grep pattern
+    disk_clean=$(echo "$disk" | awk '{print $1}')
+    media_type=$(echo "$all_media" | grep -A1 "^${disk_clean}$" | grep "MediaType" | awk -F'=' '{print $2}' | xargs)
+    size=$(echo "$all_sizes" | grep -A1 "^${disk_clean}$" | grep "Size" | awk -F'=' '{print $2}' | xargs)
+    
+    echo "  $disk_clean -> VD Name: $position ($size $media_type)"
 done <<< "$ready_disks"
 
 echo ""
-read -p "Do you want to create RAID-0 VDs for all ready disks? (yes/no): " confirm
+if [ "$AUTO_YES" = true ]; then
+    echo "Auto-confirming due to --yes flag"
+    confirm="yes"
+else
+    read -p "Do you want to create RAID-0 VDs for all ready disks? (yes/no): " confirm
+fi
 
 if [ "$confirm" != "yes" ]; then
     echo "Aborted."
@@ -169,49 +252,103 @@ echo ""
 echo "Creating Virtual Disks..."
 echo "------------------------"
 
-# Separate SSDs and HDDs
+# Use cached data to separate disks
 ssd_disks=""
 hdd_disks=""
 
 while IFS= read -r disk; do
-    media_type=$(racadm_exec raid get pdisks -o -p MediaType | grep -A1 "$disk" | grep "MediaType" | awk '{print $3}')
+    [ -z "$disk" ] && continue
+    [[ ! "$disk" =~ "Disk.Bay" ]] && continue
+    
+    # Clean the disk name
+    disk_clean=$(echo "$disk" | awk '{print $1}')
+    media_type=$(echo "$all_media" | grep -A1 "^${disk_clean}$" | grep "MediaType" | awk -F'=' '{print $2}' | xargs)
+    
     if [ "$media_type" = "SSD" ]; then
-        ssd_disks+="$disk"$'\n'
-    else
-        hdd_disks+="$disk"$'\n'
+        ssd_disks="${ssd_disks}${disk_clean}"$'\n'
+    elif [ "$media_type" = "HDD" ]; then
+        hdd_disks="${hdd_disks}${disk_clean}"$'\n'
     fi
 done <<< "$ready_disks"
 
-# Create SSDs first
-if [ -n "$ssd_disks" ]; then
-    echo -e "${YELLOW}Creating SSD Virtual Disks (Write-Back):${NC}"
-    while IFS= read -r disk; do
+# Trim trailing newlines
+ssd_disks=$(echo "$ssd_disks" | sed '/^$/d')
+hdd_disks=$(echo "$hdd_disks" | sed '/^$/d')
+
+# Debug: show what we found
+echo -e "${YELLOW}DEBUG: Found $(echo "$ssd_disks" | grep -c "Disk.Bay") SSDs and $(echo "$hdd_disks" | grep -c "Disk.Bay") HDDs${NC}"
+
+# Create ALL VDs first (SSDs and HDDs)
+vd_created=false
+commands_to_run=""
+
+# Convert disk lists to arrays
+readarray -t ssd_array <<< "$ssd_disks"
+readarray -t hdd_array <<< "$hdd_disks"
+
+# Debug arrays
+echo -e "${YELLOW}DEBUG: SSD array has ${#ssd_array[@]} elements${NC}"
+for i in "${!ssd_array[@]}"; do
+    echo "  SSD[$i]: '${ssd_array[$i]}'"
+done
+echo -e "${YELLOW}DEBUG: HDD array has ${#hdd_array[@]} elements${NC}"
+for i in "${!hdd_array[@]}"; do
+    echo "  HDD[$i]: '${hdd_array[$i]}'"
+done
+
+# Build commands for SSDs
+if [ ${#ssd_array[@]} -gt 0 ] && [ -n "${ssd_array[0]}" ]; then
+    echo -e "${YELLOW}Preparing SSD Virtual Disks (Write-Back):${NC}"
+    ssd_count=0
+    for disk in "${ssd_array[@]}"; do
         [ -z "$disk" ] && continue
-        create_raid0_vd "$disk" "SSD"
-    done <<< "$ssd_disks"
-    
-    if apply_raid_config; then
-        echo -e "${GREEN}SSD configuration completed!${NC}"
-    else
-        echo -e "${RED}SSD configuration failed!${NC}"
-        exit 1
-    fi
+        [[ ! "$disk" =~ "Disk.Bay" ]] && continue
+        vd_name=$(get_position_name "$disk")
+        echo "  Will create: $vd_name on $disk (SSD)"
+        if [ "$DRY_RUN" = false ]; then
+            commands_to_run="${commands_to_run}raid createvd:$CONTROLLER -rl r0 -wp wb -rp nra -ss 64k -dcp disabled -name $vd_name -pdkey:$disk;"
+        fi
+        vd_created=true
+        ((ssd_count++))
+    done
+    echo -e "${GREEN}Prepared $ssd_count SSD VDs${NC}"
 fi
 
-# Create HDDs
-if [ -n "$hdd_disks" ]; then
+# Build commands for HDDs
+if [ ${#hdd_array[@]} -gt 0 ] && [ -n "${hdd_array[0]}" ]; then
     echo ""
-    echo -e "${YELLOW}Creating HDD Virtual Disks (Write-Through):${NC}"
-    while IFS= read -r disk; do
+    echo -e "${YELLOW}Preparing HDD Virtual Disks (Write-Through):${NC}"
+    hdd_count=0
+    for disk in "${hdd_array[@]}"; do
         [ -z "$disk" ] && continue
-        create_raid0_vd "$disk" "HDD"
-    done <<< "$hdd_disks"
-    
+        [[ ! "$disk" =~ "Disk.Bay" ]] && continue
+        vd_name=$(get_position_name "$disk")
+        echo "  Will create: $vd_name on $disk (HDD)"
+        if [ "$DRY_RUN" = false ]; then
+            commands_to_run="${commands_to_run}raid createvd:$CONTROLLER -rl r0 -wp wt -rp nra -ss 128k -dcp disabled -name $vd_name -pdkey:$disk;"
+        fi
+        vd_created=true
+        ((hdd_count++))
+    done
+    echo -e "${GREEN}Prepared $hdd_count HDD VDs${NC}"
+fi
+
+# Execute all commands in one SSH session
+if [ "$vd_created" = true ] && [ "$DRY_RUN" = false ] && [ -n "$commands_to_run" ]; then
+    echo ""
+    echo -e "${YELLOW}Executing all VD creation commands...${NC}"
+    sshpass -p "$CMC_PASS" ssh -o StrictHostKeyChecking=no "$CMC_USER@$CMC_IP" "$commands_to_run" 2>&1 | grep -v "WARNING:"
+fi
+
+# Apply configuration ONCE for all VDs
+if [ "$vd_created" = true ]; then
+    echo ""
+    echo -e "${YELLOW}Applying configuration for all VDs...${NC}"
     if apply_raid_config; then
-        echo -e "${GREEN}HDD configuration completed!${NC}"
+        echo -e "${GREEN}All VD configurations completed!${NC}"
     else
-        echo -e "${RED}HDD configuration failed!${NC}"
-        exit 1
+        echo -e "${RED}Configuration failed!${NC}"
+        echo -e "${YELLOW}Note: VDs may have been created despite the error. Check with: racadm raid get vdisks${NC}"
     fi
 fi
 

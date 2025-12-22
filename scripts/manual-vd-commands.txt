@@ -1,0 +1,29 @@
+# Manual commands to create the remaining VDs
+# Run these commands via SSH to the CMC
+
+# 1. Create SSD VD 0:0:5
+racadm raid createvd:RAID.ChassisIntegrated.1-1 -rl r0 -wp wb -rp nra -ss 64k -dcp disabled -name 0:0:5 -pdkey:Disk.Bay.5:Enclosure.Internal.0-0:RAID.ChassisIntegrated.1-1 -pending
+
+# 2. Create HDD VD 0:0:7
+racadm raid createvd:RAID.ChassisIntegrated.1-1 -rl r0 -wp wt -rp nra -ss 128k -dcp disabled -name 0:0:7 -pdkey:Disk.Bay.7:Enclosure.Internal.0-0:RAID.ChassisIntegrated.1-1 -pending
+
+# 3. Create HDD VD 0:0:8
+racadm raid createvd:RAID.ChassisIntegrated.1-1 -rl r0 -wp wt -rp nra -ss 128k -dcp disabled -name 0:0:8 -pdkey:Disk.Bay.8:Enclosure.Internal.0-0:RAID.ChassisIntegrated.1-1 -pending
+
+# 4. Create HDD VD 0:0:9
+racadm raid createvd:RAID.ChassisIntegrated.1-1 -rl r0 -wp wt -rp nra -ss 128k -dcp disabled -name 0:0:9 -pdkey:Disk.Bay.9:Enclosure.Internal.0-0:RAID.ChassisIntegrated.1-1 -pending
+
+# 5. Apply the configuration
+racadm jobqueue create RAID.ChassisIntegrated.1-1 -s TIME_NOW
+
+# 6. Check job status
+racadm jobqueue view
+
+# 7. Verify VDs were created
+racadm raid get vdisks -o -p Name,Size,MediaType
+
+# After VDs are created, you need to assign them to blades:
+# For vrtx-alpha (slot 1):
+racadm raid assignvd:RAID.ChassisIntegrated.1-1 -vd Disk.Virtual.<ID>:RAID.ChassisIntegrated.1-1 -b 1
+
+# Replace <ID> with the actual virtual disk ID numbers

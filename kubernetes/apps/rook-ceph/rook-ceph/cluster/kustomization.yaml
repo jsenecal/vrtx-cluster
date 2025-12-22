@@ -6,3 +6,4 @@ resources:
   - ./helmrelease.yaml
   - ./httproute.yaml
   # - ./single-replica-pool.yaml  # Removed - unused pool causing health warnings
+  # - ./disable-auto-osd.yaml  # Temporary patch - now integrated in helmrelease.yaml

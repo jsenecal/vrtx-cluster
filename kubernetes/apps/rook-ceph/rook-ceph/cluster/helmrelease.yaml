@@ -72,8 +72,9 @@ spec:
         connections:
           requireMsgr2: true
       storage:
-        useAllNodes: false  # Temporarily disabled for disk reconfiguration
+        useAllNodes: false  # Can't use true since we need to exclude alpha
         useAllDevices: false
+        devicePathFilter: "^/dev/disk/by-path/pci-0000:(09|14):.*"
         config:
           osdsPerDevice: "1"
         nodes:
@@ -83,7 +84,7 @@ spec:
           - name: vrtx-charlie
             devices:
               - name: "/dev/sdd"  # Existing OSD.2
-          # vrtx-alpha excluded temporarily while reconfiguring disks
+          # vrtx-alpha excluded until ready with new storage
       resources:
         osd:
           limits:
