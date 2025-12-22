@@ -72,11 +72,18 @@ spec:
         connections:
           requireMsgr2: true
       storage:
-        useAllNodes: true
+        useAllNodes: false  # Temporarily disabled for disk reconfiguration
         useAllDevices: false
-        devicePathFilter: ^/dev/disk/by-path/pci-0000:09:.*
         config:
           osdsPerDevice: "1"
+        nodes:
+          - name: vrtx-bravo
+            devices:
+              - name: "/dev/sdd"  # Existing OSD.0
+          - name: vrtx-charlie
+            devices:
+              - name: "/dev/sdd"  # Existing OSD.2
+          # vrtx-alpha excluded temporarily while reconfiguring disks
       resources:
         osd:
           limits:
