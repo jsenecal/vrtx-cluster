@@ -4,7 +4,7 @@
 # SSDs use Write-Back, HDDs use Write-Through
 # Usage: ./vrtx-create-ceph-vds.sh [--dry-run] [--yes]
 
-set -euo pipefail
+set -uo pipefail
 
 # Parse command line arguments
 DRY_RUN=false
@@ -280,7 +280,6 @@ echo -e "${YELLOW}DEBUG: Found $(echo "$ssd_disks" | grep -c "Disk.Bay") SSDs an
 
 # Create ALL VDs first (SSDs and HDDs)
 vd_created=false
-commands_to_run=""
 
 # Convert disk lists to arrays
 readarray -t ssd_array <<< "$ssd_disks"
@@ -300,16 +299,22 @@ done
 if [ ${#ssd_array[@]} -gt 0 ] && [ -n "${ssd_array[0]}" ]; then
     echo -e "${YELLOW}Preparing SSD Virtual Disks (Write-Back):${NC}"
     ssd_count=0
+    declare -A seen_vd_names
     for disk in "${ssd_array[@]}"; do
         [ -z "$disk" ] && continue
         [[ ! "$disk" =~ "Disk.Bay" ]] && continue
         vd_name=$(get_position_name "$disk")
-        echo "  Will create: $vd_name on $disk (SSD)"
-        if [ "$DRY_RUN" = false ]; then
-            commands_to_run="${commands_to_run}raid createvd:$CONTROLLER -rl r0 -wp wb -rp nra -ss 64k -dcp disabled -name $vd_name -pdkey:$disk;"
+        
+        # Skip if we've already seen this VD name
+        if [[ -n "${seen_vd_names[$vd_name]:-}" ]]; then
+            echo "  Skipping: $disk (would create duplicate VD name: $vd_name)"
+            continue
         fi
+        seen_vd_names[$vd_name]=1
+        
+        echo "  Will create: $vd_name on $disk (SSD)"
         vd_created=true
-        ((ssd_count++))
+        ssd_count=$((ssd_count + 1))
     done
     echo -e "${GREEN}Prepared $ssd_count SSD VDs${NC}"
 fi
@@ -319,25 +324,74 @@ if [ ${#hdd_array[@]} -gt 0 ] && [ -n "${hdd_array[0]}" ]; then
     echo ""
     echo -e "${YELLOW}Preparing HDD Virtual Disks (Write-Through):${NC}"
     hdd_count=0
+    declare -A seen_vd_names
     for disk in "${hdd_array[@]}"; do
         [ -z "$disk" ] && continue
         [[ ! "$disk" =~ "Disk.Bay" ]] && continue
         vd_name=$(get_position_name "$disk")
-        echo "  Will create: $vd_name on $disk (HDD)"
-        if [ "$DRY_RUN" = false ]; then
-            commands_to_run="${commands_to_run}raid createvd:$CONTROLLER -rl r0 -wp wt -rp nra -ss 128k -dcp disabled -name $vd_name -pdkey:$disk;"
+        
+        # Skip if we've already seen this VD name
+        if [[ -n "${seen_vd_names[$vd_name]:-}" ]]; then
+            echo "  Skipping: $disk (would create duplicate VD name: $vd_name)"
+            continue
         fi
+        seen_vd_names[$vd_name]=1
+        
+        echo "  Will create: $vd_name on $disk (HDD)"
         vd_created=true
-        ((hdd_count++))
+        hdd_count=$((hdd_count + 1))
     done
     echo -e "${GREEN}Prepared $hdd_count HDD VDs${NC}"
 fi
 
-# Execute all commands in one SSH session
-if [ "$vd_created" = true ] && [ "$DRY_RUN" = false ] && [ -n "$commands_to_run" ]; then
+# Execute all commands individually
+if [ "$vd_created" = true ] && [ "$DRY_RUN" = false ]; then
     echo ""
-    echo -e "${YELLOW}Executing all VD creation commands...${NC}"
-    sshpass -p "$CMC_PASS" ssh -o StrictHostKeyChecking=no "$CMC_USER@$CMC_IP" "$commands_to_run" 2>&1 | grep -v "WARNING:"
+    echo -e "${YELLOW}Executing VD creation commands...${NC}"
+    
+    # Process SSDs
+    if [ ${#ssd_array[@]} -gt 0 ] && [ -n "${ssd_array[0]}" ]; then
+        for disk in "${ssd_array[@]}"; do
+            [ -z "$disk" ] && continue
+            [[ ! "$disk" =~ "Disk.Bay" ]] && continue
+            vd_name=$(get_position_name "$disk")
+            
+            # Skip if duplicate
+            if [[ -n "${seen_vd_names[$vd_name]:-}" ]]; then
+                continue
+            fi
+            
+            echo -n "Creating $vd_name... "
+            if racadm_exec raid createvd:"$CONTROLLER" -rl r0 -wp wb -rp nra -ss 64k -dcp disabled -name "$vd_name" -pdkey:"$disk"; then
+                echo "Success"
+            else
+                echo "Failed (may already exist)"
+            fi
+        done
+    fi
+    
+    # Process HDDs
+    if [ ${#hdd_array[@]} -gt 0 ] && [ -n "${hdd_array[0]}" ]; then
+        declare -A seen_vd_names_exec
+        for disk in "${hdd_array[@]}"; do
+            [ -z "$disk" ] && continue
+            [[ ! "$disk" =~ "Disk.Bay" ]] && continue
+            vd_name=$(get_position_name "$disk")
+            
+            # Skip if duplicate
+            if [[ -n "${seen_vd_names_exec[$vd_name]:-}" ]]; then
+                continue
+            fi
+            seen_vd_names_exec[$vd_name]=1
+            
+            echo -n "Creating $vd_name... "
+            if racadm_exec raid createvd:"$CONTROLLER" -rl r0 -wp wt -rp nra -ss 128k -dcp disabled -name "$vd_name" -pdkey:"$disk"; then
+                echo "Success"
+            else
+                echo "Failed (may already exist)"
+            fi
+        done
+    fi
 fi
 
 # Apply configuration ONCE for all VDs
