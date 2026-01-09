@@ -160,19 +160,6 @@ spec:
             namespace: kube-system
             sectionName: https
         rules:
-          - matches:
-              - path:
-                  type: PathPrefix
-                  value: /code/
-            filters:
-              - type: URLRewrite
-                urlRewrite:
-                  path:
-                    type: ReplacePrefixMatch
-                    replacePrefixMatch: /
-            backendRefs:
-              - name: home-assistant
-                port: 12321
           - backendRefs:
               - name: home-assistant
                 port: 8123
