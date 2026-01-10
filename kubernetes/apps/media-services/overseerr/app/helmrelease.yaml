@@ -32,6 +32,10 @@ spec:
               TZ: America/Toronto
               LOG_LEVEL: "info"
               PORT: &port 80
+              # Enable caching
+              CACHE_DIRECTORY: /app/config/cache
+              # Optimize database performance
+              DATABASE_URL: "sqlite:///app/config/db/db.sqlite3?mode=wal"
             envFrom:
               - secretRef:
                   name: overseerr-secret
@@ -54,9 +58,11 @@ spec:
               capabilities: { drop: ["ALL"] }
             resources:
               requests:
-                cpu: 10m
+                cpu: 100m
+                memory: 512Mi
               limits:
-                memory: 8Gi
+                cpu: 2000m
+                memory: 2Gi
     defaultPodOptions:
       securityContext:
         runAsNonRoot: true
