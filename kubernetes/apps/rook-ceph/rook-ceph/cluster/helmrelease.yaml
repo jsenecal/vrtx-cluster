@@ -72,9 +72,34 @@ spec:
         connections:
           requireMsgr2: true
       storage:
-        useAllNodes: true
+        useAllNodes: false
         useAllDevices: false
-        devicePathFilter: "^/dev/disk/by-path/pci-0000:(09|14):.*"
+        # Using stable WWN-based identifiers with NVMe WAL/DB acceleration
+        nodes:
+          - name: vrtx-alpha
+            devices:
+              - name: /dev/disk/by-id/wwn-0x6c81f660f27c950030de851d3dc8fa02
+                config:
+                  metadataDevice: /dev/disk/by-id/nvme-INTEL_SSDPED1D480GAH_PHMB8332004S480JGN
+              - name: /dev/disk/by-id/wwn-0x6c81f660f27c950030de857d4389015f
+                config:
+                  metadataDevice: /dev/disk/by-id/nvme-INTEL_SSDPED1D480GAH_PHMB8332004S480JGN
+          - name: vrtx-bravo
+            devices:
+              - name: /dev/disk/by-id/wwn-0x6c81f660f27c950030de554a640cb77d
+                config:
+                  metadataDevice: /dev/disk/by-id/nvme-INTEL_SSDPED1D480GAH_PHMB833200KJ480JGN
+              - name: /dev/disk/by-id/wwn-0x6c81f660f27c950030de74e44648bdeb
+                config:
+                  metadataDevice: /dev/disk/by-id/nvme-INTEL_SSDPED1D480GAH_PHMB833200KJ480JGN
+          - name: vrtx-charlie
+            devices:
+              - name: /dev/disk/by-id/wwn-0x6c81f660f27c950030de385aaa882919
+                config:
+                  metadataDevice: /dev/disk/by-id/nvme-INTEL_SSDPED1D480GAH_PHMB830200CB480JGN
+              - name: /dev/disk/by-id/wwn-0x6c81f660f27c950030de38bcb053e01c
+                config:
+                  metadataDevice: /dev/disk/by-id/nvme-INTEL_SSDPED1D480GAH_PHMB830200CB480JGN
         config:
           osdsPerDevice: "1"
       resources:
