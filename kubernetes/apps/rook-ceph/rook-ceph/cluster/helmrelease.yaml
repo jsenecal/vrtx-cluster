@@ -74,30 +74,30 @@ spec:
       storage:
         useAllNodes: false
         useAllDevices: false
-        # Using stable WWN-based identifiers with NVMe WAL/DB acceleration
+        # Using by-path identifiers (avoids multipath duplication) with NVMe WAL/DB acceleration
         nodes:
           - name: vrtx-alpha
             devices:
-              - name: /dev/disk/by-id/wwn-0x6c81f660f27c950030de851d3dc8fa02
+              - name: /dev/disk/by-path/pci-0000:09:00.0-scsi-0:2:4:0
                 config:
                   metadataDevice: /dev/disk/by-id/nvme-INTEL_SSDPED1D480GAH_PHMB8332004S480JGN
-              - name: /dev/disk/by-id/wwn-0x6c81f660f27c950030de857d4389015f
+              - name: /dev/disk/by-path/pci-0000:09:00.0-scsi-0:2:5:0
                 config:
                   metadataDevice: /dev/disk/by-id/nvme-INTEL_SSDPED1D480GAH_PHMB8332004S480JGN
           - name: vrtx-bravo
             devices:
-              - name: /dev/disk/by-id/wwn-0x6c81f660f27c950030de554a640cb77d
+              - name: /dev/disk/by-path/pci-0000:09:00.0-scsi-0:2:2:0
                 config:
                   metadataDevice: /dev/disk/by-id/nvme-INTEL_SSDPED1D480GAH_PHMB833200KJ480JGN
-              - name: /dev/disk/by-id/wwn-0x6c81f660f27c950030de74e44648bdeb
+              - name: /dev/disk/by-path/pci-0000:09:00.0-scsi-0:2:3:0
                 config:
                   metadataDevice: /dev/disk/by-id/nvme-INTEL_SSDPED1D480GAH_PHMB833200KJ480JGN
           - name: vrtx-charlie
             devices:
-              - name: /dev/disk/by-id/wwn-0x6c81f660f27c950030de385aaa882919
+              - name: /dev/disk/by-path/pci-0000:09:00.0-scsi-0:2:0:0
                 config:
                   metadataDevice: /dev/disk/by-id/nvme-INTEL_SSDPED1D480GAH_PHMB830200CB480JGN
-              - name: /dev/disk/by-id/wwn-0x6c81f660f27c950030de38bcb053e01c
+              - name: /dev/disk/by-path/pci-0000:09:00.0-scsi-0:2:1:0
                 config:
                   metadataDevice: /dev/disk/by-id/nvme-INTEL_SSDPED1D480GAH_PHMB830200CB480JGN
         config:
