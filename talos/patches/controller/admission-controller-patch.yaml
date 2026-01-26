@@ -1,2 +1,4 @@
-- op: remove
-  path: /cluster/apiServer/admissionControl
+# Disable default admission controllers (strategic merge patch format)
+cluster:
+  apiServer:
+    admissionControl: []

@@ -1,5 +1,5 @@
 machine:
- features:
+  features:
     kubernetesTalosAPIAccess:
       enabled: true
       allowedRoles:
@@ -7,7 +7,6 @@ machine:
       allowedKubernetesNamespaces:
         - "actions-runner-system"
         - "system-upgrade"
-    stableHostname: true
     rbac: true
     apidCheckExtKeyUsage: true
     diskQuotaSupport: true

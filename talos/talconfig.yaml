@@ -70,28 +70,6 @@ nodes:
           # Using deviceSelectors for bond members (supports wildcards)
           deviceSelectors:
             - busPath: "0000:01:00.*"
-    # Talos manifests
-    extraManifests:
-      - "./manifests/global/lldp-config.yaml"
-      - "./manifests/global/ethernet-config.yaml"
-
-    # schematic:
-    #   customization:
-    #     systemExtensions:
-    #       officialExtensions:
-    #         - siderolabs/intel-ucode
-    #         - siderolabs/nonfree-kmod-nvidia-production
-    #         - siderolabs/nvidia-container-toolkit-production
-    #         - siderolabs/iscsi-tools
-    #         - siderolabs/lldpd
-    #         - siderolabs/bnx2-bnx2x
-    # patches:
-    #   - "@./patches/global/machine-files.yaml"
-    #   # - "@./patches/global/machine-kernel-nvidia.yaml"
-    #   - "@./patches/global/machine-kubelet.yaml"
-    #   - "@./patches/global/machine-network.yaml"
-    #   - "@./patches/global/machine-sysctls.yaml"
-    #   - "@./patches/global/machine-time.yaml"
 
   - hostname: "vrtx-bravo"
     ipAddress: "192.168.168.202"
@@ -143,28 +121,6 @@ nodes:
           # Using deviceSelectors for bond members (supports wildcards)
           deviceSelectors:
             - busPath: "0000:01:00.*"
-    # Talos manifests
-    extraManifests:
-      - "./manifests/global/lldp-config.yaml"
-      - "./manifests/global/ethernet-config.yaml"
-
-    # schematic:
-    #   customization:
-    #     systemExtensions:
-    #       officialExtensions:
-    #         - siderolabs/intel-ucode
-    #         - siderolabs/nonfree-kmod-nvidia-production
-    #         - siderolabs/nvidia-container-toolkit-production
-    #         - siderolabs/iscsi-tools
-    #         - siderolabs/lldpd
-    #         - siderolabs/bnx2-bnx2x
-    # patches:
-    #   - "@./patches/global/machine-files.yaml"
-    #   # - "@./patches/global/machine-kernel-nvidia.yaml"
-    #   - "@./patches/global/machine-kubelet.yaml"
-    #   - "@./patches/global/machine-network.yaml"
-    #   - "@./patches/global/machine-sysctls.yaml"
-    #   - "@./patches/global/machine-time.yaml"
 
   - hostname: "vrtx-charlie"
     ipAddress: "192.168.168.203"
@@ -217,14 +173,10 @@ nodes:
           # Using deviceSelectors for bond members (supports wildcards)
           deviceSelectors:
             - busPath: "0000:01:00.*"
-    # Talos manifests
-    extraManifests:
-      - "./manifests/global/lldp-config.yaml"
-      - "./manifests/global/ethernet-config.yaml"
-      - "./manifests/charlie/multipath-config.yaml"
     # Charlie-specific patches for multipath support
     patches:
       - "@./patches/charlie/machine-kernel-multipath.yaml"
+      - "@./patches/charlie/multipath-config.yaml"
 
   - hostname: "vrtx-delta"
     ipAddress: "192.168.168.204"
@@ -274,21 +226,6 @@ nodes:
           # Using deviceSelectors for bond members (supports wildcards)
           deviceSelectors:
             - busPath: "0000:01:00.*"
-    # Talos manifests
-    extraManifests:
-      - "./manifests/global/lldp-config.yaml"
-      - "./manifests/global/ethernet-config.yaml"
-
-    # schematic:
-    #   customization:
-    #     systemExtensions:
-    #       officialExtensions:
-    #         - siderolabs/intel-ucode
-    #         # - siderolabs/nonfree-kmod-nvidia-production
-    #         # - siderolabs/nvidia-container-toolkit-production
-    #         - siderolabs/iscsi-tools
-    #         - siderolabs/lldpd
-    #         - siderolabs/bnx2-bnx2x
 
 # Global patches
 patches:
@@ -298,6 +235,13 @@ patches:
   - "@./patches/global/machine-network.yaml"
   - "@./patches/global/machine-sysctls.yaml"
   - "@./patches/global/machine-time.yaml"
+  # Extension service configs
+  - "@./patches/global/lldp-config.yaml"
+  # Ethernet ring buffer configs
+  - "@./patches/global/ethernet-config-eno1.yaml"
+  - "@./patches/global/ethernet-config-eno2.yaml"
+  - "@./patches/global/ethernet-config-eno3.yaml"
+  - "@./patches/global/ethernet-config-eno4.yaml"
 
 # Controller patches
 controlPlane:
