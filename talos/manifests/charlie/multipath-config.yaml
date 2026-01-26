@@ -1,4 +1,6 @@
 ---
+# Multipathd config - extension not working correctly in Talos v1.12
+# Keeping config in case future versions fix the containerization issue
 apiVersion: v1alpha1
 kind: ExtensionServiceConfig
 name: multipathd
@@ -6,16 +8,18 @@ configFiles:
   - content: |
       defaults {
           user_friendly_names yes
-          find_multipaths yes
+          find_multipaths no
           path_selector "round-robin 0"
           path_grouping_policy failover
           failback immediate
           no_path_retry fail
       }
-      blacklist {
-          devnode "^(ram|raw|loop|fd|md|dm-|sr|scd|st|sda|sdb|nvme)[0-9]*"
-      }
-      blacklist_exceptions {
-          devnode "^sd[c-f]$"
+      devices {
+          device {
+              vendor "DELL"
+              product "Shared_PERC8"
+              path_grouping_policy failover
+              path_selector "round-robin 0"
+          }
       }
     mountPath: /etc/multipath.conf
