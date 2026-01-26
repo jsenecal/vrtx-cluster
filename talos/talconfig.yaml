@@ -49,8 +49,6 @@ nodes:
             routes:
               - network: "0.0.0.0/0"
                 gateway: "192.168.168.1"
-            vip:
-              ip: "192.168.168.200"
           - vlanId: 252
             dhcp: false
             mtu: 1500
@@ -100,8 +98,6 @@ nodes:
             routes:
               - network: "0.0.0.0/0"
                 gateway: "192.168.168.1"
-            vip:
-              ip: "192.168.168.200"
           - vlanId: 252
             dhcp: false
             mtu: 1500
@@ -152,8 +148,6 @@ nodes:
             routes:
               - network: "0.0.0.0/0"
                 gateway: "192.168.168.1"
-            vip:
-              ip: "192.168.168.200"
           - vlanId: 252
             dhcp: false
             mtu: 1500
@@ -249,3 +243,4 @@ controlPlane:
     - "@./patches/controller/admission-controller-patch.yaml"
     - "@./patches/controller/cluster.yaml"
     - "@./patches/controller/machine-features.yaml"
+    - "@./patches/controller/vip-config.yaml"
