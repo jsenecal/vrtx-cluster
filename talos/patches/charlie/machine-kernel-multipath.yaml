@@ -1,0 +1,5 @@
+machine:
+  kernel:
+    modules:
+      - name: dm_multipath
+      - name: dm_round_robin

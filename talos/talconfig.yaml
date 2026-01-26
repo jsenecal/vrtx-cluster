@@ -172,7 +172,8 @@ nodes:
       wwid: "naa.690b11c023cc85002f95b43b224aec21"
     machineSpec:
       secureboot: false
-    talosImageURL: factory.talos.dev/installer/caf5b14c38258456400d7f4988569406daa804103ac374c21a8938067cec9370
+    # Schematic includes multipath-tools extension for dual PERC8 controller support
+    talosImageURL: factory.talos.dev/installer/a67c09155265b27b2905bffdd592fe5785be4888b4d85cf1b15aea9df4b10ac6
     controlPlane: true
 
     # Bonded interface configuration
@@ -220,24 +221,10 @@ nodes:
     extraManifests:
       - "./manifests/global/lldp-config.yaml"
       - "./manifests/global/ethernet-config.yaml"
-
-    # schematic:
-    #   customization:
-    #     systemExtensions:
-    #       officialExtensions:
-    #         - siderolabs/intel-ucode
-    #         # - siderolabs/nonfree-kmod-nvidia-production
-    #         # - siderolabs/nvidia-container-toolkit-production
-    #         - siderolabs/iscsi-tools
-    #         - siderolabs/lldpd
-    #         - siderolabs/bnx2-bnx2x
-    # patches:
-    #   - "@./patches/global/machine-files.yaml"
-    #   - "@./patches/global/machine-kernel-nvidia.yaml"
-    #   - "@./patches/global/machine-kubelet.yaml"
-    #   - "@./patches/global/machine-network.yaml"
-    #   - "@./patches/global/machine-sysctls.yaml"
-    #   - "@./patches/global/machine-time.yaml"
+      - "./manifests/charlie/multipath-config.yaml"
+    # Charlie-specific patches for multipath support
+    patches:
+      - "@./patches/charlie/machine-kernel-multipath.yaml"
 
   - hostname: "vrtx-delta"
     ipAddress: "192.168.168.204"

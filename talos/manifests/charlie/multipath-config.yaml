@@ -1,0 +1,21 @@
+---
+apiVersion: v1alpha1
+kind: ExtensionServiceConfig
+name: multipathd
+configFiles:
+  - content: |
+      defaults {
+          user_friendly_names yes
+          find_multipaths yes
+          path_selector "round-robin 0"
+          path_grouping_policy failover
+          failback immediate
+          no_path_retry fail
+      }
+      blacklist {
+          devnode "^(ram|raw|loop|fd|md|dm-|sr|scd|st|sda|sdb|nvme)[0-9]*"
+      }
+      blacklist_exceptions {
+          devnode "^sd[c-f]$"
+      }
+    mountPath: /etc/multipath.conf
