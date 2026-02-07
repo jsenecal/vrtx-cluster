@@ -7,6 +7,5 @@ metadata:
   namespace: media-services
 spec:
   restic:
+    moverDeadlineSeconds: 14400  # 4 hour timeout
     pruneIntervalDays: 30  # Reduce prune frequency
-    moverPodSpec:
-      activeDeadlineSeconds: 14400  # 4 hour timeout
