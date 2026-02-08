@@ -1,0 +1,54 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/kyverno.io/clusterpolicy_v1.json
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: volsync-job-deadline
+  annotations:
+    policies.kyverno.io/title: Add activeDeadlineSeconds to VolSync Jobs
+    policies.kyverno.io/category: VolSync
+    policies.kyverno.io/description: >-
+      Adds activeDeadlineSeconds to VolSync mover jobs to prevent them from
+      running indefinitely. Default is 1800 seconds (30 minutes).
+      Plex jobs get 14400 seconds (4 hours) for large dataset backups.
+spec:
+  rules:
+    # Default rule for most volsync jobs (30 min timeout)
+    - name: add-deadline-default
+      match:
+        any:
+          - resources:
+              kinds:
+                - Job
+              selector:
+                matchLabels:
+                  app.kubernetes.io/created-by: volsync
+      exclude:
+        any:
+          - resources:
+              namespaces:
+                - media-services
+              selector:
+                matchLabels:
+                  volsync.backube/pvc: plex
+      mutate:
+        patchStrategicMerge:
+          spec:
+            activeDeadlineSeconds: 1800
+    # Plex-specific rule (4 hour timeout for large backups)
+    - name: add-deadline-plex
+      match:
+        any:
+          - resources:
+              kinds:
+                - Job
+              namespaces:
+                - media-services
+              selector:
+                matchLabels:
+                  app.kubernetes.io/created-by: volsync
+                  volsync.backube/pvc: plex
+      mutate:
+        patchStrategicMerge:
+          spec:
+            activeDeadlineSeconds: 14400
