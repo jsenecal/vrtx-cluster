@@ -93,14 +93,10 @@ spec:
                 config:
                   metadataDevice: /dev/disk/by-id/nvme-INTEL_SSDPED1D480GAH_PHMB833200KJ480JGN
           - name: vrtx-charlie
-            devices:
-              # Using /dev/mapper paths as ceph-volume doesn't handle by-id symlinks for multipath
-              - name: /dev/mapper/mpathb
-                config:
-                  metadataDevice: /dev/disk/by-id/nvme-INTEL_SSDPED1D480GAH_PHMB830200CB480JGN
-              - name: /dev/mapper/mpathc
-                config:
-                  metadataDevice: /dev/disk/by-id/nvme-INTEL_SSDPED1D480GAH_PHMB830200CB480JGN
+            # Using devicePathFilter for multipath devices - ceph-volume only works with /dev/mapper paths
+            devicePathFilter: "^/dev/mapper/mpath[bc]$"
+            config:
+              metadataDevice: /dev/disk/by-id/nvme-INTEL_SSDPED1D480GAH_PHMB830200CB480JGN
         config:
           osdsPerDevice: "1"
       resources:
