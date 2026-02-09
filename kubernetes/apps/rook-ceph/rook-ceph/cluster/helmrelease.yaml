@@ -93,10 +93,11 @@ spec:
                 config:
                   metadataDevice: /dev/disk/by-id/nvme-INTEL_SSDPED1D480GAH_PHMB833200KJ480JGN
           - name: vrtx-charlie
-            # Using devicePathFilter for multipath devices - ceph-volume only works with /dev/mapper paths
-            devicePathFilter: "^/dev/mapper/mpath[bc]$"
-            config:
-              metadataDevice: /dev/disk/by-id/nvme-INTEL_SSDPED1D480GAH_PHMB830200CB480JGN
+            # Using LVM on multipath devices - ceph-volume doesn't work with dm-* kernel paths directly
+            # Note: LV + metadataDevice not supported by Rook, so NVMe WAL/DB not available for charlie
+            devices:
+              - name: /dev/ceph-osd-0/osd-data
+              - name: /dev/ceph-osd-1/osd-data
         config:
           osdsPerDevice: "1"
       resources:
