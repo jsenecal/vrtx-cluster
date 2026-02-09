@@ -26,7 +26,8 @@ nodes:
       wwid: "naa.6d0946600c455c002f9bc187053833b4"
     machineSpec:
       secureboot: false
-    talosImageURL: factory.talos.dev/installer/caf5b14c38258456400d7f4988569406daa804103ac374c21a8938067cec9370
+    # Schematic includes multipath-tools extension for dual PERC8 controller support
+    talosImageURL: factory.talos.dev/installer/a67c09155265b27b2905bffdd592fe5785be4888b4d85cf1b15aea9df4b10ac6
     controlPlane: true
 
     # Bonded interface configuration
@@ -75,7 +76,8 @@ nodes:
       wwid: "naa.6d0946600c4544002f9aa79d35a52207"
     machineSpec:
       secureboot: false
-    talosImageURL: factory.talos.dev/installer/caf5b14c38258456400d7f4988569406daa804103ac374c21a8938067cec9370
+    # Schematic includes multipath-tools extension for dual PERC8 controller support
+    talosImageURL: factory.talos.dev/installer/a67c09155265b27b2905bffdd592fe5785be4888b4d85cf1b15aea9df4b10ac6
     controlPlane: true
 
     # Bonded interface configuration
@@ -178,7 +180,8 @@ nodes:
       wwid: "naa.6d0946600c45dc002f9cbecc28be9ad9"
     machineSpec:
       secureboot: false
-    talosImageURL: factory.talos.dev/installer/caf5b14c38258456400d7f4988569406daa804103ac374c21a8938067cec9370
+    # Schematic includes multipath-tools extension for dual PERC8 controller support
+    talosImageURL: factory.talos.dev/installer/a67c09155265b27b2905bffdd592fe5785be4888b4d85cf1b15aea9df4b10ac6
     controlPlane: false # Worker node
 
     # Bonded interface configuration
