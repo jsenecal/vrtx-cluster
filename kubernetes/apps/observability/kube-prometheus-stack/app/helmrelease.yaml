@@ -38,6 +38,8 @@ spec:
         forceConflicts: true
     cleanPrometheusOperatorObjectNames: true
     defaultRules:
+      disabled:
+        KubeClientCertificateExpiration: true
       rules:
         kubeApiserverAvailability: false  # Disable expensive 30d rules
         kubeApiserverBurnrate: true       # Keep burnrate but it will use shorter windows
