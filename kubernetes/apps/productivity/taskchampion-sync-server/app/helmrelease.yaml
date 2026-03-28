@@ -30,8 +30,11 @@ spec:
             image:
               repository: ghcr.io/gothenburgbitfactory/taskchampion-sync-server
               tag: 0.7.1
+            command:
+              - /bin/taskchampion-sync-server
             env:
               DATA_DIR: /data
+              LISTEN: 0.0.0.0:8080
             probes:
               liveness: &probe
                 enabled: true
@@ -52,9 +55,9 @@ spec:
     defaultPodOptions:
       securityContext:
         runAsNonRoot: true
-        runAsUser: 65534
-        runAsGroup: 65534
-        fsGroup: 65534
+        runAsUser: 1092
+        runAsGroup: 100
+        fsGroup: 100
         fsGroupChangePolicy: OnRootMismatch
     service:
       app:
