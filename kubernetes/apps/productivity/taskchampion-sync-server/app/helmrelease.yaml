@@ -1,0 +1,84 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app taskchampion-sync-server
+spec:
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+  maxHistory: 2
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  dependsOn:
+    - name: rook-ceph-cluster
+      namespace: rook-ceph
+    - name: volsync
+      namespace: volsync-system
+  values:
+    controllers:
+      taskchampion-sync-server:
+        containers:
+          app:
+            image:
+              repository: ghcr.io/gothenburgbitfactory/taskchampion-sync-server
+              tag: 0.7.1
+            env:
+              DATA_DIR: /data
+            probes:
+              liveness: &probe
+                enabled: true
+                type: TCP
+              readiness: *probe
+            resources:
+              requests:
+                cpu: 10m
+                memory: 64Mi
+              limits:
+                memory: 256Mi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+        fsGroupChangePolicy: OnRootMismatch
+    service:
+      app:
+        controller: taskchampion-sync-server
+        ports:
+          http:
+            port: 8080
+    route:
+      app:
+        hostnames:
+          - "taskchampion.k8s.${SECRET_DOMAIN}"
+        parentRefs:
+          - name: internal
+            namespace: kube-system
+            sectionName: https
+        rules:
+          - backendRefs:
+              - name: *app
+                port: 8080
+    persistence:
+      data:
+        enabled: true
+        existingClaim: taskchampion-sync-server
+        globalMounts:
+          - path: /data
+      tmp:
+        type: emptyDir
