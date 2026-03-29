@@ -75,7 +75,7 @@ spec:
         hostnames:
           - "todo.${SECRET_DOMAIN}"
         parentRefs:
-          - name: external
+          - name: external-lab
             namespace: kube-system
             sectionName: https
         rules:
