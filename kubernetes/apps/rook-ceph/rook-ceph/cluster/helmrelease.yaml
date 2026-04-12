@@ -101,6 +101,12 @@ spec:
         config:
           osdsPerDevice: "1"
       resources:
+        mgr:
+          limits:
+            memory: 2Gi
+          requests:
+            cpu: "1"
+            memory: 512Mi
         osd:
           limits:
             memory: 16Gi
