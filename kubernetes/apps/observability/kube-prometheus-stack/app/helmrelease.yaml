@@ -147,10 +147,15 @@ spec:
             rules:
               - alert: DockerhubRateLimitRisk
                 annotations:
-                  summary: Kubernetes cluster Dockerhub rate limit risk
-                expr: count(time() - container_last_seen{image=~"(docker.io).*",container!=""} < 30) > 25
+                  summary: High rate of Spegel cache misses for Docker Hub
+                  description: >-
+                    {{ $value | humanize }} Docker Hub cache misses per minute
+                    detected via Spegel, indicating direct upstream pulls that
+                    count against the Docker Hub rate limit.
+                expr: sum(rate(spegel_mirror_requests_total{registry="docker.io",cache="miss"}[5m])) * 60 > 10
+                for: 15m
                 labels:
-                  severity: critical
+                  severity: warning
       oom-rules:
         groups:
           - name: oom
