@@ -14,4 +14,8 @@ if [ ! -e "${home}/.code-pod-initialised" ]; then
     chown "${USERNAME}:${USERNAME}" "${home}/.code-pod-initialised"
 fi
 
+# Strip group/world write on $HOME every start. Kubernetes' fsGroup sets the
+# mount root group-writable, which sshd's StrictModes rejects.
+chmod g-w,o-w "${home}"
+
 exec /usr/sbin/sshd -D -e
