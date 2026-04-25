@@ -176,7 +176,6 @@ bjw-s `app-template`. One controller (`code-pod`), `strategy: Recreate` (RWO PVC
   - Volume mounts:
     - `code-pod` PVC at `/home/jsenecal`
     - `code-pod-workspace` PVC at `/home/jsenecal/Code`
-    - `ssh-host-keys` emptyDir at `/etc/ssh`
     - `cache` emptyDir at `/home/jsenecal/.cache` (excludes node_modules-ish junk from backups)
   - Probes: `exec: pgrep -x sshd` for liveness and readiness.
   - Capabilities: drop ALL, add `SETUID`, `SETGID`, `CHOWN`, `DAC_OVERRIDE` (sshd minimum).
@@ -185,8 +184,9 @@ bjw-s `app-template`. One controller (`code-pod`), `strategy: Recreate` (RWO PVC
 - `tailscale` sidecar:
   - Image: `ghcr.io/tailscale/tailscale:<pinned>` (digest pinned, Renovate-managed).
   - Env (from `code-pod-tailscale-secret`):
-    - `TS_AUTHKEY` — value rendered from the OAuth client secret with query-string flags appended: `<TS_OAUTH_CLIENT_SECRET>?ephemeral=true&preauthorized=true&tags=tag:k8s`. The OAuth client secret is already formatted as `tskey-client-<id>-<extra>`, so we append the query string directly rather than re-composing the prefix. The ExternalSecret template does this.
+    - `TS_AUTHKEY` — rendered from the OAuth client secret with query-string flags appended: `<TS_OAUTH_CLIENT_SECRET>?ephemeral=true&preauthorized=true`. The OAuth client secret is already formatted as `tskey-client-<id>-<extra>`. Tags are NOT appended to the URL (the sidecar's auto-`tailscale up` path doesn't honor URL-form tags for OAuth-derived keys); they go via `TS_EXTRA_ARGS` instead.
     - `TS_HOSTNAME=vrtx-pod`
+    - `TS_EXTRA_ARGS=--advertise-tags=tag:k8s` (required when using OAuth-derived auth keys)
     - `TS_USERSPACE=false`
     - `TS_STATE_DIR=/var/lib/tailscale`
   - Volume mounts:
@@ -224,7 +224,7 @@ spec:
     name: code-pod-tailscale-secret
     template:
       data:
-        TS_AUTHKEY: "{{ .TS_OAUTH_CLIENT_SECRET }}?ephemeral=true&preauthorized=true&tags=tag:k8s"
+        TS_AUTHKEY: "{{ .TS_OAUTH_CLIENT_SECRET }}?ephemeral=true&preauthorized=true"
   dataFrom:
     - extract: { key: code-pod }
 ```

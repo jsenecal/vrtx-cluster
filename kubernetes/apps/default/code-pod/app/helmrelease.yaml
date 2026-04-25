@@ -107,6 +107,7 @@ spec:
               TS_USERSPACE: "false"
               TS_STATE_DIR: /var/lib/tailscale
               TS_KUBE_SECRET: ""
+              TS_EXTRA_ARGS: --advertise-tags=tag:k8s
             envFrom:
               - secretRef:
                   name: code-pod-tailscale-secret
@@ -163,12 +164,6 @@ spec:
           code-pod:
             app:
               - path: /home/jsenecal/Code
-      ssh-host-keys:
-        type: emptyDir
-        advancedMounts:
-          code-pod:
-            app:
-              - path: /etc/ssh
       cache:
         type: emptyDir
         advancedMounts:
