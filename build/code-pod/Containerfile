@@ -1,0 +1,57 @@
+# syntax=docker/dockerfile:1.7
+FROM docker.io/library/archlinux:base-devel AS aur-build
+
+RUN pacman -Syu --noconfirm git \
+ && useradd -m -G wheel builder \
+ && echo 'builder ALL=(ALL) NOPASSWD: /usr/bin/pacman' > /etc/sudoers.d/builder
+
+USER builder
+WORKDIR /home/builder
+
+RUN git clone --depth=1 https://aur.archlinux.org/yay-bin.git \
+ && cd yay-bin \
+ && makepkg --noconfirm -s
+
+FROM docker.io/library/archlinux:base-devel AS final
+
+ARG USERNAME=jsenecal
+ARG UID=1000
+ARG GID=1000
+ENV USERNAME=${USERNAME}
+
+RUN pacman -Syu --noconfirm \
+      openssh git base-devel sudo fish curl wget unzip jq less \
+      ripgrep fd bat eza htop rsync tmux nodejs npm github-cli \
+      python python-pip ca-certificates tzdata \
+ && pacman -Scc --noconfirm
+
+COPY --from=aur-build /home/builder/yay-bin/yay-bin-*.pkg.tar.zst /tmp/
+RUN pacman -U --noconfirm /tmp/yay-bin-*.pkg.tar.zst \
+ && rm -f /tmp/yay-bin-*.pkg.tar.zst
+
+COPY rootfs/ /
+
+RUN groupadd -g ${GID} ${USERNAME} \
+ && useradd -m -u ${UID} -g ${GID} -G wheel -s /usr/bin/fish ${USERNAME} \
+ && chmod 0440 /etc/sudoers.d/wheel-pacman \
+ && chmod 0755 /usr/local/bin/code-pod-entrypoint.sh
+
+RUN npm config --global set prefix /usr/local \
+ && npm install -g @anthropic-ai/claude-code
+
+USER ${USERNAME}
+WORKDIR /home/${USERNAME}
+RUN curl -fsSL https://raw.githubusercontent.com/oh-my-fish/oh-my-fish/master/bin/install -o /tmp/omf-install \
+ && fish /tmp/omf-install --noninteractive --yes \
+ && rm -f /tmp/omf-install
+
+USER root
+WORKDIR /
+
+EXPOSE 22
+
+LABEL org.opencontainers.image.source="https://github.com/jsenecal/vrtx-cluster" \
+      org.opencontainers.image.title="code-pod" \
+      org.opencontainers.image.description="Tailscale-attached Arch dev pod with Claude Code"
+
+ENTRYPOINT ["/usr/local/bin/code-pod-entrypoint.sh"]
