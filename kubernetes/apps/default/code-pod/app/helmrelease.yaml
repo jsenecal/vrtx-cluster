@@ -117,10 +117,7 @@ spec:
                 custom: true
                 spec:
                   exec:
-                    command:
-                      - /bin/sh
-                      - -c
-                      - "tailscale status --json | grep -q '\"BackendState\":\"Running\"'"
+                    command: ["/usr/local/bin/tailscale", "status", "--peers=false"]
                   periodSeconds: 30
                   timeoutSeconds: 5
                   failureThreshold: 3
@@ -129,10 +126,7 @@ spec:
                 custom: true
                 spec:
                   exec:
-                    command:
-                      - /bin/sh
-                      - -c
-                      - "tailscale status --json | grep -q '\"BackendState\":\"Running\"'"
+                    command: ["/usr/local/bin/tailscale", "status", "--peers=false"]
                   periodSeconds: 10
                   timeoutSeconds: 5
                   failureThreshold: 3
