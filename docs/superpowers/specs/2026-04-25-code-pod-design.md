@@ -26,7 +26,7 @@ The brainstorming session resolved the following design choices. Each is load-be
 | Image base | `archlinux:base-devel`, multi-stage so the final layer has no makepkg builder user / build cache. |
 | AUR support | yay (from `aur/yay-bin`) built in stage 1, installed via `pacman -U` in stage 2. |
 | Claude auth | Both env (`ANTHROPIC_API_KEY`) and OAuth login paths supported; in practice the user logs in once with `claude /login` and the token persists in `~/.claude/`. |
-| Tailscale auth | OAuth client → ephemeral nodes (one-shot auth-key minted at startup). No long-lived auth-key at rest. Tags: `tag:k8s`. |
+| Tailscale auth | OAuth client → ephemeral nodes (one-shot auth-key minted at startup). No long-lived auth-key at rest. Tags: `tag:perso`. |
 | Tailnet hostname | `vrtx-pod`. |
 | Persistent storage | Two volsynced PVCs: `code-pod` (10 GiB `$HOME`, hourly) and `code-pod-workspace` (100 GiB `~/Code`, daily). |
 | kubectl from inside | No ServiceAccount mounted. User scp's their own kubeconfig to `~/.kube/config` post-bootstrap. |
@@ -186,7 +186,7 @@ bjw-s `app-template`. One controller (`code-pod`), `strategy: Recreate` (RWO PVC
   - Env (from `code-pod-tailscale-secret`):
     - `TS_AUTHKEY` — rendered from the OAuth client secret with query-string flags appended: `<TS_OAUTH_CLIENT_SECRET>?ephemeral=true&preauthorized=true`. The OAuth client secret is already formatted as `tskey-client-<id>-<extra>`. Tags are NOT appended to the URL (the sidecar's auto-`tailscale up` path doesn't honor URL-form tags for OAuth-derived keys); they go via `TS_EXTRA_ARGS` instead.
     - `TS_HOSTNAME=vrtx-pod`
-    - `TS_EXTRA_ARGS=--advertise-tags=tag:k8s` (required when using OAuth-derived auth keys)
+    - `TS_EXTRA_ARGS=--advertise-tags=tag:perso` (required when using OAuth-derived auth keys)
     - `TS_USERSPACE=false`
     - `TS_STATE_DIR=/var/lib/tailscale`
   - Volume mounts:
@@ -315,12 +315,12 @@ A small entry is added to the existing Renovate config so `ghcr.io/${{ github.re
 
 **Pre-merge (one-time):**
 
-1. Tailscale admin → OAuth clients → new client, scope `auth_keys` (write), allowed tag `tag:k8s`. Copy ID + Secret.
+1. Tailscale admin → OAuth clients → new client, scope `auth_keys` (write), allowed tag `tag:perso`. Copy ID + Secret.
 2. 1Password: create item `code-pod` with `TS_OAUTH_CLIENT_ID`, `TS_OAUTH_CLIENT_SECRET`.
 3. 1Password: create item `code-pod-ssh` with `AUTHORIZED_KEYS` (laptop pubkey, newline-separated for multiple).
 4. (Optional) 1Password: create item `code-pod-anthropic` with `ANTHROPIC_API_KEY` empty for now.
 5. (Existing) `volsync-template` is reused.
-6. Tailscale ACLs: confirm `tag:k8s` is reachable on `tcp:22` from your user.
+6. Tailscale ACLs: confirm `tag:perso` is reachable on `tcp:22` from your user.
 
 **Post-merge (automatic):**
 

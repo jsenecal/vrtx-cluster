@@ -107,7 +107,7 @@ spec:
               TS_USERSPACE: "false"
               TS_STATE_DIR: /var/lib/tailscale
               TS_KUBE_SECRET: ""
-              TS_EXTRA_ARGS: --advertise-tags=tag:k8s
+              TS_EXTRA_ARGS: --advertise-tags=tag:perso
             envFrom:
               - secretRef:
                   name: code-pod-tailscale-secret
