@@ -1,0 +1,191 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app code-pod
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    controllers:
+      code-pod:
+        strategy: Recreate
+        annotations:
+          reloader.stakater.com/auto: "true"
+        initContainers:
+          seed-authorized-keys:
+            image:
+              repository: ghcr.io/jsenecal/code-pod
+              tag: main
+            command: ["/bin/bash", "-c"]
+            args:
+              - |
+                set -euo pipefail
+                target=/home/jsenecal/.ssh/authorized_keys
+                if [ ! -s "$target" ]; then
+                  install -d -o jsenecal -g jsenecal -m 0700 /home/jsenecal/.ssh
+                  install -o jsenecal -g jsenecal -m 0600 \
+                    /etc/code-pod/ssh/authorized_keys "$target"
+                fi
+            securityContext:
+              runAsUser: 0
+              capabilities:
+                drop: ["ALL"]
+                add: ["CHOWN", "DAC_OVERRIDE", "FOWNER"]
+        containers:
+          app:
+            image:
+              repository: ghcr.io/jsenecal/code-pod
+              tag: main
+            envFrom:
+              - secretRef:
+                  name: code-pod-anthropic-secret
+                  optional: true
+            probes:
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  exec:
+                    command: ["/usr/bin/pgrep", "-x", "sshd"]
+                  periodSeconds: 30
+                  timeoutSeconds: 5
+                  failureThreshold: 3
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  exec:
+                    command: ["/usr/bin/pgrep", "-x", "sshd"]
+                  periodSeconds: 10
+                  timeoutSeconds: 5
+                  failureThreshold: 3
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  exec:
+                    command: ["/usr/bin/pgrep", "-x", "sshd"]
+                  periodSeconds: 5
+                  failureThreshold: 30
+            securityContext:
+              runAsUser: 0
+              runAsGroup: 0
+              allowPrivilegeEscalation: true
+              capabilities:
+                drop: ["ALL"]
+                add:
+                  - SETUID
+                  - SETGID
+                  - CHOWN
+                  - DAC_OVERRIDE
+                  - FOWNER
+                  - SYS_CHROOT
+                  - AUDIT_WRITE
+            resources:
+              requests:
+                cpu: 50m
+                memory: 256Mi
+              limits:
+                memory: 4Gi
+          tailscale:
+            image:
+              repository: ghcr.io/tailscale/tailscale
+              tag: stable
+            env:
+              TS_HOSTNAME: vrtx-pod
+              TS_USERSPACE: "false"
+              TS_STATE_DIR: /var/lib/tailscale
+              TS_KUBE_SECRET: ""
+            envFrom:
+              - secretRef:
+                  name: code-pod-tailscale-secret
+            probes:
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  exec:
+                    command:
+                      - /bin/sh
+                      - -c
+                      - "tailscale status --json | grep -q '\"BackendState\":\"Running\"'"
+                  periodSeconds: 30
+                  timeoutSeconds: 5
+                  failureThreshold: 3
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  exec:
+                    command:
+                      - /bin/sh
+                      - -c
+                      - "tailscale status --json | grep -q '\"BackendState\":\"Running\"'"
+                  periodSeconds: 10
+                  timeoutSeconds: 5
+                  failureThreshold: 3
+            securityContext:
+              capabilities:
+                add: ["NET_ADMIN", "NET_RAW"]
+            resources:
+              requests:
+                cpu: 10m
+                memory: 64Mi
+              limits:
+                memory: 256Mi
+    defaultPodOptions:
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+    persistence:
+      home:
+        existingClaim: code-pod
+        advancedMounts:
+          code-pod:
+            seed-authorized-keys:
+              - path: /home/jsenecal
+            app:
+              - path: /home/jsenecal
+      workspace:
+        existingClaim: code-pod-workspace
+        advancedMounts:
+          code-pod:
+            app:
+              - path: /home/jsenecal/Code
+      ssh-host-keys:
+        type: emptyDir
+        advancedMounts:
+          code-pod:
+            app:
+              - path: /etc/ssh
+      cache:
+        type: emptyDir
+        advancedMounts:
+          code-pod:
+            app:
+              - path: /home/jsenecal/.cache
+      tailscale-state:
+        type: emptyDir
+        advancedMounts:
+          code-pod:
+            tailscale:
+              - path: /var/lib/tailscale
+      ssh-seed:
+        type: secret
+        name: code-pod-ssh-secret
+        advancedMounts:
+          code-pod:
+            seed-authorized-keys:
+              - path: /etc/code-pod/ssh
+                readOnly: true
