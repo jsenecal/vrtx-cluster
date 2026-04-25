@@ -266,6 +266,8 @@ Expected: either deletes any matching jobs/pods, or does nothing if none exist (
 
 - [ ] **Step 1: Write the wipe Pod manifest to a local file**
 
+> **Note on Talos + LVM:** From inside a privileged Pod on Talos, `udevadm settle` says "Running in chroot, ignoring request" — host udev events are not reachable. LVM tools default to creating a SysV semaphore "cookie" and waiting for udev to ack each device-mapper change; without a reachable udev, `lvremove`/`vgremove` block forever in `__do_semtimedop`. The manifest below uses `--noudevsync` on every LVM mutation that supports it, plus a `dmsetup udevcomplete_all -y` and explicit `dmsetup remove --force --noudevsync` calls to bypass the cookie mechanism entirely. Note that `pvremove` does not accept `--noudevsync` in LVM2 — but by the time it runs, `vgremove` has already removed the PV signatures, so the call is essentially a defensive no-op. `blockdev --rereadpt` on mpath devices returns `BLKRRPART invalid` and is harmless (caught by `|| true`).
+
 Create `/tmp/charlie-wipe-pod.yaml` with this content:
 ```yaml
 apiVersion: v1
@@ -291,26 +293,41 @@ spec:
           echo "== before =="
           dmsetup ls --tree || true
           ls -l /dev/mapper/ /dev/disk/by-id/ | grep -E 'mpath|nvme|ceph-osd' || true
-          echo "== removing LVs =="
-          lvremove -f /dev/ceph-osd-0/osd-data /dev/ceph-osd-1/osd-data || true
-          vgremove -f ceph-osd-0 ceph-osd-1 || true
-          pvremove -ff -y /dev/mapper/mpathb /dev/mapper/mpathc || true
+          echo "== draining stuck udev cookies =="
+          dmsetup udevcomplete_all -y || true
+          echo "== removing kernel dm nodes for ceph LVs (no udev sync) =="
+          dmsetup remove --force --noudevsync ceph--osd--0-osd--data 2>&1 || echo "(ceph--osd--0-osd--data: already gone)"
+          dmsetup remove --force --noudevsync ceph--osd--1-osd--data 2>&1 || echo "(ceph--osd--1-osd--data: already gone)"
+          echo "== removing LVM metadata (no udev sync) =="
+          lvremove -f --noudevsync /dev/ceph-osd-0/osd-data /dev/ceph-osd-1/osd-data 2>&1 || echo "(lvremove: some LVs already gone)"
+          vgremove -f --noudevsync ceph-osd-0 2>&1 || echo "(vgremove ceph-osd-0: already gone)"
+          vgremove -f --noudevsync ceph-osd-1 2>&1 || echo "(vgremove ceph-osd-1: already gone)"
+          # pvremove does not accept --noudevsync; vgremove already cleared the PV signatures.
+          pvremove -ff -y /dev/mapper/mpathb 2>&1 || echo "(pvremove mpathb: already gone)"
+          pvremove -ff -y /dev/mapper/mpathc 2>&1 || echo "(pvremove mpathc: already gone)"
           echo "== wiping mpath devices =="
           wipefs -af /dev/mapper/mpathb /dev/mapper/mpathc
           sgdisk --zap-all /dev/mapper/mpathb
           sgdisk --zap-all /dev/mapper/mpathc
+          blockdev --rereadpt /dev/mapper/mpathb || true
+          blockdev --rereadpt /dev/mapper/mpathc || true
           echo "== wiping NVMe =="
           wipefs -af /dev/disk/by-id/nvme-INTEL_SSDPED1D480GAH_PHMB830200CB480JGN
           sgdisk --zap-all /dev/disk/by-id/nvme-INTEL_SSDPED1D480GAH_PHMB830200CB480JGN
-          partprobe || true
+          blockdev --rereadpt /dev/disk/by-id/nvme-INTEL_SSDPED1D480GAH_PHMB830200CB480JGN || true
           echo "== after =="
           dmsetup ls --tree || true
           ls -l /dev/mapper/ | grep -E 'mpath|ceph-osd' || true
+          pvs 2>&1 || true
+          vgs 2>&1 || true
           echo "== done =="
       volumeMounts:
         - { name: dev, mountPath: /dev }
         - { name: udev, mountPath: /run/udev }
         - { name: lvm, mountPath: /run/lvm }
+      resources:
+        limits:
+          memory: 256Mi
   volumes:
     - { name: dev, hostPath: { path: /dev } }
     - { name: udev, hostPath: { path: /run/udev } }
@@ -319,15 +336,30 @@ spec:
     - operator: Exists
 ```
 
+The `|| echo "..."` on each LVM call tolerates the case where prior tools already cleaned up the object — a clean re-run and a partial-prior-attempt re-run should both pass through. The `wipefs` and `sgdisk` calls have no `|| true` and must succeed; if they don't, `set -e` aborts and the Pod becomes Failed.
+
 - [ ] **Step 2: Apply the Pod**
 
 Run:
 ```bash
 kubectl apply -f /tmp/charlie-wipe-pod.yaml
-kubectl -n rook-ceph wait --for=condition=Ready pod/charlie-wipe --timeout=2m
 ```
 
-Expected: `pod/charlie-wipe created` then `pod/charlie-wipe condition met`.
+Then poll to terminal state. Avoid `kubectl wait --for=condition=Ready` here — the Pod often goes Pending → Running → Completed faster than the wait command can catch it:
+
+```bash
+for i in $(seq 1 30); do
+  status=$(kubectl -n rook-ceph get pod charlie-wipe -o jsonpath='{.status.phase}' 2>/dev/null)
+  echo "[$i] phase: $status"
+  case "$status" in
+    Succeeded|Failed) break ;;
+    "") echo "Pod missing"; exit 1 ;;
+  esac
+  sleep 10
+done
+```
+
+Expected: `phase` transitions to `Succeeded` within 1–3 minutes. If it stays `Running` past 5 minutes (30 iterations), stop and investigate — that indicates a different deadlock than the one the manifest is designed to bypass.
 
 - [ ] **Step 3: Watch the wipe complete**
 
