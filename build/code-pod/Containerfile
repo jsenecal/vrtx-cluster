@@ -23,7 +23,7 @@ ENV USERNAME=${USERNAME}
 RUN pacman -Syu --noconfirm \
       openssh git base-devel sudo fish curl wget unzip jq less \
       ripgrep fd bat eza htop rsync tmux nodejs npm github-cli \
-      python python-pip ca-certificates tzdata \
+      python python-pip ca-certificates tzdata inetutils \
  && pacman -Scc --noconfirm
 
 COPY --from=aur-build /home/builder/yay-bin/yay-bin-*.pkg.tar.zst /tmp/
