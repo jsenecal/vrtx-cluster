@@ -39,6 +39,9 @@ jobs:
         with:
           dockerfile: build/code-pod/Containerfile
           failure-threshold: warning
+          # DL3016: pinning @anthropic-ai/claude-code breaks Renovate tracking.
+          # DL3002: sshd is PID 1 and requires root to drop into the user session.
+          ignore: DL3016,DL3002
 
       - name: Set up Buildx
         uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
