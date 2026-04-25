@@ -152,14 +152,14 @@ kubectl -n rook-ceph exec deploy/rook-ceph-tools -- ceph osd out osd.0 osd.1
 
 Expected: `marked out osd.0. marked out osd.1.`
 
-- [ ] **Step 3: Confirm the cluster is in the expected degraded state**
+- [ ] **Step 3: Confirm the cluster is in the expected remapped state**
 
 Run:
 ```bash
 kubectl -n rook-ceph exec deploy/rook-ceph-tools -- ceph status
 ```
 
-Expected: `health: HEALTH_WARN` with messages like `Degraded data redundancy: ... pgs undersized`, plus `osd: 6 osds: 6 up (...), 4 in`. **No** `backfill_wait`, `backfilling`, or `recovery` activity should appear — the third replica has nowhere to go (only 3 hosts, host failure domain), so PGs go undersized rather than backfilling. `min_size: 2` is still met by alpha+bravo, so client IO continues.
+Expected: `health: HEALTH_OK` with `osd: 6 osds: 6 up, 4 in; 81 remapped pgs` and `pgs: 81 active+clean+remapped` and `~33.333% objects misplaced`. The third replica is still being served by charlie's OSDs (they are still `up`, just `out`), so CRUSH wants to move data but nothing has actually moved yet — and since only 3 hosts exist with `host` failure domain, no third location is available for the moves. **No** `backfill_wait`, `backfilling`, or `recovery` keywords should appear in the io section. `min_size: 2` is still met, client IO continues. The cluster will move to genuinely degraded state once charlie's OSDs go `down` in Task 3.
 
 If you see active backfill, stop and investigate — the failure domain may have been changed.
 
