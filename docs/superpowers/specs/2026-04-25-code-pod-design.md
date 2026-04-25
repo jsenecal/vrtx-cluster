@@ -185,7 +185,7 @@ bjw-s `app-template`. One controller (`code-pod`), `strategy: Recreate` (RWO PVC
 - `tailscale` sidecar:
   - Image: `ghcr.io/tailscale/tailscale:<pinned>` (digest pinned, Renovate-managed).
   - Env (from `code-pod-tailscale-secret`):
-    - `TS_AUTHKEY` — value rendered from OAuth client id+secret using the Tailscale-documented format `tskey-client-<id>-<secret>?ephemeral=true&preauthorized=true&tags=tag:k8s`. The ExternalSecret template does this composition.
+    - `TS_AUTHKEY` — value rendered from the OAuth client secret with query-string flags appended: `<TS_OAUTH_CLIENT_SECRET>?ephemeral=true&preauthorized=true&tags=tag:k8s`. The OAuth client secret is already formatted as `tskey-client-<id>-<extra>`, so we append the query string directly rather than re-composing the prefix. The ExternalSecret template does this.
     - `TS_HOSTNAME=vrtx-pod`
     - `TS_USERSPACE=false`
     - `TS_STATE_DIR=/var/lib/tailscale`
@@ -224,7 +224,7 @@ spec:
     name: code-pod-tailscale-secret
     template:
       data:
-        TS_AUTHKEY: "tskey-client-{{ .TS_OAUTH_CLIENT_ID }}-{{ .TS_OAUTH_CLIENT_SECRET }}?ephemeral=true&preauthorized=true&tags=tag:k8s"
+        TS_AUTHKEY: "{{ .TS_OAUTH_CLIENT_SECRET }}?ephemeral=true&preauthorized=true&tags=tag:k8s"
   dataFrom:
     - extract: { key: code-pod }
 ```
