@@ -315,7 +315,7 @@ A small entry is added to the existing Renovate config so `ghcr.io/${{ github.re
 
 **Pre-merge (one-time):**
 
-1. Tailscale admin → OAuth clients → new client, scope `Devices: Core`, allowed tag `tag:k8s`. Copy ID + Secret.
+1. Tailscale admin → OAuth clients → new client, scope `auth_keys` (write), allowed tag `tag:k8s`. Copy ID + Secret.
 2. 1Password: create item `code-pod` with `TS_OAUTH_CLIENT_ID`, `TS_OAUTH_CLIENT_SECRET`.
 3. 1Password: create item `code-pod-ssh` with `AUTHORIZED_KEYS` (laptop pubkey, newline-separated for multiple).
 4. (Optional) 1Password: create item `code-pod-anthropic` with `ANTHROPIC_API_KEY` empty for now.
