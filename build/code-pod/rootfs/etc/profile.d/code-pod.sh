@@ -1,3 +1,4 @@
+# shellcheck shell=sh
 export EDITOR=vim
 export PAGER=less
 export LESS='-R'
