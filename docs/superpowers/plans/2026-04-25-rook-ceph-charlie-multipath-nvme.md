@@ -79,13 +79,14 @@ git push
 
 Run:
 ```bash
-flux reconcile source oci -n flux-system rook-ceph
-flux reconcile source oci -n flux-system rook-ceph-cluster
+flux reconcile source git -n flux-system flux-system
+flux reconcile source oci -n rook-ceph rook-ceph
+flux reconcile source oci -n rook-ceph rook-ceph-cluster
 flux reconcile kustomization -n rook-ceph rook-ceph
 flux reconcile kustomization -n rook-ceph rook-ceph-cluster
 ```
 
-Expected: each command returns within a few seconds with `... reconciliation finished`.
+Expected: each command returns within a few seconds with `... reconciliation finished`. Note the OCIRepositories live in the `rook-ceph` namespace (not `flux-system`); the GitRepository is in `flux-system`.
 
 - [ ] **Step 6: Verify both kustomizations are Ready**
 
@@ -440,7 +441,8 @@ git push
 
 Run:
 ```bash
-flux reconcile source oci -n flux-system rook-ceph-cluster
+flux reconcile source git -n flux-system flux-system
+flux reconcile source oci -n rook-ceph rook-ceph-cluster
 flux reconcile kustomization -n rook-ceph rook-ceph-cluster
 ```
 
