@@ -63,7 +63,12 @@ jobs:
           image-ref: code-pod:ci
           severity: HIGH,CRITICAL
           ignore-unfixed: true
-          exit-code: "1"
+          # Report-only: most findings here are Go-stdlib CVEs vendored into
+          # third-party binaries (yay, op) — only fixable when upstream rebuilds
+          # with a newer Go. Tailnet-only access plus single-user model means
+          # gating CI on these is more noise than signal. Re-evaluate if Trivy
+          # ever flags something in our own code or in the OS package layer.
+          exit-code: "0"
           trivyignores: build/code-pod/.trivyignore
 
   push:
