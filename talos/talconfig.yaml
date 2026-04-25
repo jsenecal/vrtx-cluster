@@ -69,6 +69,10 @@ nodes:
           # Using deviceSelectors for bond members (supports wildcards)
           deviceSelectors:
             - busPath: "0000:01:00.*"
+    # Multipath support for dual PERC8 SAS controller paths
+    patches:
+      - "@./patches/multipath/machine-kernel-multipath.yaml"
+      - "@./patches/multipath/multipath-config.yaml"
 
   - hostname: "vrtx-bravo"
     ipAddress: "192.168.168.202"
@@ -119,6 +123,10 @@ nodes:
           # Using deviceSelectors for bond members (supports wildcards)
           deviceSelectors:
             - busPath: "0000:01:00.*"
+    # Multipath support for dual PERC8 SAS controller paths
+    patches:
+      - "@./patches/multipath/machine-kernel-multipath.yaml"
+      - "@./patches/multipath/multipath-config.yaml"
 
   - hostname: "vrtx-charlie"
     ipAddress: "192.168.168.203"
@@ -169,10 +177,10 @@ nodes:
           # Using deviceSelectors for bond members (supports wildcards)
           deviceSelectors:
             - busPath: "0000:01:00.*"
-    # Charlie-specific patches for multipath support
+    # Multipath support for dual PERC8 SAS controller paths
     patches:
-      - "@./patches/charlie/machine-kernel-multipath.yaml"
-      - "@./patches/charlie/multipath-config.yaml"
+      - "@./patches/multipath/machine-kernel-multipath.yaml"
+      - "@./patches/multipath/multipath-config.yaml"
 
   - hostname: "vrtx-delta"
     ipAddress: "192.168.168.204"
