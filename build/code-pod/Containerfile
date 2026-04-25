@@ -41,6 +41,10 @@ RUN npm config --global set prefix /usr/local \
 
 USER ${USERNAME}
 WORKDIR /home/${USERNAME}
+
+RUN yay -S --noconfirm --answerdiff=None --answerclean=None \
+        --mflags="--noconfirm" 1password-cli
+
 RUN curl -fsSL https://raw.githubusercontent.com/oh-my-fish/oh-my-fish/master/bin/install -o /tmp/omf-install \
  && fish /tmp/omf-install --noninteractive --yes \
  && rm -f /tmp/omf-install
