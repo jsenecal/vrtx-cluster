@@ -20,7 +20,8 @@ ARG UID=1000
 ARG GID=1000
 ENV USERNAME=${USERNAME}
 
-RUN pacman -Syu --noconfirm \
+RUN sed -i 's/^#Color/Color/' /etc/pacman.conf \
+ && pacman -Syu --noconfirm \
       openssh git base-devel sudo fish curl wget unzip jq less \
       ripgrep fd bat eza htop rsync tmux nodejs npm github-cli \
       python python-pip ca-certificates tzdata inetutils \
