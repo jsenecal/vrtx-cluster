@@ -22,9 +22,10 @@ ENV USERNAME=${USERNAME}
 
 RUN sed -i 's/^#Color/Color/' /etc/pacman.conf \
  && pacman -Syu --noconfirm \
-      openssh git base-devel sudo fish curl wget unzip jq less \
+      openssh git base-devel sudo fish curl wget unzip jq yq less \
       ripgrep fd bat eza htop rsync tmux nodejs npm github-cli \
       python python-pip ca-certificates tzdata inetutils \
+      kubectl helm kustomize k9s kubectx stern sops age go-task \
  && pacman -Scc --noconfirm
 
 COPY --from=aur-build /home/builder/yay-bin/yay-bin-*.pkg.tar.zst /tmp/
@@ -45,7 +46,9 @@ USER ${USERNAME}
 WORKDIR /home/${USERNAME}
 
 RUN yay -S --noconfirm --answerdiff=None --answerclean=None \
-        --mflags="--noconfirm" 1password-cli
+        --mflags="--noconfirm" \
+        1password-cli kubecolor-bin kubeconform-bin talosctl-bin \
+        flux-bin cilium-cli-bin helmfile mise-bin
 
 RUN curl -fsSL https://raw.githubusercontent.com/oh-my-fish/oh-my-fish/master/bin/install -o /tmp/omf-install \
  && fish /tmp/omf-install --noninteractive --yes \
