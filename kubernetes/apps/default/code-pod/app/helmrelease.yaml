@@ -47,6 +47,8 @@ spec:
             image:
               repository: ghcr.io/jsenecal/code-pod
               tag: main@sha256:a1ef49427fc19669c98c9a5c47af1ef76841bfcba5da9ae6214252f6e132a2e8
+            env:
+              DOCKER_HOST: unix:///var/run/docker/docker.sock
             envFrom:
               - secretRef:
                   name: code-pod-anthropic-secret
@@ -98,6 +100,43 @@ spec:
                 memory: 256Mi
               limits:
                 memory: 4Gi
+          dind:
+            image:
+              repository: docker
+              tag: dind
+            env:
+              DOCKER_TLS_CERTDIR: ""
+            args:
+              - --host=unix:///var/run/docker/docker.sock
+              - --storage-driver=overlay2
+            securityContext:
+              privileged: true
+              runAsUser: 0
+            probes:
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  exec:
+                    command: ["docker", "--host=unix:///var/run/docker/docker.sock", "info"]
+                  periodSeconds: 30
+                  timeoutSeconds: 10
+                  failureThreshold: 3
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  exec:
+                    command: ["docker", "--host=unix:///var/run/docker/docker.sock", "info"]
+                  periodSeconds: 10
+                  timeoutSeconds: 10
+                  failureThreshold: 6
+            resources:
+              requests:
+                cpu: 100m
+                memory: 256Mi
+              limits:
+                memory: 2Gi
           tailscale:
             image:
               repository: ghcr.io/tailscale/tailscale
@@ -170,6 +209,20 @@ spec:
           code-pod:
             app:
               - path: /var/lib/code-pod/ssh-host-keys
+      docker-storage:
+        existingClaim: code-pod-docker
+        advancedMounts:
+          code-pod:
+            dind:
+              - path: /var/lib/docker
+      docker-socket:
+        type: emptyDir
+        advancedMounts:
+          code-pod:
+            app:
+              - path: /var/run/docker
+            dind:
+              - path: /var/run/docker
       tailscale-state:
         type: emptyDir
         advancedMounts:

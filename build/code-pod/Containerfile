@@ -26,6 +26,7 @@ RUN sed -i 's/^#Color/Color/' /etc/pacman.conf \
       ripgrep fd bat eza htop rsync tmux nodejs npm github-cli \
       python python-pip ca-certificates tzdata inetutils \
       kubectl helm kustomize k9s kubectx stern sops age go-task \
+      docker docker-compose docker-buildx \
  && pacman -Scc --noconfirm
 
 COPY --from=aur-build /home/builder/yay-bin/yay-bin-*.pkg.tar.zst /tmp/
