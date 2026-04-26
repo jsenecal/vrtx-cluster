@@ -46,7 +46,7 @@ USER ${USERNAME}
 WORKDIR /home/${USERNAME}
 
 RUN yay -S --noconfirm --answerdiff=None --answerclean=None \
-        --mflags="--noconfirm" \
+        --mflags="--noconfirm --nocheck" \
         1password-cli kubecolor kubeconform-bin talosctl-bin \
         flux-bin cilium-cli helmfile mise-bin
 
