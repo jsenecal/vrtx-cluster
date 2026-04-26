@@ -33,9 +33,12 @@ if [ ! -e "${home}/.code-pod-initialised" ]; then
     chown "${USERNAME}:${USERNAME}" "${home}/.code-pod-initialised"
 fi
 
-# Strip group/world write on $HOME every start. Kubernetes' fsGroup sets the
-# mount root group-writable, which sshd's StrictModes rejects.
+# Strip group/world write on $HOME and ~/.ssh every start. Kubernetes' fsGroup
+# sets mount roots group-writable (recursing through .ssh too), which sshd's
+# StrictModes rejects.
 chmod g-w,o-w "${home}"
+[ -d "${home}/.ssh" ] && chmod 0700 "${home}/.ssh"
+[ -f "${home}/.ssh/authorized_keys" ] && chmod 0600 "${home}/.ssh/authorized_keys"
 
 # Bootstrap Oh My Fish into $HOME if missing. The image build does this too,
 # but the home PVC mount shadows that install — so we redo it on first PVC use.
