@@ -49,7 +49,7 @@ WORKDIR /home/${USERNAME}
 RUN yay -S --noconfirm --answerdiff=None --answerclean=None \
         --mflags="--noconfirm --nocheck" \
         1password-cli kubecolor kubeconform-bin talosctl-bin \
-        flux-bin cilium-cli helmfile mise-bin
+        flux-bin cilium-cli helmfile mise
 
 RUN curl -fsSL https://raw.githubusercontent.com/oh-my-fish/oh-my-fish/master/bin/install -o /tmp/omf-install \
  && fish /tmp/omf-install --noninteractive --yes \
