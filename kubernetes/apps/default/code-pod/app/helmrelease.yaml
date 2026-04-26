@@ -164,6 +164,12 @@ spec:
           code-pod:
             app:
               - path: /home/jsenecal/.cache
+      ssh-host-keys:
+        existingClaim: code-pod-ssh-host-keys
+        advancedMounts:
+          code-pod:
+            app:
+              - path: /var/lib/code-pod/ssh-host-keys
       tailscale-state:
         type: emptyDir
         advancedMounts:

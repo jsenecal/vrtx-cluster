@@ -3,7 +3,26 @@ set -euo pipefail
 
 : "${USERNAME:?USERNAME must be set in the image environment}"
 
-ssh-keygen -A
+# Persistent host keys live on a dedicated PVC mounted here. Generate any
+# missing keys; sshd is told to use them via a generated sshd_config drop-in.
+hostkeys_dir="/var/lib/code-pod/ssh-host-keys"
+mkdir -p "${hostkeys_dir}"
+chown root:root "${hostkeys_dir}"
+chmod 0700 "${hostkeys_dir}"
+for keytype in ed25519 rsa ecdsa; do
+    keyfile="${hostkeys_dir}/ssh_host_${keytype}_key"
+    if [ ! -s "${keyfile}" ]; then
+        ssh-keygen -q -N "" -t "${keytype}" -f "${keyfile}"
+    fi
+done
+chown root:root "${hostkeys_dir}"/ssh_host_*
+chmod 0600 "${hostkeys_dir}"/ssh_host_*_key
+chmod 0644 "${hostkeys_dir}"/ssh_host_*_key.pub
+cat > /etc/ssh/sshd_config.d/00-hostkeys.conf <<EOF
+HostKey ${hostkeys_dir}/ssh_host_ed25519_key
+HostKey ${hostkeys_dir}/ssh_host_rsa_key
+HostKey ${hostkeys_dir}/ssh_host_ecdsa_key
+EOF
 
 home="/home/${USERNAME}"
 
