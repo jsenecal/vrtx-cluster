@@ -35,7 +35,7 @@ COPY rootfs/ /
 
 RUN groupadd -g ${GID} ${USERNAME} \
  && useradd -l -m -u ${UID} -g ${GID} -G wheel -s /usr/bin/fish ${USERNAME} \
- && chmod 0440 /etc/sudoers.d/wheel-pacman \
+ && chmod 0440 /etc/sudoers.d/wheel-nopasswd \
  && chmod 0755 /usr/local/bin/code-pod-entrypoint.sh
 
 RUN npm config --global set prefix /usr/local \
