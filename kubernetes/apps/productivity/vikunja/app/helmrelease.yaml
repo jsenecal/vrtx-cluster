@@ -29,7 +29,7 @@ spec:
           app:
             image:
               repository: ghcr.io/go-vikunja/vikunja
-              tag: latest@sha256:a96c20c0997bae4a445bf717002328524c5449c2b64391032c671ff4e1d8b2fa # v2.2.2
+              tag: latest@sha256:f6b80393c1998cd5cd0dc38d24762c59ab4c10000a6f1032ef5b554e262cab93 # v2.2.2
             env:
               VIKUNJA_SERVICE_PUBLICURL: "https://todo.${SECRET_DOMAIN}"
               VIKUNJA_SERVICE_TIMEZONE: America/Toronto
