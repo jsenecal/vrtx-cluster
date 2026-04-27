@@ -86,10 +86,10 @@ spec:
                   metadataDevice: /dev/disk/by-id/nvme-INTEL_SSDPED1D480GAH_PHMB8332004S480JGN
           - name: vrtx-bravo
             devices:
-              - name: /dev/disk/by-path/pci-0000:09:00.0-scsi-0:2:2:0
+              - name: /dev/disk/by-id/dm-uuid-mpath-36c81f660f27c950030de554a640cb77d
                 config:
                   metadataDevice: /dev/disk/by-id/nvme-INTEL_SSDPED1D480GAH_PHMB833200KJ480JGN
-              - name: /dev/disk/by-path/pci-0000:09:00.0-scsi-0:2:3:0
+              - name: /dev/disk/by-id/dm-uuid-mpath-36c81f660f27c950030de74e44648bdeb
                 config:
                   metadataDevice: /dev/disk/by-id/nvme-INTEL_SSDPED1D480GAH_PHMB833200KJ480JGN
           - name: vrtx-charlie
