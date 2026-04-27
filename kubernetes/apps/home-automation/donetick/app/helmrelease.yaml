@@ -27,7 +27,7 @@ spec:
           app:
             image:
               repository: donetick/donetick
-              tag: v0.1.64
+              tag: v0.1.75
             env:
               TZ: ${TIMEZONE}
               DT_SQLITE_PATH: /donetick-data/donetick.db
