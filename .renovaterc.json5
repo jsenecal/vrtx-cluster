@@ -88,6 +88,20 @@
       },
     },
     {
+      description: 'Pin emqx-operator to 2.2.x (2.3+ drops OSS support; calls /api/v5/load_rebalance/global_status which only exists in EMQX 5.9+ Enterprise)',
+      matchDatasources: [
+        'helm',
+      ],
+      matchPackageNames: [
+        'emqx-operator',
+      ],
+      matchUpdateTypes: [
+        'major',
+        'minor',
+      ],
+      enabled: false,
+    },
+    {
       description: 'Auto-merge GitHub Actions',
       matchManagers: [
         'github-actions',
