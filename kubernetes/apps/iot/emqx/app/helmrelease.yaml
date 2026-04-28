@@ -18,7 +18,9 @@ spec:
   chart:
     spec:
       chart: emqx-operator
-      version: 2.3.0
+      # 2.3.0 requires EMQX 5.9+ (calls /api/v5/load_rebalance/global_status).
+      # Stay on 2.2.x until we bump EMQX core.
+      version: 2.2.29
       sourceRef:
         kind: HelmRepository
         name: emqx-operator
