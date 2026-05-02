@@ -17,3 +17,15 @@ resources:
   - ./smartctl-exporter/ks.yaml
   - ./snmp-exporter/ks.yaml
   - ./unpoller/ks.yaml
+patches:
+  # node-exporter (DS, hostNetwork) and smartctl-exporter (DS, privileged
+  # for /dev SMART access) need PSA exemption. Other workloads in this
+  # namespace (Grafana, Prometheus, Loki, Alertmanager, etc.) are not
+  # privileged in practice — the label just disables the check for them.
+  - target:
+      kind: Namespace
+    patch: |-
+      - op: add
+        path: /metadata/labels
+        value:
+          pod-security.kubernetes.io/enforce: privileged
