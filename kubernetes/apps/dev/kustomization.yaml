@@ -1,0 +1,20 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: dev
+components:
+  - ../../components/common
+resources:
+  - ./code-pod/ks.yaml
+patches:
+  # code-pod runs Docker-in-Docker (privileged) for personal dev work.
+  # Dedicated namespace keeps the PSA carve-out scoped to dev tooling
+  # only; default stays at baseline.
+  - target:
+      kind: Namespace
+    patch: |-
+      - op: add
+        path: /metadata/labels
+        value:
+          pod-security.kubernetes.io/enforce: privileged
