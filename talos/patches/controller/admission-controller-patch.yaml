@@ -1,4 +1,23 @@
-# Disable default admission controllers (strategic merge patch format)
+# Keep cluster-wide PodSecurity "baseline" enforcement, but exempt the
+# OpenEBS local-PV provisioner ServiceAccount. It creates a privileged
+# `init-pvc-*` helper pod inline in the requesting PVC's namespace to mkdir
+# the hostpath; that helper inherently violates baseline. Exempting the SA
+# is the narrowest carve-out — only pods created by this account bypass
+# PSA, regardless of namespace.
 cluster:
   apiServer:
-    admissionControl: []
+    admissionControl:
+      - name: PodSecurity
+        configuration:
+          apiVersion: pod-security.admission.config.k8s.io/v1alpha1
+          kind: PodSecurityConfiguration
+          defaults:
+            enforce: baseline
+            enforce-version: latest
+            audit: restricted
+            audit-version: latest
+            warn: restricted
+            warn-version: latest
+          exemptions:
+            usernames:
+              - system:serviceaccount:openebs-system:openebs-localpv-provisioner
