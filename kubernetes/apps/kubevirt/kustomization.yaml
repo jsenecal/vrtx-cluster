@@ -8,3 +8,14 @@ components:
 resources:
   - ./kubevirt/ks.yaml
   - ./cdi/ks.yaml
+patches:
+  # virt-handler (DS), virt-launcher VM pods, and CDI importer/uploader/cloner
+  # pods all need privileged + hostPath; baseline PSA blocks them. Dedicated
+  # namespace, so relaxing PSA enforcement here is scoped tightly.
+  - target:
+      kind: Namespace
+    patch: |-
+      - op: add
+        path: /metadata/labels
+        value:
+          pod-security.kubernetes.io/enforce: privileged
