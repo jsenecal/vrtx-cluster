@@ -11,4 +11,3 @@ resources:
   - ./cloudflare-dns/ks.yaml
   - ./echo/ks.yaml
   - ./unifi-dns/ks.yaml
-  - ./multus/ks.yaml

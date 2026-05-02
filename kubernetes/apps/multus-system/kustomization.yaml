@@ -1,0 +1,20 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: multus-system
+components:
+  - ../../components/common
+resources:
+  - ./multus/ks.yaml
+patches:
+  # multus DaemonSet is privileged + hostNetwork; this namespace is dedicated
+  # to that workload alone, so we relax PSA enforcement here. All other
+  # namespaces remain at cluster-wide baseline.
+  - target:
+      kind: Namespace
+    patch: |-
+      - op: add
+        path: /metadata/labels
+        value:
+          pod-security.kubernetes.io/enforce: privileged
