@@ -7,3 +7,14 @@ components:
   - ../../components/common
 resources:
   - ./rook-ceph/ks.yaml
+patches:
+  # rook-ceph mon/osd/mgr/csi pods all need privileged + hostNetwork +
+  # hostPath; baseline PSA blocks them. This namespace is dedicated to
+  # rook-ceph workloads, so relax PSA enforcement here.
+  - target:
+      kind: Namespace
+    patch: |-
+      - op: add
+        path: /metadata/labels
+        value:
+          pod-security.kubernetes.io/enforce: privileged
