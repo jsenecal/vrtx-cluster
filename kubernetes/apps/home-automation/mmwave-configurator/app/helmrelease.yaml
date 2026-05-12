@@ -24,7 +24,7 @@ spec:
           app:
             image:
               repository: everythingsmarthome/everything-presence-mmwave-configurator
-              tag: 2.0.12
+              tag: 2.1.0
             env:
               - name: NODE_OPTIONS
                 value: "--max-old-space-size=384"
