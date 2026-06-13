@@ -19,7 +19,7 @@ spec:
         fsGroup: 1000
       containers:
       - name: restic-info
-        image: quay.io/backube/volsync:0.15.0
+        image: quay.io/backube/volsync:0.16.0
         imagePullPolicy: IfNotPresent
         env:
         - name: RESTIC_CACHE_DIR
