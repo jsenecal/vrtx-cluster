@@ -1,6 +1,6 @@
 lovelace:
   dashboards:
-    maximalist:
+    lovelace-maximalist:
       mode: yaml
       title: Maximalist
       icon: mdi:view-dashboard-variant
