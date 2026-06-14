@@ -22,3 +22,4 @@ talosconfig
 .DS_Store
 Thumbs.db
 talos/backups/
+.worktrees/
