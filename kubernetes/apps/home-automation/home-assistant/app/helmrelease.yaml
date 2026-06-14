@@ -88,6 +88,31 @@ spec:
               limits:
                 memory: 8Gi
 
+          git-sync:
+            image:
+              # renovate: datasource=docker depName=registry.k8s.io/git-sync/git-sync
+              repository: registry.k8s.io/git-sync/git-sync
+              tag: v4.7.0@sha256:d232fd13474ba1b46dba431af2b1411b9d9afacda55ae644d2a32e43975128dd
+            env:
+              GITSYNC_REPO: https://github.com/jsenecal/home-assistant-yaml
+              GITSYNC_REF: main
+              GITSYNC_ROOT: /git
+              GITSYNC_LINK: repo
+              GITSYNC_PERIOD: 30s
+              HOME: /tmp
+            resources:
+              requests:
+                cpu: 5m
+                memory: 32Mi
+              limits:
+                memory: 64Mi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
+
     service:
       app:
         controller: home-assistant
@@ -114,6 +139,15 @@ spec:
             app:
               - path: /venv
                 subPath: hass-venv
+      hass-config-src:
+        type: emptyDir
+        advancedMounts:
+          home-assistant:
+            git-sync:
+              - path: /git
+            app:
+              - path: /config/hass-config-src
+                readOnly: true
       tmpfs:
         type: emptyDir
         advancedMounts:
@@ -126,6 +160,9 @@ spec:
                 subPath: code-server-tmp
               - path: /nonexistent
                 subPath: nonexistent
+            git-sync:
+              - path: /tmp
+                subPath: git-sync-tmp
 
     route:
       internal:
