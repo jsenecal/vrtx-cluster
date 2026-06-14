@@ -148,6 +148,15 @@ spec:
             app:
               - path: /config/hass-config-src
                 readOnly: true
+      lovelace-maximalist:
+        type: configMap
+        name: home-assistant-lovelace-maximalist
+        advancedMounts:
+          home-assistant:
+            app:
+              - path: /config/packages/lovelace_maximalist.yaml
+                subPath: lovelace_maximalist.yaml
+                readOnly: true
       tmpfs:
         type: emptyDir
         advancedMounts:

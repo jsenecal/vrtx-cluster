@@ -1,0 +1,9 @@
+lovelace:
+  dashboards:
+    maximalist:
+      mode: yaml
+      title: Maximalist
+      icon: mdi:view-dashboard-variant
+      filename: hass-config-src/repo/lovelace/lovelace-maximalist.yaml
+      show_in_sidebar: true
+      require_admin: false

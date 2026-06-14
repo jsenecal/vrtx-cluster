@@ -5,6 +5,14 @@ kind: Kustomization
 resources:
   - ./helmrelease.yaml
   - ./pvc.yaml
+configMapGenerator:
+  - name: home-assistant-lovelace-maximalist
+    files:
+      - lovelace_maximalist.yaml=./resources/lovelace_maximalist.yaml
+generatorOptions:
+  disableNameSuffixHash: true
+  annotations:
+    kustomize.toolkit.fluxcd.io/substitute: disabled
 postBuild:
   substituteFrom:
     - kind: Secret
