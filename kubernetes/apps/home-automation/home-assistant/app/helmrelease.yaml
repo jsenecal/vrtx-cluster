@@ -47,6 +47,13 @@ spec:
               tag: 2026.6.3
             env:
               VENV_FOLDER: /venv
+            lifecycle:
+              postStart:
+                exec:
+                  command:
+                    - sh
+                    - -c
+                    - chmod -R g+w /config/themes 2>/dev/null || true
             resources:
               requests:
                 cpu: 47m
