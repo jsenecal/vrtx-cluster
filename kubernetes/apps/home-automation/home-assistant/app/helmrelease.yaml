@@ -164,6 +164,18 @@ spec:
               - path: /config/packages/lovelace_maximalist.yaml
                 subPath: lovelace_maximalist.yaml
                 readOnly: true
+      psychrometry-assets:
+        type: configMap
+        name: home-assistant-psychrometry-assets
+        advancedMounts:
+          home-assistant:
+            app:
+              - path: /config/www/psychrometry-chart.svg
+                subPath: psychrometry-chart.svg
+                readOnly: true
+              - path: /config/www/psychrometry-chart.css
+                subPath: psychrometry-chart.css
+                readOnly: true
       tmpfs:
         type: emptyDir
         advancedMounts:

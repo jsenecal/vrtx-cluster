@@ -9,6 +9,10 @@ configMapGenerator:
   - name: home-assistant-lovelace-maximalist
     files:
       - lovelace_maximalist.yaml=./resources/lovelace_maximalist.yaml
+  - name: home-assistant-psychrometry-assets
+    files:
+      - psychrometry-chart.svg=./www/psychrometry-chart.svg
+      - psychrometry-chart.css=./www/psychrometry-chart.css
 generatorOptions:
   disableNameSuffixHash: true
   annotations:
