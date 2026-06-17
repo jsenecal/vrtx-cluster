@@ -143,7 +143,7 @@ Three tiles side-by-side inside a horizontal `custom:layout-card`:
 condition icon, current temperature, and a compact hourly strip.
 
 #### 2b. Extra attributes tile
-`type: markdown` or `custom:button-card` (template-less) showing:
+`type: markdown` showing:
 - Apparent temperature: `{{ state_attr('weather.weather','apparent_temperature') }} °C`
 - Wind: `{{ states('weather.weather') }}` direction + `{{ state_attr('weather.weather','wind_speed') }} km/h` gusts `{{ state_attr('weather.weather','wind_gust_speed') }}`
 - UV Index: `{{ state_attr('weather.weather','uv_index') }}`
