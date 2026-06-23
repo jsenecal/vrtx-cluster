@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.24
+# syntax=docker/dockerfile:1.25
 FROM docker.io/library/archlinux:base-devel AS aur-build
 
 RUN pacman -Syu --noconfirm git \
