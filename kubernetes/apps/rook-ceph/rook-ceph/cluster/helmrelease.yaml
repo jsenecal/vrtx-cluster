@@ -31,6 +31,20 @@ spec:
     cleanupOnFail: true
     remediation:
       retries: 3
+  postRenderers:
+    - kustomize:
+        patches:
+          - patch: |-
+              - op: replace
+                path: /spec/groups/7/rules/0/expr
+                value: >-
+                  (max by(cluster,pool_id,instance)(predict_linear(ceph_pool_percent_used[2d], 3600 * 24 * 5))
+                  * on(cluster,pool_id, instance) group_right() ceph_pool_metadata) >= 95
+            target:
+              group: monitoring.coreos.com
+              version: v1
+              kind: PrometheusRule
+              name: prometheus-ceph-rules
   values:
     monitoring:
       enabled: true
