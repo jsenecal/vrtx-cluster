@@ -29,7 +29,7 @@ spec:
               repository: donetick/donetick
               tag: v0.1.75
             env:
-              TZ: ${TIMEZONE}
+              TZ: America/Toronto
               DT_SQLITE_PATH: /donetick-data/donetick.db
               DT_DATABASE_TYPE: sqlite
               DT_SERVER_PORT: "2021"
