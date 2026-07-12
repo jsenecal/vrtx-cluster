@@ -35,10 +35,18 @@ fi
 
 # Strip group/world write on $HOME and ~/.ssh every start. Kubernetes' fsGroup
 # sets mount roots group-writable (recursing through .ssh too), which sshd's
-# StrictModes rejects.
+# StrictModes rejects and ssh/git refuse to use as private keys ("UNPROTECTED
+# PRIVATE KEY FILE"). Re-tighten on every start, not just first init.
 chmod g-w,o-w "${home}"
-[ -d "${home}/.ssh" ] && chmod 0700 "${home}/.ssh"
-[ -f "${home}/.ssh/authorized_keys" ] && chmod 0600 "${home}/.ssh/authorized_keys"
+if [ -d "${home}/.ssh" ]; then
+    chmod 0700 "${home}/.ssh"
+    find "${home}/.ssh" -maxdepth 1 -type f \
+        ! -name '*.pub' ! -name known_hosts ! -name config \
+        -exec chmod 0600 {} +
+    find "${home}/.ssh" -maxdepth 1 -type f \
+        \( -name '*.pub' -o -name known_hosts -o -name config \) \
+        -exec chmod 0644 {} +
+fi
 
 # Bootstrap Oh My Fish into $HOME if missing. The image build does this too,
 # but the home PVC mount shadows that install — so we redo it on first PVC use.
@@ -49,6 +57,17 @@ if [ ! -d "${home}/.local/share/omf" ]; then
         fish /tmp/omf-install --noninteractive --yes
         rm -f /tmp/omf-install
     ' || echo "warn: omf install failed; continuing"
+fi
+
+# Same PVC-shadow issue for oh-my-tmux.
+if [ ! -d "${home}/.tmux" ]; then
+    runuser -u "${USERNAME}" -- bash -c '
+        set -e
+        cd ~
+        git clone --depth=1 https://github.com/gpakosz/.tmux.git
+        ln -s -f .tmux/.tmux.conf .tmux.conf
+        [ -f .tmux.conf.local ] || cp .tmux/.tmux.conf.local .
+    ' || echo "warn: oh-my-tmux install failed; continuing"
 fi
 
 exec /usr/sbin/sshd -D -e

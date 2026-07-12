@@ -5,6 +5,7 @@ kind: Kustomization
 resources:
   - ./pvc-ssh-host-keys.yaml
   - ./pvc-docker.yaml
+  - ./pvc-tailscale-state.yaml
   - ./externalsecret-tailscale.yaml
   - ./externalsecret-ssh.yaml
   - ./externalsecret-anthropic.yaml

@@ -224,7 +224,7 @@ spec:
             dind:
               - path: /var/run/docker
       tailscale-state:
-        type: emptyDir
+        existingClaim: code-pod-tailscale-state
         advancedMounts:
           code-pod:
             tailscale:
