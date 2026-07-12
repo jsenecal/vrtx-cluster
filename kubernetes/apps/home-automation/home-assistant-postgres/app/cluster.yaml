@@ -1,0 +1,29 @@
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: home-assistant-postgres
+spec:
+  instances: 1
+
+  # renovate: datasource=docker depName=ghcr.io/cloudnative-pg/postgresql
+  imageName: ghcr.io/cloudnative-pg/postgresql:18.1-202601120807-standard-bookworm
+
+  storage:
+    storageClass: ceph-block
+    size: 10Gi
+
+  bootstrap:
+    initdb:
+      database: homeassistant
+      owner: homeassistant
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      memory: 1Gi
+
+  monitoring:
+    enablePodMonitor: true
