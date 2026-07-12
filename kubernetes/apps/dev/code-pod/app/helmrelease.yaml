@@ -26,7 +26,7 @@ spec:
           seed-authorized-keys:
             image:
               repository: ghcr.io/jsenecal/code-pod
-              tag: main@sha256:07a6287ee1ed0dde8f3735fe87b0b8df6a1b24f61336eda7f1a7f02340b60f59
+              tag: main@sha256:d5e96958ffdf14c648902956d8f1690a44be59a9c58f9070ce9586c91505838e
             command: ["/bin/bash", "-c"]
             args:
               - |
@@ -46,7 +46,7 @@ spec:
           app:
             image:
               repository: ghcr.io/jsenecal/code-pod
-              tag: main@sha256:07a6287ee1ed0dde8f3735fe87b0b8df6a1b24f61336eda7f1a7f02340b60f59
+              tag: main@sha256:d5e96958ffdf14c648902956d8f1690a44be59a9c58f9070ce9586c91505838e
             env:
               DOCKER_HOST: unix:///var/run/docker/docker.sock
             envFrom:
