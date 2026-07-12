@@ -59,15 +59,18 @@ if [ ! -d "${home}/.local/share/omf" ]; then
     ' || echo "warn: omf install failed; continuing"
 fi
 
-# Same PVC-shadow issue for oh-my-tmux.
+# Same PVC-shadow issue for oh-my-tmux. Runs as root, unlike the omf block
+# above: $HOME's group-write is stripped for sshd's StrictModes (see above),
+# so the unprivileged user can't create new top-level entries like .tmux/ or
+# .tmux.conf; chown the results afterward instead.
 if [ ! -d "${home}/.tmux" ]; then
-    runuser -u "${USERNAME}" -- bash -c '
+    (
         set -e
-        cd ~
-        git clone --depth=1 https://github.com/gpakosz/.tmux.git
-        ln -s -f .tmux/.tmux.conf .tmux.conf
-        [ -f .tmux.conf.local ] || cp .tmux/.tmux.conf.local .
-    ' || echo "warn: oh-my-tmux install failed; continuing"
+        git clone --depth=1 https://github.com/gpakosz/.tmux.git "${home}/.tmux"
+        ln -s -f .tmux/.tmux.conf "${home}/.tmux.conf"
+        [ -f "${home}/.tmux.conf.local" ] || cp "${home}/.tmux/.tmux.conf.local" "${home}/.tmux.conf.local"
+        chown -R "${USERNAME}:${USERNAME}" "${home}/.tmux" "${home}/.tmux.conf" "${home}/.tmux.conf.local"
+    ) || echo "warn: oh-my-tmux install failed; continuing"
 fi
 
 exec /usr/sbin/sshd -D -e
