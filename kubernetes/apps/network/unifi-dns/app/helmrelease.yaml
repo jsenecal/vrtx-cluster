@@ -58,6 +58,9 @@ spec:
             port: http-webhook
           initialDelaySeconds: 10
           timeoutSeconds: 5
+    extraArgs:
+      webhook-provider-read-timeout: 3m
+      webhook-provider-write-timeout: 3m
     triggerLoopOnEvent: true
     policy: sync
     sources: ["gateway-httproute", "service"]
