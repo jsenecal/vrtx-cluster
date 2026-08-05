@@ -2,6 +2,10 @@ machine:
   kubelet:
     extraConfig:
       serializeImagePulls: false
+      # Proactively prune unused image layers before Ceph's mon_data_avail_warn
+      # threshold trips (mon store shares the EPHEMERAL partition with containerd)
+      imageGCHighThresholdPercent: 75
+      imageGCLowThresholdPercent: 65
     nodeIP:
       validSubnets:
         - 192.168.168.0/24
