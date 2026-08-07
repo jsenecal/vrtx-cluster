@@ -10,20 +10,20 @@ spec:
       rules:
         - alert: GatusEndpointDown
           expr: |
-            gatus_results_endpoint_success{group="external"} == 0
+            gatus_results_endpoint_success{group=~"Public Services|Infrastructure"} == 0
           for: 5m
           annotations:
             summary: >-
-              The {{ $labels.name }} endpoint is down
+              The {{ $labels.name }} endpoint ({{ $labels.group }}) is down
           labels:
             severity: critical
 
-        - alert: GatusEndpointExposed
+        - alert: GatusInternalEndpointDown
           expr: |
-            gatus_results_endpoint_success{group="guarded"} == 0
+            gatus_results_endpoint_success{group=~"Internal Services|IoT"} == 0
           for: 5m
           annotations:
             summary: >-
-              The {{ $labels.name }} endpoint has a public DNS record and is exposed
+              The {{ $labels.name }} endpoint ({{ $labels.group }}) is down
           labels:
-            severity: critical
+            severity: warning

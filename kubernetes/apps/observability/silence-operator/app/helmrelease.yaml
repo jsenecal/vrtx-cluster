@@ -67,3 +67,17 @@ spec:
             - name: device
               value: /dev/sd.*
               isRegex: true
+      # erpnext is intentionally offline; silence its Gatus down alert until it returns
+      - apiVersion: monitoring.giantswarm.io/v1alpha1
+        kind: Silence
+        metadata:
+          name: gatus-erpnext-expected-down
+          namespace: observability
+        spec:
+          matchers:
+            - name: alertname
+              value: GatusEndpointDown
+              isRegex: false
+            - name: name
+              value: erpnext
+              isRegex: false
