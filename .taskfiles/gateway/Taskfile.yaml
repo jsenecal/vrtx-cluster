@@ -1,0 +1,99 @@
+---
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: '3'
+
+# Health checks for the Cilium Gateway API ingress data plane and the Gatus
+# synthetic endpoint checks. Motivated by the 2026-08-07 outage where a Cilium
+# major upgrade left Envoy with zero TLS certs (empty cilium-secrets) and every
+# HTTPS gateway silently reset connections.
+
+tasks:
+
+  health:
+    desc: Full gateway + Cilium data-plane + Gatus endpoint health check
+    summary: |
+      One-shot health report covering the pieces that broke during the
+      2026-08-07 Gateway API TLS outage:
+        - cilium / cilium-envoy / cilium-operator pod status
+        - Envoy loaded TLS certificate count (0 == ingress down)
+        - cilium-secrets sync count (Gateway TLS secrets)
+        - Gateway Programmed status
+        - Gatus endpoint success (which public/internal endpoints are down)
+    cmds:
+      - task: pods
+      - task: certs
+      - task: secrets
+      - task: gateways
+      - task: endpoints
+
+  pods:
+    desc: Show Cilium agent / Envoy / operator pod status
+    cmds:
+      - |
+        echo "=== Cilium data-plane pods ==="
+        kubectl -n kube-system get pods \
+          -l 'k8s-app in (cilium,cilium-envoy)' \
+          -o wide --no-headers | awk '{printf "%-24s %-10s %s\n", $1, $3, $7}'
+        kubectl -n kube-system get pods -l io.cilium/app=operator \
+          --no-headers | awk '{printf "%-24s %-10s\n", $1, $3}'
+
+  certs:
+    desc: Show TLS certificates Envoy currently has loaded (0 == ingress broken)
+    summary: |
+      Queries the Envoy admin interface via cilium-dbg. During the outage this
+      returned an empty list; healthy state shows one cert per Gateway listener.
+    cmds:
+      - |
+        AGENT=$(kubectl -n kube-system get pod -l k8s-app=cilium -o name | head -1)
+        if [ -z "$AGENT" ]; then echo "No cilium agent pod found"; exit 1; fi
+        echo "=== Envoy loaded TLS certificates ==="
+        DUMP=$(kubectl -n kube-system exec "${AGENT##*/}" -- cilium-dbg envoy admin certs 2>/dev/null)
+        COUNT=$(echo "$DUMP" | jq '.certificates | length')
+        echo "loaded certificates: ${COUNT}"
+        echo "$DUMP" | jq -r '.certificates[].cert_chain[]? | "  serial=\(.serial_number) days_until_expiration=\(.days_until_expiration)"'
+        if [ "${COUNT}" = "0" ]; then
+          echo "!! Envoy has NO certificates - Gateway HTTPS is down (check cilium-secrets / Gateway API CRDs)"
+          exit 1
+        fi
+
+  secrets:
+    desc: Show Gateway TLS secrets synced into cilium-secrets
+    cmds:
+      - |
+        echo "=== cilium-secrets (synced Gateway TLS) ==="
+        COUNT=$(kubectl -n cilium-secrets get secrets --no-headers 2>/dev/null | grep -c . || echo 0)
+        echo "synced secrets: ${COUNT}"
+        kubectl -n cilium-secrets get secrets --no-headers 2>/dev/null | awk '{print "  " $1}'
+        if [ "${COUNT}" = "0" ]; then
+          echo "!! cilium-secrets is EMPTY - operator Gateway API secret-sync not running (check Gateway API CRD versions)"
+          exit 1
+        fi
+
+  gateways:
+    desc: Show Gateway Programmed status and addresses
+    cmds:
+      - |
+        echo "=== Gateways ==="
+        kubectl -n kube-system get gateways \
+          -o custom-columns='NAME:.metadata.name,CLASS:.spec.gatewayClassName,PROGRAMMED:.status.conditions[?(@.type=="Programmed")].status,ADDRESS:.status.addresses[0].value'
+
+  endpoints:
+    desc: Show Gatus synthetic endpoint status (0 == failing)
+    summary: |
+      Reads gatus_results_endpoint_success from Prometheus. These checks hit the
+      public URLs through Cloudflare -> tunnel -> external gateway, so they cover
+      the real ingress path. Uses an ephemeral curl pod because the Prometheus
+      container is distroless.
+    cmds:
+      - |
+        echo "=== Gatus endpoint status (via Prometheus) ==="
+        JSON=$(kubectl -n observability run gatus-check-$$ --rm -i --restart=Never \
+          --image=curlimages/curl --timeout=30s --quiet -- \
+          curl -s 'http://kube-prometheus-stack-prometheus:9090/api/v1/query?query=gatus_results_endpoint_success' 2>/dev/null)
+        echo "$JSON" | jq -r '
+          .data.result
+          | sort_by(.metric.group, .metric.name)[]
+          | "\(if .value[1]=="0" then "DOWN" else "up  " end)  [\(.metric.group)] \(.metric.name)"'
+        DOWN=$(echo "$JSON" | jq '[.data.result[] | select(.value[1]=="0")] | length')
+        echo "---"
+        echo "endpoints down: ${DOWN}"

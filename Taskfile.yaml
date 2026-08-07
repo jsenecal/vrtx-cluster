@@ -22,6 +22,7 @@ includes:
   alertmanager: .taskfiles/alertmanager
   bootstrap: .taskfiles/bootstrap
   ceph: .taskfiles/ceph
+  gateway: .taskfiles/gateway
   talos: .taskfiles/talos
   volsync: .taskfiles/volsync
 
