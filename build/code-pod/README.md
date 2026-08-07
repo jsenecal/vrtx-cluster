@@ -21,7 +21,7 @@ docker exec -u jsenecal code-pod-test fish -c 'claude --version; gh --version; y
 docker rm -f code-pod-test
 ```
 
-To ssh in, drop a pubkey into `/home/jsenecal/.ssh/authorized_keys` (mode `0600`, owner `jsenecal`).
+To ssh in, drop a pubkey into `/etc/code-pod/ssh/authorized_keys` (sshd reads `AuthorizedKeysFile` from there, not from `~/.ssh`). In the cluster this path is the read-only `ssh-seed` Secret mount synced from 1Password; for a local `docker run` smoke test, bind-mount a file over that path instead.
 
 ## What's in the image
 

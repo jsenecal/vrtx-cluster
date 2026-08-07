@@ -34,9 +34,13 @@ if [ ! -e "${home}/.code-pod-initialised" ]; then
 fi
 
 # Strip group/world write on $HOME and ~/.ssh every start. Kubernetes' fsGroup
-# sets mount roots group-writable (recursing through .ssh too), which sshd's
-# StrictModes rejects and ssh/git refuse to use as private keys ("UNPROTECTED
-# PRIVATE KEY FILE"). Re-tighten on every start, not just first init.
+# sets mount roots group-writable (recursing through .ssh too), which ssh/git
+# refuse to use as private keys ("UNPROTECTED PRIVATE KEY FILE"). Only a
+# one-shot fix (it doesn't survive a later kubelet/CSI reconcile that re-widens
+# the mount without restarting this container) but it's cheap insurance, and
+# it's why authorized_keys is served from the read-only ssh-seed Secret mount
+# instead of a copy here: sshd never sees this volume's permissions for login.
+# Re-tighten on every start, not just first init.
 chmod g-w,o-w "${home}"
 if [ -d "${home}/.ssh" ]; then
     chmod 0700 "${home}/.ssh"

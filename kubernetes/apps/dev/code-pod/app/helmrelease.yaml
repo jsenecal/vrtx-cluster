@@ -22,26 +22,6 @@ spec:
         strategy: Recreate
         annotations:
           reloader.stakater.com/auto: "true"
-        initContainers:
-          seed-authorized-keys:
-            image:
-              repository: ghcr.io/jsenecal/code-pod
-              tag: main@sha256:1cacdeb0517ec0093ba06d7c9793708147ec88eecbd7072b71174c80c9f1b6de
-            command: ["/bin/bash", "-c"]
-            args:
-              - |
-                set -euo pipefail
-                target=/home/jsenecal/.ssh/authorized_keys
-                if [ ! -s "$target" ]; then
-                  install -d -o jsenecal -g jsenecal -m 0700 /home/jsenecal/.ssh
-                  install -o jsenecal -g jsenecal -m 0600 \
-                    /etc/code-pod/ssh/authorized_keys "$target"
-                fi
-            securityContext:
-              runAsUser: 0
-              capabilities:
-                drop: ["ALL"]
-                add: ["CHOWN", "DAC_OVERRIDE", "FOWNER"]
         containers:
           app:
             image:
@@ -187,8 +167,6 @@ spec:
         existingClaim: code-pod
         advancedMounts:
           code-pod:
-            seed-authorized-keys:
-              - path: /home/jsenecal
             app:
               - path: /home/jsenecal
       workspace:
@@ -234,6 +212,6 @@ spec:
         name: code-pod-ssh-secret
         advancedMounts:
           code-pod:
-            seed-authorized-keys:
+            app:
               - path: /etc/code-pod/ssh
                 readOnly: true
