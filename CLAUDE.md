@@ -29,6 +29,7 @@ If you manually create a PVC without dataSourceRef, Flux will continuously fail 
 - `task bootstrap:talos` - Bootstrap Talos cluster
 - `task bootstrap:apps` - Bootstrap apps into the cluster
 - `task reconcile` - Force Flux to pull changes from Git (only if automatic reconciliation isn't working)
+- `task gateway:health` - Full ingress health check: Cilium/Envoy/operator pods, Envoy loaded TLS cert count, cilium-secrets sync, Gateway Programmed status, and Gatus endpoint success. Subtasks: `gateway:certs`, `gateway:secrets`, `gateway:gateways`, `gateway:endpoints`, `gateway:pods`. Use this first when external/tunnel-fronted services are unreachable — `gateway:certs` returning 0 means Envoy has no TLS certs (see Gateway API CRD notes under Troubleshooting).
 - `task template:tidy` - Archive template related files
 - `task talos:reset` - Reset cluster nodes
 - `task talos:generate-config` - Generate Talos configuration files
@@ -617,6 +618,35 @@ kubectl -n <namespace> delete pod restic-list-snapshots
 2. **Failed backups after app changes**: Ensure the app's PVC name matches what volsync expects
 3. **Slow sync times**: Check if snapshot-based backups would be faster than direct copies
 4. **Missing backups**: Verify the schedule in ReplicationSource matches expectations
+
+### Gateway HTTPS Broken After a Cilium Upgrade (empty cilium-secrets / no Envoy certs)
+
+Run `task gateway:health` first when external/tunnel-fronted services are unreachable.
+
+**Symptoms:**
+- ALL HTTPS gateways (external + internal) reset the TLS connection immediately
+  after ClientHello; cloudflared logs `Unable to reach the origin ... connection reset by peer`.
+- `task gateway:certs` shows `loaded certificates: 0`; `task gateway:secrets` shows `cilium-secrets` empty.
+- A broken gateway RSTs the TCP connection; a healthy gateway with a down backend returns 5xx — use this to tell them apart.
+
+**Root cause:** Cilium major upgrades raise the required Gateway API CRD version.
+Gateway API CRDs here are installed by `scripts/bootstrap-apps.sh` (one-time, NOT
+Flux-managed), so they drift behind Cilium. When the operator can't find the
+required CRD version (e.g. `tlsroutes`/`referencegrants`/`backendtlspolicies` at
+`v1`), it aborts Gateway API controller init, so the `Gateway -> cilium-secrets`
+secret-sync never registers → Envoy gets 0 TLS certs → every handshake RSTs.
+Confirm in operator logs: `Required GatewayAPI resources are not found`. Cilium 1.20
+requires Gateway API v1.6.1.
+
+**Fix (forward, not rollback):**
+```bash
+# Apply the Gateway API version Cilium requires (safe if no tls/tcp/backendtls/referencegrant CRs exist)
+kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/experimental-install.yaml
+# Re-run the operator's resource check so secret-sync registers
+kubectl -n kube-system rollout restart deployment/cilium-operator
+# Verify recovery
+task gateway:health   # expect certs=4, cilium-secrets=4, gateways Programmed=True
+```
 
 ### HTTPRoute Not Attached to Gateway
 
