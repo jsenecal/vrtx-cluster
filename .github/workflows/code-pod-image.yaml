@@ -41,7 +41,9 @@ jobs:
           failure-threshold: warning
           # DL3016: pinning @anthropic-ai/claude-code breaks Renovate tracking.
           # DL3002: sshd is PID 1 and requires root to drop into the user session.
-          ignore: DL3016,DL3002
+          # DL3064: ARG/ENV USERNAME just holds the login account name, not a secret.
+          # DL3066: USER switches to named accounts (builder/jsenecal/root) by design.
+          ignore: DL3016,DL3002,DL3064,DL3066
 
       - name: Set up Buildx
         uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4
