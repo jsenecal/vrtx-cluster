@@ -213,5 +213,10 @@ spec:
         advancedMounts:
           code-pod:
             app:
-              - path: /etc/code-pod/ssh
+              # subPath so /etc/code-pod/ssh is an ordinary root:root 0755 dir,
+              # not a world-writable (1777) tmpfs Secret mount root. sshd's
+              # StrictModes walks the AuthorizedKeysFile path and refuses any
+              # group/world-writable directory, which the full-volume mount is.
+              - path: /etc/code-pod/ssh/authorized_keys
+                subPath: authorized_keys
                 readOnly: true
