@@ -1,0 +1,97 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/helm.toolkit.fluxcd.io/helmrelease_v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: erpnext-${TENANT}
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: erpnext
+      version: "8.0.71"
+      sourceRef:
+        kind: HelmRepository
+        name: erpnext
+        namespace: flux-system
+  maxHistory: 2
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  # Inject the MariaDB root password from the ExternalSecret without plaintext in Git.
+  valuesFrom:
+    - kind: Secret
+      name: erpnext-${TENANT}-secret
+      valuesKey: mariadb-root-password
+      targetPath: mariadb-sts.rootPassword
+  # mariadb-sts ships a livenessProbe but no startupProbe; add a generous one so
+  # InnoDB crash recovery cannot trigger a liveness-kill loop.
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: StatefulSet
+              name: ".*-mariadb-sts"
+            patch: |
+              - op: add
+                path: /spec/template/spec/containers/0/startupProbe
+                value:
+                  tcpSocket:
+                    port: 3306
+                  periodSeconds: 10
+                  failureThreshold: 60
+  values:
+    image:
+      repository: ghcr.io/jsenecal/erpnext-helpdesk
+      tag: v16.31.1
+      pullPolicy: IfNotPresent
+    nginx:
+      # Fixed site header: serve this bench's single site for any incoming Host,
+      # so both erp.* and helpdesk.* hostnames map to it.
+      envVars:
+        - name: FRAPPE_SITE_NAME_HEADER
+          value: erp.${SECRET_DOMAIN_2}
+    persistence:
+      worker:
+        enabled: true
+        size: 20Gi
+        storageClass: ceph-filesystem
+        accessModes:
+          - ReadWriteMany
+      logs:
+        enabled: false
+    ingress:
+      enabled: false
+    httproute:
+      enabled: false
+    mariadb-sts:
+      enabled: true
+      persistence:
+        storageClass: ceph-block
+        size: 20Gi
+      myCnf: |
+        [mysqld]
+        skip-character-set-client-handshake
+        skip-innodb-read-only-compressed
+        character-set-server=utf8mb4
+        collation-server=utf8mb4_unicode_ci
+        innodb_flush_log_at_trx_commit=2
+        innodb_buffer_pool_size=1G
+    jobs:
+      createSite:
+        enabled: true
+        siteName: erp.${SECRET_DOMAIN_2}
+        adminExistingSecret: erpnext-${TENANT}-secret
+        adminExistingSecretKey: admin-password
+        installApps:
+          - erpnext
+          - helpdesk
+          - telephony
+        dbType: mariadb
+      createMultipleSites:
+        enabled: false

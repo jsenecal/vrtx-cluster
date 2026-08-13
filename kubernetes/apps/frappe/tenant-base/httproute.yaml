@@ -1,0 +1,47 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/gateway.networking.k8s.io/httproute_v1.json
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: erpnext-${TENANT}
+spec:
+  parentRefs:
+    - name: external-prod
+      namespace: kube-system
+      sectionName: https
+  hostnames:
+    - erp.${SECRET_DOMAIN_2}
+  rules:
+    - backendRefs:
+        - name: erpnext-${TENANT}
+          port: 8080
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/gateway.networking.k8s.io/httproute_v1.json
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: erpnext-${TENANT}-helpdesk
+spec:
+  parentRefs:
+    - name: external-prod
+      namespace: kube-system
+      sectionName: https
+  hostnames:
+    - helpdesk.${SECRET_DOMAIN_2}
+  rules:
+    # Exact "/" redirects to the Helpdesk portal; all other paths pass through
+    # (so /helpdesk, /helpdesk/*, /api/*, /assets/* reach the backend).
+    - matches:
+        - path:
+            type: Exact
+            value: /
+      filters:
+        - type: RequestRedirect
+          requestRedirect:
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: /helpdesk
+            statusCode: 302
+    - backendRefs:
+        - name: erpnext-${TENANT}
+          port: 8080

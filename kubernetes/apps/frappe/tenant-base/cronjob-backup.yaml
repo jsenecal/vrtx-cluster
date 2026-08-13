@@ -1,0 +1,47 @@
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: erpnext-${TENANT}-backup
+spec:
+  schedule: "0 3 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        spec:
+          restartPolicy: Never
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+          containers:
+            - name: backup
+              image: ghcr.io/jsenecal/erpnext-helpdesk:v16.31.1
+              command: ["/bin/bash", "-c"]
+              args:
+                - |
+                  set -euo pipefail
+                  cd /home/frappe/frappe-bench
+                  SITE="erp.${SECRET_DOMAIN_2}"
+                  bench --site "$SITE" backup --with-files
+                  mkdir -p /backups
+                  cp -f sites/"$SITE"/private/backups/*-database.sql.gz   /backups/ || true
+                  cp -f sites/"$SITE"/private/backups/*-files.tar         /backups/ || true
+                  cp -f sites/"$SITE"/private/backups/*-private-files.tar /backups/ || true
+                  ls -1t /backups | tail -n +13 | while read -r f; do rm -f "/backups/$f"; done
+              volumeMounts:
+                - name: sites
+                  mountPath: /home/frappe/frappe-bench/sites
+                - name: backups
+                  mountPath: /backups
+          volumes:
+            - name: sites
+              persistentVolumeClaim:
+                claimName: erpnext-${TENANT}
+            - name: backups
+              persistentVolumeClaim:
+                claimName: erpnext-${TENANT}-backups
