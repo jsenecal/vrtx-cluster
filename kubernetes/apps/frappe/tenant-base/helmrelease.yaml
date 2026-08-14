@@ -6,6 +6,9 @@ metadata:
   name: erpnext-${TENANT}
 spec:
   interval: 30m
+  # First-time deploy pulls a large custom image and runs new-site (installs
+  # erpnext + helpdesk + telephony + migrate), which exceeds the 5m default.
+  timeout: 20m
   chart:
     spec:
       chart: erpnext
