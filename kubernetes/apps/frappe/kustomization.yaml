@@ -7,3 +7,15 @@ components:
   - ../../components/common
 resources:
   - ./tenants/loopnetworks/ks.yaml
+patches:
+  # The official ERPNext chart adds CAP_CHOWN to its containers (chowns the
+  # frappe-bench sites dir), which the cluster-wide baseline PSA blocks.
+  # Dedicated namespace, so relaxing PSA enforcement here is scoped tightly.
+  - target:
+      kind: Namespace
+    patch: |-
+      - op: add
+        path: /metadata/labels
+        value:
+          pod-security.kubernetes.io/enforce: privileged
+
