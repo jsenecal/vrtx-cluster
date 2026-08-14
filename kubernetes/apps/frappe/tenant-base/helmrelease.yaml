@@ -45,17 +45,30 @@ spec:
                     port: 3306
                   periodSeconds: 10
                   failureThreshold: 60
+          # Chart hardcodes FRAPPE_SITE_NAME_HEADER=$host; override to the fixed
+          # site name so both erp.* and helpdesk.* hosts serve this bench's site.
+          # Strategic merge merges container env by name (no duplicate key).
+          - target:
+              kind: Deployment
+              name: ".*-nginx"
+            patch: |
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: not-used
+              spec:
+                template:
+                  spec:
+                    containers:
+                      - name: nginx
+                        env:
+                          - name: FRAPPE_SITE_NAME_HEADER
+                            value: erp.${SECRET_DOMAIN_2}
   values:
     image:
       repository: ghcr.io/jsenecal/erpnext-helpdesk
       tag: v16.31.1
       pullPolicy: IfNotPresent
-    nginx:
-      # Fixed site header: serve this bench's single site for any incoming Host,
-      # so both erp.* and helpdesk.* hostnames map to it.
-      envVars:
-        - name: FRAPPE_SITE_NAME_HEADER
-          value: erp.${SECRET_DOMAIN_2}
     persistence:
       worker:
         enabled: true
