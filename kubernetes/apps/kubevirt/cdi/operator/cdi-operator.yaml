@@ -5480,6 +5480,15 @@ rules:
   - get
   - list
   - update
+- nonResourceURLs:
+  - /metrics
+  verbs:
+  - get
+- nonResourceURLs:
+  - /debug/pprof
+  - /debug/pprof/*
+  verbs:
+  - get
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
