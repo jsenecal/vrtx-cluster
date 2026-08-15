@@ -17,7 +17,7 @@
   ],
   timezone: 'America/Toronto',
   schedule: [
-    'before 9pm every weekend',
+    'after 8am and before 9pm every weekend',
   ],
   ignorePaths: [
     '**/*.sops.*',
