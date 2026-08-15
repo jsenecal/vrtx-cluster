@@ -15,8 +15,9 @@
     'prEditedNotification',
     'prIgnoreNotification',
   ],
+  timezone: 'America/Toronto',
   schedule: [
-    'every weekend',
+    'before 9pm every weekend',
   ],
   ignorePaths: [
     '**/*.sops.*',
@@ -240,6 +241,22 @@
       ],
       addLabels: [
         'renovate/github-release',
+      ],
+    },
+    {
+      description: 'CDI operator: never automerge — Renovate only bumps the cdi-operator image tag, leaving the vendored cdi-operator.yaml RBAC/CRDs stale (breaks metrics auth). The full manifest must be re-vendored by hand before merging.',
+      matchDatasources: [
+        'docker',
+      ],
+      matchPackageNames: [
+        '/kubevirt/cdi-operator/',
+      ],
+      automerge: false,
+      addLabels: [
+        'manual/re-vendor',
+      ],
+      prBodyNotes: [
+        '⚠️ **Re-vendor the full manifest before merging** — Renovate only bumps the image tag, so RBAC/CRDs drift and break the operator metrics auth:\n```sh\ncurl -sL https://github.com/kubevirt/containerized-data-importer/releases/download/{{{newVersion}}}/cdi-operator.yaml \\\n  -o kubernetes/apps/kubevirt/cdi/operator/cdi-operator.yaml\n```\nThe image tag is already `{{{newVersion}}}` in the fetched manifest, so no further edit is needed.',
       ],
     },
   ],
