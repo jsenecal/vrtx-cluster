@@ -128,8 +128,12 @@ spec:
             cpu: "1"
             memory: 2Gi
         mgr:
+          # Ceph 20.2.2 (Tentacle) mgr transiently balloons past 4Gi then
+          # collapses back to ~290Mi, OOMKilling the mgr container. Raised
+          # to 8Gi to see if it eventually stabilizes; likely a prometheus /
+          # diskprediction_local spike amplified by multipath device paths.
           limits:
-            memory: 4Gi
+            memory: 8Gi
           requests:
             cpu: "1"
             memory: 2Gi
