@@ -27,7 +27,7 @@ spec:
           app:
             image:
               repository: donetick/donetick
-              tag: v0.1.76
+              tag: v0.1.79
             env:
               TZ: America/Toronto
               DT_SQLITE_PATH: /donetick-data/donetick.db
