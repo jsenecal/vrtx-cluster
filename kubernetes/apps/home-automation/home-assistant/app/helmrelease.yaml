@@ -61,10 +61,10 @@ spec:
                     - chmod -R g+w /config/themes 2>/dev/null || true
             resources:
               requests:
-                cpu: 47m
-                memory: 2Gi
+                cpu: 1g
+                memory: 4Gi
               limits:
-                memory: 2Gi
+                memory: 8Gi
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
