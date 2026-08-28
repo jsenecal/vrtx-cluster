@@ -37,6 +37,14 @@ spec:
                 "ips": ["192.168.254.249/24"],
                 "mac": "3e:59:e4:f7:44:09"
               }]
+          # The upstream image declares no USER. Run as 1000 so /data is owned by
+          # the same uid the restic mover uses; the repository NFS export
+          # root-squashes, so a root mover cannot write it.
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+            fsGroupChangePolicy: OnRootMismatch
 
         containers:
           app:
@@ -74,8 +82,6 @@ spec:
                 memory: 1Gi
               limits:
                 memory: 4Gi
-            # The upstream image declares no USER and the entrypoint writes only
-            # to /data and /tmp, so it runs as root on a read-only root filesystem.
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true

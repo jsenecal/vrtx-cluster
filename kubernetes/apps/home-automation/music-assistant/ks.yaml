@@ -32,10 +32,6 @@ spec:
     substitute:
       APP: *appname
       VOLSYNC_CAPACITY: 10Gi
-      # The upstream image declares no USER, so the server writes /data as root.
-      # The restic mover must match or it cannot read the backup source.
-      VOLSYNC_PUID: "0"
-      VOLSYNC_PGID: "0"
     substituteFrom:
       - kind: Secret
         name: cluster-secrets
