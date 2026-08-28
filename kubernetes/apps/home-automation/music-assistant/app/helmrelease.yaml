@@ -1,0 +1,122 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app music-assistant
+spec:
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+    namespace: flux-system
+  dependsOn:
+    - name: rook-ceph-cluster
+      namespace: rook-ceph
+  values:
+    controllers:
+      music-assistant:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        # The static macvlan IP/MAC can only be held by one pod at a time, and
+        # /data is a RWO volume, so the old pod must be gone before the new one starts.
+        strategy: Recreate
+
+        pod:
+          annotations:
+            k8s.v1.cni.cncf.io/networks: |
+              [{
+                "name":"multus-iot",
+                "namespace": "multus-system",
+                "ips": ["192.168.252.167/24"],
+                "mac": "3e:59:e4:f7:44:08"
+              },
+              {
+                "name":"multus-lan",
+                "namespace": "multus-system",
+                "ips": ["192.168.254.249/24"],
+                "mac": "3e:59:e4:f7:44:09"
+              }]
+
+        containers:
+          app:
+            image:
+              repository: ghcr.io/music-assistant/server
+              tag: 2.10.0
+            env:
+              TZ: America/Toronto
+              LOG_LEVEL: info
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /
+                    port: &port 8095
+                  initialDelaySeconds: 0
+                  periodSeconds: 10
+                  timeoutSeconds: 5
+                  failureThreshold: 3
+              readiness: *probes
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /
+                    port: *port
+                  failureThreshold: 30
+                  periodSeconds: 10
+            resources:
+              requests:
+                cpu: 100m
+                memory: 1Gi
+              limits:
+                memory: 4Gi
+            # The upstream image declares no USER and the entrypoint writes only
+            # to /data and /tmp, so it runs as root on a read-only root filesystem.
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+
+    service:
+      app:
+        controller: music-assistant
+        ports:
+          http:
+            port: *port
+            primary: true
+          stream:
+            port: 8097
+
+    persistence:
+      data:
+        existingClaim: *app
+        globalMounts:
+          - path: /data
+      nfs-nas-music:
+        type: nfs
+        server: 192.168.168.4
+        path: /mnt/zpool/shares/media/Music
+        globalMounts:
+          - path: /media
+            readOnly: true
+      tmpfs:
+        type: emptyDir
+        globalMounts:
+          - path: /tmp
+
+    route:
+      app:
+        hostnames:
+          - "{{ .Release.Name }}.k8s.${SECRET_DOMAIN}"
+        parentRefs:
+          - name: internal
+            namespace: kube-system
+            sectionName: https
+        rules:
+          - backendRefs:
+              - name: *app
+                port: *port

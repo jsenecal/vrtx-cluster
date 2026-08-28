@@ -11,6 +11,7 @@ resources:
   - ./home-assistant/ks.yaml
   - ./home-assistant-postgres/ks.yaml
   - ./mmwave-configurator/ks.yaml
+  - ./music-assistant/ks.yaml
   # - ./scrypted/ks.yaml
   - ./zigbee2mqtt/ks.yaml
 components:

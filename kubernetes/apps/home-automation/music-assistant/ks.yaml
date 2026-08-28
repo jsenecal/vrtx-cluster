@@ -1,0 +1,41 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/kustomization-kustomize-v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: &appname music-assistant
+  namespace: &namespace home-automation
+spec:
+  targetNamespace: *namespace
+  commonMetadata:
+    labels:
+      app.kubernetes.io/name: *appname
+  interval: 30m
+  timeout: 5m
+  path: "./kubernetes/apps/home-automation/music-assistant/app"
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  wait: false
+  dependsOn:
+    - name: multus-networks
+      namespace: multus-system
+    - name: onepassword-connect
+      namespace: external-secrets
+    - name: volsync
+      namespace: volsync-system
+  components:
+    - ../../../../components/volsync
+  postBuild:
+    substitute:
+      APP: *appname
+      VOLSYNC_CAPACITY: 10Gi
+      # The upstream image declares no USER, so the server writes /data as root.
+      # The restic mover must match or it cannot read the backup source.
+      VOLSYNC_PUID: "0"
+      VOLSYNC_PGID: "0"
+    substituteFrom:
+      - kind: Secret
+        name: cluster-secrets
