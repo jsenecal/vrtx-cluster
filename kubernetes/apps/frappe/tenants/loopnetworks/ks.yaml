@@ -30,6 +30,7 @@ spec:
       TENANT: loopnetworks
       APP: erpnext-loopnetworks-backups
       VOLSYNC_CAPACITY: 20Gi
+      VOLSYNC_SCHEDULE: "14 * * * *"
     substituteFrom:
       - kind: Secret
         name: cluster-secrets

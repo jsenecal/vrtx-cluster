@@ -24,6 +24,7 @@ spec:
       APP: *app
       GATUS_PATH: /ping
       VOLSYNC_CAPACITY: 1Gi
+      VOLSYNC_SCHEDULE: "21 * * * *"
     substituteFrom:
       - name: cluster-secrets
         kind: Secret

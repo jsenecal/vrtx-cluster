@@ -33,6 +33,7 @@ spec:
       GATUS_SUBDOMAIN: todo
       GATUS_PATH: /health
       VOLSYNC_CAPACITY: 10Gi
+      VOLSYNC_SCHEDULE: "40 * * * *"
     substituteFrom:
       - kind: Secret
         name: cluster-secrets

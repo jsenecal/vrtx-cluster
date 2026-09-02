@@ -32,6 +32,7 @@ spec:
       APP: *app
       GATUS_SUBDOMAIN: taskchampion
       VOLSYNC_CAPACITY: 1Gi
+      VOLSYNC_SCHEDULE: "33 * * * *"
     substituteFrom:
       - kind: Secret
         name: cluster-secrets

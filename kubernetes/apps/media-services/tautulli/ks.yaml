@@ -22,6 +22,7 @@ spec:
       APP: *app
       GATUS_PATH: /status
       VOLSYNC_CAPACITY: 5Gi
+      VOLSYNC_SCHEDULE: "42 * * * *"
     substituteFrom:
       - name: cluster-secrets
         kind: Secret

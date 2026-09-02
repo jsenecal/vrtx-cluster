@@ -32,6 +32,7 @@ spec:
   postBuild:
     substitute:
       APP: *appname
+      VOLSYNC_SCHEDULE: "31 * * * *"
     substituteFrom:
       - kind: Secret
         name: cluster-secrets
@@ -70,6 +71,7 @@ spec:
   postBuild:
     substitute:
       APP: *appname
+      VOLSYNC_SCHEDULE: "16 * * * *"
     substituteFrom:
       - kind: Secret
         name: cluster-secrets

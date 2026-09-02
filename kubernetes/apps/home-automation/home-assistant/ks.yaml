@@ -37,6 +37,7 @@ spec:
       APP_UID: "65534"
       APP_GID: "65533"
       VOLSYNC_CAPACITY: 16Gi
+      VOLSYNC_SCHEDULE: "2 * * * *"
       GATUS_PATH: /auth/authorize
       GATUS_SUBDOMAIN: haus
     substituteFrom:

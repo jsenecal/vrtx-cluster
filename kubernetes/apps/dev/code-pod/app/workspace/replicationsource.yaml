@@ -7,7 +7,7 @@ metadata:
 spec:
   sourcePVC: code-pod-workspace
   trigger:
-    schedule: "0 4 * * *"
+    schedule: "55 4 * * *"
   restic:
     copyMethod: Snapshot
     pruneIntervalDays: 14
