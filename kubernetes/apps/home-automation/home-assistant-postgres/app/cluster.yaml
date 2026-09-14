@@ -11,7 +11,7 @@ spec:
 
   storage:
     storageClass: ceph-block
-    size: 32Gi
+    size: 100Gi
 
   bootstrap:
     initdb:
