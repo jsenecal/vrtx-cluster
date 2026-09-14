@@ -29,3 +29,28 @@ tasks:
       - test -f {{.ROOT_DIR}}/.sops.yaml
       - test -f {{.SCRIPTS_DIR}}/bootstrap-apps.sh
       - test -f {{.SOPS_AGE_KEY_FILE}}
+
+  crds:
+    desc: Re-apply the pinned CRD bundles to a running cluster
+    summary: |
+      Reconciles the CRD bundles that nothing else manages, for when Renovate
+      has bumped a pinned version in scripts/bootstrap-apps.sh but the cluster
+      is still on the old one. `task gateway:crds` reports that drift.
+
+      This is the safe way to apply a CRD bump. `task bootstrap:apps` is not:
+      it also runs apply_helm_releases, which re-runs helmfile against a live
+      Cilium, CoreDNS, cert-manager and Flux at their bootstrap-pinned
+      versions.
+
+      Only the CRDS_RECONCILED set is applied. The prometheus-operator bundle
+      is skipped on purpose: kube-prometheus-stack owns those CRDs day-2, and
+      the pinned bundle is the stripped-down variant, so re-applying it would
+      strip every field description off the chart's copy.
+
+      Idempotent -- each bundle is diffed first and only applied when it
+      differs.
+    cmd: bash {{.SCRIPTS_DIR}}/bootstrap-apps.sh --crds-only
+    preconditions:
+      - test -f {{.KUBECONFIG}}
+      - test -f {{.SCRIPTS_DIR}}/bootstrap-apps.sh
+      - which kubectl

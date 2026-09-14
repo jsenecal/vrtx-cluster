@@ -84,18 +84,39 @@ function apply_sops_secrets() {
     done
 }
 
-# CRDs to be applied before the helmfile charts are installed
-function apply_crds() {
-    log debug "Applying CRDs"
+# CRDs that must exist before the helmfile charts are installed.
+#
+# Nothing manages these after bootstrap, so `--crds-only` re-applies them
+# whenever Renovate bumps a version. Gateway API is the load-bearing one:
+# Cilium majors raise the Gateway API version the operator requires, and a
+# mismatch aborts Gateway API init, which takes all ingress TLS down with it.
+# `task gateway:crds` reports when the cluster has fallen behind these pins.
+readonly CRDS_RECONCILED=(
+    # renovate: datasource=github-releases depName=kubernetes-sigs/gateway-api
+    https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.2/experimental-install.yaml
+    # renovate: datasource=github-releases depName=kubernetes-sigs/external-dns
+    https://raw.githubusercontent.com/kubernetes-sigs/external-dns/v0.22.0/config/crd/standard/dnsendpoints.externaldns.k8s.io.yaml
+)
 
-    local -r crds=(
-        # renovate: datasource=github-releases depName=kubernetes-sigs/gateway-api
-        https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.2/experimental-install.yaml
-        # renovate: datasource=github-releases depName=prometheus-operator/prometheus-operator
-        https://github.com/prometheus-operator/prometheus-operator/releases/download/v0.93.1/stripped-down-crds.yaml
-        # renovate: datasource=github-releases depName=kubernetes-sigs/external-dns
-        https://raw.githubusercontent.com/kubernetes-sigs/external-dns/refs/tags/v0.22.0/docs/sources/crd/crd-manifest.yaml
-    )
+# CRDs needed only to get the chart that owns them installed. The chart
+# reconciles them from then on, so these are deliberately NOT re-applied to a
+# running cluster: the prometheus-operator bundle is the stripped-down variant,
+# and applying it over the full CRDs kube-prometheus-stack installs would strip
+# every field description off them.
+readonly CRDS_BOOTSTRAP_ONLY=(
+    # renovate: datasource=github-releases depName=prometheus-operator/prometheus-operator
+    https://github.com/prometheus-operator/prometheus-operator/releases/download/v0.93.1/stripped-down-crds.yaml
+)
+
+function apply_crds() {
+    local -r scope="${1:-all}"
+
+    log debug "Applying CRDs" "scope=${scope}"
+
+    local crds=("${CRDS_RECONCILED[@]}")
+    if [[ "${scope}" == "all" ]]; then
+        crds+=("${CRDS_BOOTSTRAP_ONLY[@]}")
+    fi
 
     for crd in "${crds[@]}"; do
         if kubectl diff --filename "${crd}" &>/dev/null; then
@@ -128,16 +149,37 @@ function apply_helm_releases() {
 }
 
 function main() {
-    check_cli helmfile kubectl kustomize sops talhelper yq
+    local -r mode="${1:-bootstrap}"
 
-    # Apply resources and Helm releases
-    wait_for_nodes
-    apply_namespaces
-    apply_sops_secrets
-    apply_crds
-    apply_helm_releases
+    case "${mode}" in
+        # Reconcile only the pinned CRD bundles against a running cluster.
+        # Renovate bumps the versions in apply_crds(), but nothing re-applies
+        # them, so the cluster drifts behind in silence until something that
+        # gates on a CRD version breaks. A full bootstrap is not a safe way to
+        # catch up: apply_helm_releases would re-run helmfile against a live
+        # Cilium, CoreDNS, cert-manager and Flux at their bootstrap-pinned
+        # versions. This is the safe path for applying a bump.
+        --crds-only)
+            check_cli kubectl
+            apply_crds reconciled
+            log info "CRDs reconciled"
+            ;;
+        bootstrap)
+            check_cli helmfile kubectl kustomize sops talhelper yq
 
-    log info "Congrats! The cluster is bootstrapped and Flux is syncing the Git repository"
+            # Apply resources and Helm releases
+            wait_for_nodes
+            apply_namespaces
+            apply_sops_secrets
+            apply_crds all
+            apply_helm_releases
+
+            log info "Congrats! The cluster is bootstrapped and Flux is syncing the Git repository"
+            ;;
+        *)
+            log error "Unknown argument, expected --crds-only or no argument" "arg=${mode}"
+            ;;
+    esac
 }
 
 main "$@"
