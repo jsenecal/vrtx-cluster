@@ -19,12 +19,14 @@ tasks:
         - cilium-secrets sync count (Gateway TLS secrets)
         - Gateway Programmed status
         - Gatus endpoint success (which public/internal endpoints are down)
+        - Gateway API CRD versions vs. the pinned bootstrap version
     cmds:
       - task: pods
       - task: certs
       - task: secrets
       - task: gateways
       - task: endpoints
+      - task: crds
 
   pods:
     desc: Show Cilium agent / Envoy / operator pod status
@@ -97,3 +99,62 @@ tasks:
         DOWN=$(echo "$JSON" | jq '[.data.result[] | select(.value[1]=="0")] | length')
         echo "---"
         echo "endpoints down: ${DOWN}"
+
+  crds:
+    desc: Check installed Gateway API CRD versions against the pinned bootstrap version
+    summary: |
+      Gateway API CRDs are installed by scripts/bootstrap-apps.sh, which runs
+      once at bootstrap and is NOT Flux-managed. Renovate bumps the pinned
+      version in that script, but nothing re-applies it, so the cluster drifts
+      behind silently.
+
+      That drift is not cosmetic: Cilium major upgrades raise the Gateway API
+      version the operator requires, and when the required version is missing
+      the operator aborts Gateway API init. Secret-sync never registers,
+      cilium-secrets stays empty, Envoy loads zero TLS certs, and every HTTPS
+      gateway resets connections. That was the 2026-08-07 outage.
+
+      Compares every installed gateway.networking.* CRD's bundle-version
+      annotation against the version pinned in the bootstrap script. Any
+      mismatch is drift, in either direction:
+        - older than pinned  -> a Renovate bump was never applied to the cluster
+        - not in the bundle  -> an orphan upstream removed; apply can never
+                                clean it up, only an explicit delete can
+
+      Fix drift by applying the pinned version, then restarting the operator so
+      its one-shot resource check re-runs:
+        kubectl apply --server-side -f \
+          https://github.com/kubernetes-sigs/gateway-api/releases/download/<pinned>/experimental-install.yaml
+        kubectl -n kube-system rollout restart deployment/cilium-operator
+    cmds:
+      - |
+        echo "=== Gateway API CRD versions ==="
+        SCRIPT="{{.SCRIPTS_DIR}}/bootstrap-apps.sh"
+        if [ ! -f "$SCRIPT" ]; then
+          echo "!! bootstrap script not found: $SCRIPT"
+          exit 1
+        fi
+        PINNED=$(grep -oE 'gateway-api/releases/download/v[0-9]+\.[0-9]+\.[0-9]+' "$SCRIPT" \
+          | head -1 | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+')
+        if [ -z "$PINNED" ]; then
+          echo "!! could not parse the pinned gateway-api version from $SCRIPT"
+          exit 1
+        fi
+        echo "pinned (scripts/bootstrap-apps.sh): ${PINNED}"
+        INSTALLED=$(kubectl get crd -o json | jq -r --arg p "$PINNED" '
+          .items[]
+          | select(.spec.group | test("^gateway\\.networking\\."))
+          | (.metadata.annotations["gateway.networking.k8s.io/bundle-version"] // "NONE") as $v
+          | "\(if $v == $p then "ok  " else "DRIFT" end)  \($v)  \(.metadata.name)"' | sort)
+        if [ -z "$INSTALLED" ]; then
+          echo "!! no gateway.networking.* CRDs installed at all - Gateway API is not bootstrapped"
+          exit 1
+        fi
+        echo "$INSTALLED" | awk '{printf "  %s  %-8s %s\n", $1, $2, $3}'
+        DRIFTED=$(echo "$INSTALLED" | grep -c '^DRIFT' || true)
+        echo "---"
+        echo "installed: $(echo "$INSTALLED" | grep -c .)   drifted: ${DRIFTED}"
+        if [ "${DRIFTED}" != "0" ]; then
+          echo "!! Gateway API CRDs do not match the pinned version - see 'task gateway:crds --summary'"
+          exit 1
+        fi
