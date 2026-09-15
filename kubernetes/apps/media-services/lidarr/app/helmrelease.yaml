@@ -34,6 +34,7 @@ spec:
               LIDARR__AUTH__REQUIRED: DisabledForLocalAddresses
               LIDARR__LOG__DBENABLED: "False"
               LIDARR__LOG__LEVEL: info
+              LIDARR__SERVER__ALLOWEDHOSTS: lidarr.k8s.${SECRET_DOMAIN},lidarr
               LIDARR__SERVER__PORT: &port 80
               LIDARR__UPDATE__BRANCH: develop
               TZ: America/Toronto
@@ -48,6 +49,9 @@ spec:
                   httpGet:
                     path: /ping
                     port: *port
+                    httpHeaders:
+                      - name: Host
+                        value: localhost
                   initialDelaySeconds: 0
                   periodSeconds: 10
                   timeoutSeconds: 1
