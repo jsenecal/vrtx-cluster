@@ -26,6 +26,9 @@ spec:
               SONARR__APP__THEME: dark
               SONARR__LOG__DBENABLED: "False"
               SONARR__LOG__LEVEL: info
+              # Inert on Sonarr 4.x, which has no AllowedHosts support; set now so the
+              # host check is already correct on the release that adds it. The probe
+              # Host header below must stay for the same reason.
               SONARR__SERVER__ALLOWEDHOSTS: sonarr.k8s.${SECRET_DOMAIN},sonarr
               SONARR__SERVER__PORT: &port 80
               SONARR__UPDATE__BRANCH: develop
