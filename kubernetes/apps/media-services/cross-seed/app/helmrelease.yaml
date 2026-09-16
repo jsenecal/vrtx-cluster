@@ -1,0 +1,99 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app cross-seed
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    controllers:
+      cross-seed:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            image:
+              repository: ghcr.io/cross-seed/cross-seed
+              tag: 6.13.7@sha256:a1fed512261fd968c55cb03c51cff9c6620aa76a34b3b591afca95c890aa8225
+            args: ["daemon"]
+            env:
+              CROSS_SEED_PORT: &port 80
+              TZ: America/Toronto
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /api/ping
+                    port: *port
+                  initialDelaySeconds: 0
+                  periodSeconds: 10
+                  timeoutSeconds: 1
+                  failureThreshold: 3
+              readiness: *probes
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+            resources:
+              requests:
+                cpu: 10m
+              limits:
+                memory: 1Gi
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+    service:
+      app:
+        controller: cross-seed
+        ports:
+          http:
+            port: *port
+    route:
+      app:
+        hostnames: ["{{ .Release.Name }}.k8s.${SECRET_DOMAIN}"]
+        parentRefs:
+          - name: internal
+            namespace: kube-system
+            sectionName: https
+        rules:
+          - backendRefs:
+              - name: *app
+                port: *port
+    persistence:
+      config:
+        existingClaim: *app
+      config-file:
+        type: secret
+        name: cross-seed-secret
+        globalMounts:
+          - path: /config/config.js
+            subPath: config.js
+            readOnly: true
+      tmp:
+        type: emptyDir
+      # Mounted at /downloads so pod paths are identical to Transmission's, and so
+      # the linkDir below shares an export (and therefore an st_dev) with the data.
+      nfs-nas-downloads:
+        type: nfs
+        server: 192.168.168.4
+        path: /mnt/zpool/shares/downloads/torrents
+        globalMounts:
+          - path: /downloads
+            readOnly: false
