@@ -12,5 +12,6 @@ resources:
   - ./lidarr/ks.yaml
   - ./prowlarr/ks.yaml
   - ./cross-seed/ks.yaml
+  - ./unpackerr/ks.yaml
   - ./overseerr/ks.yaml
   - ./tautulli/ks.yaml

@@ -1,0 +1,75 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app unpackerr
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+  install:
+    remediation:
+      retries: -1
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      retries: 3
+  values:
+    controllers:
+      unpackerr:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            image:
+              repository: ghcr.io/unpackerr/unpackerr
+              tag: 0.16.1@sha256:406586865431b40b29353d899fb75a788f5384743f7f381444db5fe55d206914
+            env:
+              TZ: America/Toronto
+              UN_INTERVAL: 2m
+              UN_START_DELAY: 1m
+              UN_FILE_MODE: "0644"
+              UN_DIR_MODE: "0755"
+              # Short service names, not FQDNs: the *arr AllowedHosts lists contain
+              # `<app>` and `<app>.k8s.<domain>` only, so an in-cluster FQDN is
+              # rejected with HTTP 400.
+              UN_SONARR_0_URL: http://sonarr
+              UN_RADARR_0_URL: http://radarr
+              UN_LIDARR_0_URL: http://lidarr
+              # Paths are as the *arrs report them, i.e. after their remote path
+              # mapping of /downloads/ -> /data/downloads/torrents/, which is why
+              # the export below is mounted at /data/downloads and not /downloads.
+              UN_SONARR_0_PATHS_0: &downloads /data/downloads/torrents
+              UN_RADARR_0_PATHS_0: *downloads
+              UN_LIDARR_0_PATHS_0: *downloads
+            envFrom:
+              - secretRef:
+                  name: unpackerr-secret
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+            resources:
+              requests:
+                cpu: 10m
+              limits:
+                memory: 1Gi
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+    persistence:
+      tmp:
+        type: emptyDir
+      nfs-nas-downloads:
+        type: nfs
+        server: 192.168.168.4
+        path: /mnt/zpool/shares/downloads
+        globalMounts:
+          - path: /data/downloads
+            readOnly: false
