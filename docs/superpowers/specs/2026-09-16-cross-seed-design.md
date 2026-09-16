@@ -154,13 +154,24 @@ has been observed behaving.
 
 ## Secrets
 
-One new 1Password item, `cross-seed`:
+All items live in the `Automation` vault, which already holds the *arr items and
+`volsync-template`.
+
+Only one new item is created, `cross-seed`, holding a single generated field:
 
 | Field | Used for |
 |---|---|
 | `CROSS_SEED_API_KEY` | cross-seed's own API auth |
-| `TRANSMISSION_USERNAME` | Transmission RPC |
-| `TRANSMISSION_PASSWORD` | Transmission RPC |
+
+The Transmission credentials are **not** duplicated. A `transmission` item already
+exists in the same vault carrying `TRANSMISSION_USERNAME`, `TRANSMISSION_PASSWORD`
+and `TRANSMISSION_URL`, so the ExternalSecret extracts it directly. This keeps one
+source of truth: rotating the Transmission password in 1Password updates both the
+*arr download clients and cross-seed, with no second copy to drift.
+
+`config.js` assembles the RPC endpoint from `TRANSMISSION_URL` rather than
+hardcoding the host, normalising the trailing slash and using the `URL` username
+and password setters so credentials are percent-encoded correctly.
 
 The ExternalSecret also extracts the existing `prowlarr`, `radarr`, and `sonarr`
 items for their API keys. Field names were confirmed from the existing
