@@ -11,7 +11,10 @@ spec:
     - name: internal
       namespace: kube-system
       sectionName: http
-    - name: external
+    - name: external-lab
+      namespace: kube-system
+      sectionName: http
+    - name: external-prod
       namespace: kube-system
       sectionName: http
   rules:
