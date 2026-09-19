@@ -7,7 +7,7 @@ metadata:
   labels:
     external-dns.alpha.kubernetes.io/gateway: "true"
   annotations:
-    external-dns.alpha.kubernetes.io/target: &hostname vrtx.${SECRET_DOMAIN_2}
+    external-dns.kubernetes.io/target: &hostname vrtx.${SECRET_DOMAIN_2}
 spec:
   gatewayClassName: cilium
   addresses:
@@ -15,7 +15,7 @@ spec:
       value: 192.168.168.212
   infrastructure:
     annotations:
-      external-dns.alpha.kubernetes.io/hostname: *hostname
+      external-dns.kubernetes.io/hostname: *hostname
   listeners:
     - name: http
       protocol: HTTP
