@@ -26,7 +26,7 @@ spec:
           app:
             image:
               repository: ghcr.io/jsenecal/code-pod
-              tag: main@sha256:e64a5dd3f88e26bf9cd743b43a48852ab66ff896156ee7f5d9c94f74307d36ba
+              tag: main@sha256:eb67b7e1a6241b684db499a3867416e5329ab9dc8352b9d42ee92ccd0cb542b7
             env:
               DOCKER_HOST: unix:///var/run/docker/docker.sock
             envFrom:
