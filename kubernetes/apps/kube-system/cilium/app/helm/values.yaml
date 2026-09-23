@@ -29,6 +29,14 @@ gatewayAPI:
   enableAlpn: true
 hubble:
   enabled: true
+  tls:
+    auto:
+      enabled: true
+      # helm method reuses the existing secret via lookup, so certs never rotate
+      # and silently expire (they did, 2026-09-11). cronJob regenerates them.
+      method: cronJob
+      certValidityDuration: 365
+      schedule: "0 0 1 */4 *"
   relay:
     enabled: true
     rollOutPods: true
