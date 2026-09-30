@@ -105,7 +105,7 @@ readonly CRDS_RECONCILED=(
 # every field description off them.
 readonly CRDS_BOOTSTRAP_ONLY=(
     # renovate: datasource=github-releases depName=prometheus-operator/prometheus-operator
-    https://github.com/prometheus-operator/prometheus-operator/releases/download/v0.94.0/stripped-down-crds.yaml
+    https://github.com/prometheus-operator/prometheus-operator/releases/download/v0.94.1/stripped-down-crds.yaml
 )
 
 function apply_crds() {
