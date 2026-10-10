@@ -93,7 +93,7 @@ function apply_sops_secrets() {
 # `task gateway:crds` reports when the cluster has fallen behind these pins.
 readonly CRDS_RECONCILED=(
     # renovate: datasource=github-releases depName=kubernetes-sigs/gateway-api
-    https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.2/experimental-install.yaml
+    https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.3/experimental-install.yaml
     # renovate: datasource=github-releases depName=kubernetes-sigs/external-dns
     https://raw.githubusercontent.com/kubernetes-sigs/external-dns/v0.23.0/config/crd/standard/dnsendpoints.externaldns.k8s.io.yaml
 )
