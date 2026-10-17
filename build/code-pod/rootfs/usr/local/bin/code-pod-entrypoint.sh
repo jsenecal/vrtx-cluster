@@ -52,6 +52,43 @@ if [ -d "${home}/.ssh" ]; then
         -exec chmod 0644 {} +
 fi
 
+# sshd execs as PID 1 with no profile/PAM step that forwards the container's
+# own env (image env, Kubernetes `env`/`envFrom`, ExternalSecrets-backed
+# values) into SSH login sessions — they're invisible to an SSH session
+# otherwise. Write them to ~/.ssh/environment instead (sshd_config.d's
+# PermitUserEnvironment makes sshd read it before the login shell starts),
+# skipping shell-reserved names and Kubernetes' own auto-injected Service
+# discovery vars (KUBERNETES_*, *_PORT*, *_SERVICE_HOST) so they don't
+# clobber the login shell or drown out the few vars that matter. Rewritten
+# on every start so secret rotations (ExternalSecrets refresh + pod restart)
+# take effect.
+env_file="${home}/.ssh/environment"
+env_tmp="${env_file}.tmp"
+: > "${env_tmp}"
+while IFS= read -r -d '' entry; do
+    name="${entry%%=*}"
+    value="${entry#*=}"
+    case "${name}" in
+        HOME | PATH | PWD | OLDPWD | SHELL | USER | LOGNAME | TERM | SHLVL | _ | MAIL | HOSTNAME | TMPDIR)
+            continue
+            ;;
+        KUBERNETES_*)
+            continue
+            ;;
+        *_PORT* | *_SERVICE_HOST*)
+            continue
+            ;;
+    esac
+    if [[ "${value}" == *$'\n'* ]]; then
+        echo "warn: skipping ${name} for ssh environment (contains newline)" >&2
+        continue
+    fi
+    printf '%s=%s\n' "${name}" "${value}" >> "${env_tmp}"
+done < <(env -0)
+chown "${USERNAME}:${USERNAME}" "${env_tmp}"
+chmod 0600 "${env_tmp}"
+mv "${env_tmp}" "${env_file}"
+
 # Bootstrap Oh My Fish into $HOME if missing. The image build does this too,
 # but the home PVC mount shadows that install — so we redo it on first PVC use.
 if [ ! -d "${home}/.local/share/omf" ]; then
