@@ -29,9 +29,13 @@ spec:
               tag: main@sha256:eb67b7e1a6241b684db499a3867416e5329ab9dc8352b9d42ee92ccd0cb542b7
             env:
               DOCKER_HOST: unix:///var/run/docker/docker.sock
+              HOMEASSISTANT_URL: http://home-assistant.home-automation.svc.cluster.local:8123
             envFrom:
               - secretRef:
                   name: code-pod-anthropic-secret
+                  optional: true
+              - secretRef:
+                  name: code-pod-ha-mcp-secret
                   optional: true
             probes:
               liveness:

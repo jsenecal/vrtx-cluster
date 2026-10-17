@@ -9,6 +9,7 @@ resources:
   - ./externalsecret-tailscale.yaml
   - ./externalsecret-ssh.yaml
   - ./externalsecret-anthropic.yaml
+  - ./externalsecret-ha-mcp.yaml
   - ./helmrelease.yaml
   - ./workspace/pvc.yaml
   - ./workspace/replicationsource.yaml
