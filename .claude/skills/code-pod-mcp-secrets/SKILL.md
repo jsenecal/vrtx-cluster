@@ -16,7 +16,9 @@ description: Use when adding an MCP server or a 1Password-backed secret/env var 
 | Secret → env var | ExternalSecret + `envFrom` in `kubernetes/apps/dev/code-pod/app/helmrelease.yaml` | Yes |
 | MCP server registration | `~/.claude.json` (or `claude mcp add`) inside the pod | **No** |
 
-The home PVC (`existingClaim: code-pod`, mounted at `/home/jsenecal`, where `~/.claude.json` lives) has **no PVC manifest in this repo and no VolSync backup** — unlike `workspace` (`code-pod-workspace`, which has `replicationsource`/`replicationdestination`). Lose that PVC and MCP registrations, memory, everything under `$HOME` goes with it, with nothing to restore from.
+The home PVC (`existingClaim: code-pod`, mounted at `/home/jsenecal`, where `~/.claude.json` lives) **is** backed up hourly via VolSync — but not through a hand-written PVC/ReplicationSource like `workspace` has. `code-pod`'s `ks.yaml` pulls in the shared `kubernetes/components/volsync` Kustomize component with `APP: code-pod` substitution, which templates out the PVC, ExternalSecret, ReplicationSource, and ReplicationDestination all named `code-pod`/`code-pod-dst`. A literal `grep -rn "name: code-pod$"` won't find this — the component's YAML says `name: "${APP}"`, substituted at build time. Check `kubectl -n dev get replicationsource code-pod` to confirm it's syncing.
+
+So MCP registration in `~/.claude.json` *is* disaster-recovery-safe (it's just a file under the backed-up home volume), it's just not git-tracked — no diff, no review, no history. Those are different properties; don't conflate them.
 
 ## Wiring a new secret into code-pod's env
 
@@ -92,8 +94,8 @@ gh run view --job=<push-job-id> --log | grep containerimage.digest
 
 ## Common mistakes
 
-- Assuming MCP registration is tracked by git — it isn't; a fresh pod/clone won't have it.
+- Assuming MCP registration is tracked by git — it isn't; a fresh pod/clone won't have it (though it IS in the backed-up home PVC — don't conflate "not in git" with "not backed up").
 - Pushing a code-pod HelmRelease/image change without warning it recreates the pod (kills the current session if running inside it).
 - Adding `uv` to the Containerfile's pacman list instead of using the existing mise-managed install.
 - Re-running a failed CI build without clearing the GHA cache first, when the failure is a mirror 404 rather than an actual Containerfile problem.
-- Assuming `~/.claude.json`/home PVC is backed up — it isn't (no VolSync, no PVC manifest in git).
+- Grepping for a literal PVC/ReplicationSource name and concluding a resource doesn't exist — check for `kubernetes/components/volsync` usage via `APP:` substitution in the owning `ks.yaml` first, and verify live state with `kubectl` before trusting a static grep.
