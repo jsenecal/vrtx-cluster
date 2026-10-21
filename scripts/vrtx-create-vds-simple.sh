@@ -7,7 +7,7 @@ set -euo pipefail
 # Configuration
 CMC_IP="192.168.255.200"
 CMC_USER="admin"
-CMC_PASS="0235629xD!"
+CMC_PASS="${CMC_PASS:-$(op read "op://Loop Networks inc./VRTX CMC/password")}"
 CONTROLLER="RAID.ChassisIntegrated.1-1"
 
 # Parse arguments
@@ -82,7 +82,7 @@ echo ""
 echo "Configuration job submitted. The RAID controller will process the changes."
 echo ""
 echo "To check status, run:"
-echo "  sshpass -p '${CMC_PASS}' ssh ${CMC_USER}@${CMC_IP} 'racadm jobqueue view'"
+echo "  SSHPASS=\"\$(op read 'op://Loop Networks inc./VRTX CMC/password')\" sshpass -e ssh ${CMC_USER}@${CMC_IP} 'racadm jobqueue view'"
 echo ""
 echo "To see created VDs:"
-echo "  sshpass -p '${CMC_PASS}' ssh ${CMC_USER}@${CMC_IP} 'racadm raid get vdisks -o -p Name'"
+echo "  SSHPASS=\"\$(op read 'op://Loop Networks inc./VRTX CMC/password')\" sshpass -e ssh ${CMC_USER}@${CMC_IP} 'racadm raid get vdisks -o -p Name'"

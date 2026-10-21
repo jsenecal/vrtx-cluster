@@ -3,7 +3,7 @@
 
 CMC_IP="192.168.255.200"
 CMC_USER="admin"
-CMC_PASS="0235629xD!"
+CMC_PASS="${CMC_PASS:-$(op read "op://Loop Networks inc./VRTX CMC/password")}"
 
 echo "Testing different RACADM command syntaxes..."
 echo ""

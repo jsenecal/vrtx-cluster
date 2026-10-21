@@ -25,7 +25,7 @@ done
 # Configuration
 CMC_IP="192.168.255.200"
 CMC_USER="admin"
-CMC_PASS="0235629xD!"
+CMC_PASS="${CMC_PASS:-$(op read "op://Loop Networks inc./VRTX CMC/password")}"
 CONTROLLER="RAID.ChassisIntegrated.1-1"
 
 # Color codes for output
