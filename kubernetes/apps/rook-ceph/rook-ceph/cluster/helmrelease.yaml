@@ -65,6 +65,23 @@ spec:
           mon_data_avail_crit: "5" # quote; default 5, kept explicit alongside warn
       crashCollector:
         disable: false
+      # Tentacle flags legacy "aes" cephx keys as HEALTH_ERR; rotate to aes256k.
+      # Bump keyGeneration to trigger another rotation. Once every entity is on
+      # aes256k, set allowedCiphers: [aes256k] to clear the AUTH_INSECURE_KEYS_* warnings.
+      security:
+        cephx:
+          daemon:
+            keyRotationPolicy: KeyGeneration
+            keyGeneration: 2
+            keyType: aes256k
+          csi:
+            keyRotationPolicy: KeyGeneration
+            keyGeneration: 2
+            keyType: aes256k
+          rbdMirrorPeer:
+            keyRotationPolicy: KeyGeneration
+            keyGeneration: 2
+            keyType: aes256k
       csi:
         readAffinity:
           enabled: true
