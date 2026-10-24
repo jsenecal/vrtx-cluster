@@ -83,6 +83,30 @@ spec:
                 memory: 4Gi
             securityContext:
               allowPrivilegeEscalation: false
+              # Providers install their python deps at setup time with
+              # `uv pip install` into /app/venv (e.g. YouTube Music pulls
+              # yt-dlp + bgutil-ytdlp-pot-provider), so the image root
+              # filesystem must stay writable.
+              readOnlyRootFilesystem: false
+              capabilities: { drop: ["ALL"] }
+          # PO token server for the YouTube Music provider. MA defaults to
+          # http://127.0.0.1:4416. Keep the version in step with the
+          # bgutil-ytdlp-pot-provider plugin MA installs (latest from PyPI).
+          # Bound to loopback only: the server is unauthenticated and this pod
+          # has macvlan addresses on the IoT and LAN networks.
+          bgutil-pot:
+            image:
+              repository: docker.io/brainicism/bgutil-ytdlp-pot-provider
+              tag: 2.0.2
+            args: ["--host", "127.0.0.1", "--port", "4416"]
+            resources:
+              requests:
+                cpu: 10m
+                memory: 128Mi
+              limits:
+                memory: 512Mi
+            securityContext:
+              allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
               capabilities: { drop: ["ALL"] }
 
