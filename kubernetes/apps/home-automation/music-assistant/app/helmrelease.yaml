@@ -53,6 +53,9 @@ spec:
             env:
               TZ: America/Toronto
               LOG_LEVEL: info
+              # HOME is / (not writable by uid 1000); yt-dlp caches its
+              # YouTube signature solutions under $XDG_CACHE_HOME.
+              XDG_CACHE_HOME: /tmp/.cache
             probes:
               liveness: &probes
                 enabled: true
