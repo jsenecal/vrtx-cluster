@@ -105,6 +105,11 @@ spec:
         existingClaim: plex-cache
         globalMounts:
           - path: /config/Library/Application Support/Plex Media Server/Cache
+      # Thumbnails live on a separate PVC so volsync doesn't back them up
+      config-media:
+        existingClaim: plex-media
+        globalMounts:
+          - path: /config/Library/Application Support/Plex Media Server/Media
       config-logs:
         type: emptyDir
         globalMounts:
