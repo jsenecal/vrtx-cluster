@@ -9,3 +9,15 @@ spec:
     requests:
       storage: 100Gi
   storageClassName: ceph-block
+---
+# Regenerable thumbnails (BIF/chapter images) kept off the volsync-backed config PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: plex-media
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 300Gi
+  storageClassName: ceph-block
