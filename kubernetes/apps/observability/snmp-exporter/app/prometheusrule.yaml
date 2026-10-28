@@ -40,3 +40,62 @@ spec:
           for: 5m
           labels:
             severity: critical
+    - name: apc-ups.rules
+      rules:
+        - alert: UPSOnBattery
+          annotations:
+            summary: UPS {{$labels.instance}} is running on battery
+            description: Mains power is lost; {{ with printf "upsAdvBatteryRunTimeRemaining_seconds{instance='%s'}" $labels.instance | query }}{{ . | first | value | humanizeDuration }}{{ end }} of runtime remaining.
+          expr: |
+            upsBasicOutputStatus{upsBasicOutputStatus="onBattery"} == 1
+          for: 1m
+          labels:
+            severity: critical
+        - alert: UPSLowRuntime
+          annotations:
+            summary: UPS {{$labels.instance}} has {{ $value | humanizeDuration }} of runtime remaining
+          expr: |
+            upsAdvBatteryRunTimeRemaining_seconds < 600
+          for: 1m
+          labels:
+            severity: critical
+        - alert: UPSBatteryLow
+          annotations:
+            summary: UPS {{$labels.instance}} reports a low battery
+          expr: |
+            upsBasicBatteryStatus{upsBasicBatteryStatus="batteryLow"} == 1
+          for: 1m
+          labels:
+            severity: critical
+        - alert: UPSBatteryNeedsReplacing
+          annotations:
+            summary: UPS {{$labels.instance}} battery needs replacing
+          expr: |
+            upsAdvBattery_needsreplacing == 1
+          for: 1h
+          labels:
+            severity: warning
+        - alert: UPSHighLoad
+          annotations:
+            summary: UPS {{$labels.instance}} output load is {{ $value }}%
+          expr: |
+            upsAdvOutputLoad > 80
+          for: 15m
+          labels:
+            severity: warning
+        - alert: UPSHighTemperature
+          annotations:
+            summary: UPS {{$labels.instance}} battery temperature is {{ $value }}°C
+          expr: |
+            upsHighPrecBatteryTemperature > 40
+          for: 15m
+          labels:
+            severity: warning
+        - alert: UPSUnreachable
+          annotations:
+            summary: UPS metrics are missing; SNMP polling of the APC UPS is failing
+          expr: |
+            absent(upsCommStatus_ok{target="apcups"}) or upsCommStatus_ok{target="apcups"} == 0
+          for: 10m
+          labels:
+            severity: warning
