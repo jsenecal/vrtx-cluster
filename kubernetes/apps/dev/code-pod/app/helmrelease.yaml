@@ -37,6 +37,9 @@ spec:
               - secretRef:
                   name: code-pod-ha-mcp-secret
                   optional: true
+              - secretRef:
+                  name: code-pod-op-secret
+                  optional: true
             probes:
               liveness:
                 enabled: true

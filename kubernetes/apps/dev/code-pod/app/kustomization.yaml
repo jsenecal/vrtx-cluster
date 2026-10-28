@@ -10,6 +10,7 @@ resources:
   - ./externalsecret-ssh.yaml
   - ./externalsecret-anthropic.yaml
   - ./externalsecret-ha-mcp.yaml
+  - ./secret-op.sops.yaml
   - ./helmrelease.yaml
   - ./workspace/pvc.yaml
   - ./workspace/replicationsource.yaml
