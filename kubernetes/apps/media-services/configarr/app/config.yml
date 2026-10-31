@@ -30,22 +30,23 @@ sonarr:
               - Bluray-1080p
               - WEBDL-1080p
               - WEBRip-1080p
+    # Language scores are 2000 apart so they outrank release-group tiers (max 1950).
     custom_formats:
       - trash_ids:
           - 802dd70b856c423a9b0cb7f34ac42be1  # VOQ
         assign_scores_to:
           - name: French
-            score: 400
+            score: 6100
       - trash_ids:
           - 7ae924ee9b2f39df3283c6c0beb8a2aa  # VOF
         assign_scores_to:
           - name: French
-            score: 300
+            score: 4100
       - trash_ids:
           - 7a7f4e4f58bd1058440236d033a90b67  # VFQ
         assign_scores_to:
           - name: French
-            score: 200
+            score: 2100
       - trash_ids:
           - 2c29a39a4fdfd6d258799bc4c09731b9  # VFF
         assign_scores_to:
@@ -55,7 +56,7 @@ sonarr:
           - 10e77b96ae4770a7de645a91a53ce29a  # Language: Original + French
         assign_scores_to:
           - name: French
-            score: 1000
+            score: 4500
       - trash_ids:
           - 322fca6f8f3694acc1401ddb530fd33d  # Language: Not French
         assign_scores_to:
@@ -139,22 +140,23 @@ radarr:
               - Bluray-1080p
               - WEBDL-1080p
               - WEBRip-1080p
+    # Language scores are 2000 apart so they outrank release-group tiers (max 1950).
     custom_formats:
       - trash_ids:
           - f7caa1942be5cc547c266bd3dbc2cda9  # VOQ
         assign_scores_to:
           - name: French
-            score: 400
+            score: 6100
       - trash_ids:
           - 4cafa20d5584f6ba1871d1b8941aa3cb  # VOF
         assign_scores_to:
           - name: French
-            score: 300
+            score: 4100
       - trash_ids:
           - b6ace47331a1d3b77942fc18156f6df6  # VFQ
         assign_scores_to:
           - name: French
-            score: 200
+            score: 2100
       - trash_ids:
           - 404c08fd0bd67f39b4d8e5709319094e  # VFF
         assign_scores_to:
@@ -164,7 +166,7 @@ radarr:
           - 0542a48746585dc4444bbbb8a6bdf6ea  # Language: Original + French
         assign_scores_to:
           - name: French
-            score: 1000
+            score: 4500
       - trash_ids:
           - 533f782474f0819643c2ec0c1eeeb0ac  # Language: Not French
         assign_scores_to:
