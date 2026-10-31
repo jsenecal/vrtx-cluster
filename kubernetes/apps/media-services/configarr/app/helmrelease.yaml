@@ -35,6 +35,8 @@ spec:
               repository: ghcr.io/raydak-labs/configarr
               tag: 1.38.0@sha256:36d15adcc815557409a9437bc51468edfd1ac05ef6b46336dff650a56d2cc6a3
             env:
+              CONFIGARR_ENFORCE_CONFIG_VALIDATION: "true"
+              STOP_ON_ERROR: "true"
               TZ: America/Toronto
             envFrom:
               - secretRef:
