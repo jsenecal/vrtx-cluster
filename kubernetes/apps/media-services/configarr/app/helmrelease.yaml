@@ -24,6 +24,8 @@ spec:
           reloader.stakater.com/auto: "true"
         cronjob:
           schedule: 0 4 * * *
+          timeZone: America/Toronto
+          activeDeadlineSeconds: 1800
           backoffLimit: 0
           concurrencyPolicy: Forbid
           successfulJobsHistory: 1

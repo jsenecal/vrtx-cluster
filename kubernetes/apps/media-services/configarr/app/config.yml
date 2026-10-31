@@ -63,10 +63,10 @@ sonarr:
           - name: French
             score: -10000
       - trash_ids:
-          - 07a32f77690263bb9fda1842db7e273f  # VOSTFR
+          - 07a32f77690263bb9fda1842db7e273f  # VOSTFR (0: also matches SUBFRENCH; VO-only is rejected by Language: Not French)
         assign_scores_to:
           - name: French
-            score: -10000
+            score: 0
       - trash_ids:
           - 3ba797e5dc13af4b8d9bb25e83d90de2  # FR LQ
         assign_scores_to:
@@ -173,10 +173,10 @@ radarr:
           - name: French
             score: -10000
       - trash_ids:
-          - 9172b2f683f6223e3a1846427b417a3d  # VOSTFR
+          - 9172b2f683f6223e3a1846427b417a3d  # VOSTFR (0: also matches SUBFRENCH; VO-only is rejected by Language: Not French)
         assign_scores_to:
           - name: French
-            score: -10000
+            score: 0
       - trash_ids:
           - 48f031e76111f17ea94898f4cdc34fdc  # FR LQ
         assign_scores_to:
