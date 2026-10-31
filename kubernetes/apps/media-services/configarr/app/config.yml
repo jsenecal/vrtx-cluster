@@ -1,0 +1,18 @@
+---
+sonarr:
+  main:
+    base_url: http://sonarr.media-services.svc.cluster.local
+    api_key: !env SONARR_API_KEY
+    delete_unmanaged_custom_formats:
+      enabled: false
+    delete_unmanaged_quality_profiles:
+      enabled: false
+
+radarr:
+  main:
+    base_url: http://radarr.media-services.svc.cluster.local
+    api_key: !env RADARR_API_KEY
+    delete_unmanaged_custom_formats:
+      enabled: false
+    delete_unmanaged_quality_profiles:
+      enabled: false
