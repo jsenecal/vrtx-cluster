@@ -83,6 +83,7 @@ spec:
         hostnames:
           - "seerr.${SECRET_DOMAIN}"
           - "requests.${SECRET_DOMAIN}"
+          - "overseerr.${SECRET_DOMAIN}"
         parentRefs:
           - name: external-lab
             namespace: kube-system
