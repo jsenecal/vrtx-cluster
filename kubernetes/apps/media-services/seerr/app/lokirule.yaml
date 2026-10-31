@@ -1,0 +1,111 @@
+---
+groups:
+  - name: seerr
+    rules:
+      # Database health monitoring
+      - alert: SeerrDatabaseIsLocked
+        expr: |
+          sum by (app) (count_over_time({app="seerr"} |~ "(?i)(database is locked|SQLITE_BUSY)"[5m])) > 0
+        for: 5m
+        annotations:
+          summary: >-
+            {{ $labels.app }} is experiencing database lock issues
+        labels:
+          severity: critical
+
+      - alert: SeerrDatabaseIsMalformed
+        expr: |
+          sum by (app) (count_over_time({app="seerr"} |~ "(?i)(database disk image is malformed|SQLITE_CORRUPT)"[5m])) > 0
+        for: 5m
+        annotations:
+          summary: >-
+            {{ $labels.app }} database is corrupted
+        labels:
+          severity: critical
+
+      - alert: SeerrDatabaseError
+        expr: |
+          sum by (app) (count_over_time({app="seerr"} |~ "(?i)(sqlite.*error|database.*error)"[5m])) > 5
+        for: 5m
+        annotations:
+          summary: >-
+            {{ $labels.app }} is experiencing database errors
+        labels:
+          severity: warning
+
+      # Setup/Initialization detection
+      - alert: SeerrInSetupMode
+        expr: |
+          sum by (app) (count_over_time({app="seerr"} |~ "(?i)(setup|initialization|first.*time.*setup|welcome)"[5m])) > 2
+        for: 5m
+        annotations:
+          summary: >-
+            {{ $labels.app }} appears to be in setup mode - database may have been reset
+        labels:
+          severity: critical
+
+      # Migration issues
+      - alert: SeerrMigrationFailed
+        expr: |
+          sum by (app) (count_over_time({app="seerr"} |~ "(?i)(migration.*failed|error.*migrating|failed.*to.*migrate)"[5m])) > 0
+        for: 2m
+        annotations:
+          summary: >-
+            {{ $labels.app }} database migration has failed
+        labels:
+          severity: critical
+
+      # Connection and service health
+      - alert: SeerrConnectionErrors
+        expr: |
+          sum by (app) (count_over_time({app="seerr"} |~ "(?i)(ECONNREFUSED|ETIMEDOUT|ENOTFOUND|connection.*refused)"[5m])) > 10
+        for: 5m
+        annotations:
+          summary: >-
+            {{ $labels.app }} is experiencing connection errors to external services
+        labels:
+          severity: warning
+
+      # Plex integration issues
+      - alert: SeerrPlexConnectionFailed
+        expr: |
+          sum by (app) (count_over_time({app="seerr"} |~ "(?i)(plex.*failed|plex.*error|failed.*to.*connect.*plex)"[5m])) > 5
+        for: 5m
+        annotations:
+          summary: >-
+            {{ $labels.app }} cannot connect to Plex server
+        labels:
+          severity: warning
+
+      # Notification failures
+      - alert: SeerrNotificationsFailing
+        expr: |
+          sum by (app) (count_over_time({app="seerr"} |~ "(?i)error.*sending.*notification"[5m])) > 10
+        for: 10m
+        annotations:
+          summary: >-
+            {{ $labels.app }} notification system is failing
+        labels:
+          severity: warning
+
+      # Critical application errors
+      - alert: SeerrCriticalError
+        expr: |
+          sum by (app) (count_over_time({app="seerr"} |~ "(?i)(FATAL|CRITICAL|PANIC|unhandled.*exception)"[5m])) > 0
+        for: 2m
+        annotations:
+          summary: >-
+            {{ $labels.app }} has encountered a critical error
+        labels:
+          severity: critical
+
+      # Disk space issues
+      - alert: SeerrDiskSpaceError
+        expr: |
+          sum by (app) (count_over_time({app="seerr"} |~ "(?i)(ENOSPC|no.*space.*left|disk.*full)"[5m])) > 0
+        for: 2m
+        annotations:
+          summary: >-
+            {{ $labels.app }} is out of disk space
+        labels:
+          severity: critical

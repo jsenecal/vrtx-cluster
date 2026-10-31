@@ -21,6 +21,8 @@ spec:
   values:
     controllers:
       overseerr:
+        # Parked after migration to Seerr; kept for rollback until removed.
+        replicas: 0
         annotations:
           reloader.stakater.com/auto: "true"
         containers:
@@ -81,7 +83,6 @@ spec:
       app:
         hostnames:
           - "{{ .Release.Name }}.${SECRET_DOMAIN}"
-          - "requests.${SECRET_DOMAIN}"
         parentRefs:
           - name: external-lab
             namespace: kube-system
