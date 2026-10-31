@@ -45,7 +45,7 @@ tasks:
         vars:
           NAMESPACE: home-automation
           APP: "{{.ITEM}}"
-      - for: [overseerr, plex, prowlarr, radarr, sonarr, tautulli]
+      - for: [plex, prowlarr, radarr, seerr, sonarr, tautulli]
         task: unlock
         vars:
           NAMESPACE: media-services

@@ -306,7 +306,7 @@ The `media-services` namespace contains applications for home media management:
    - Centralizes indexer configurations
    - Includes Loki monitoring rules for database issues
 
-4. **Overseerr**: Request management and discovery for media
+4. **Seerr** (successor of Overseerr): Request management and discovery for media
    - Allows users to request new content
    - Integrates with Sonarr/Radarr for automated fulfillment
 
