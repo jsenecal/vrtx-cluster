@@ -1,7 +1,7 @@
 ---
 sonarr:
   main:
-    base_url: http://sonarr.media-services.svc.cluster.local
+    base_url: http://sonarr
     api_key: !env SONARR_API_KEY
     delete_unmanaged_custom_formats:
       enabled: false
@@ -10,7 +10,7 @@ sonarr:
 
 radarr:
   main:
-    base_url: http://radarr.media-services.svc.cluster.local
+    base_url: http://radarr
     api_key: !env RADARR_API_KEY
     delete_unmanaged_custom_formats:
       enabled: false
