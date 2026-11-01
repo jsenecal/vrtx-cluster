@@ -63,6 +63,8 @@ spec:
           # kubelet's imageGCHighThresholdPercent (75%) now prunes before this fires
           mon_data_avail_warn: "15" # quote; default 30
           mon_data_avail_crit: "5" # quote; default 5, kept explicit alongside warn
+          # HDDs behind the PERC8 see the odd slow write; default 1 trips HEALTH_WARN for 24h on a single blip
+          bluestore_slow_ops_warn_threshold: "5" # quote; default 1
       crashCollector:
         disable: false
       # Tentacle flags legacy "aes" cephx keys as HEALTH_ERR; all keys are on aes256k.
