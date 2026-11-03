@@ -32,6 +32,14 @@ spec:
       retries: 3
   values:
     fullnameOverride: *app
+    config:
+      # Only poll the Optane NVMe and the blade-local PERC H730 disks.
+      # sd* are Shared PERC8 virtual disks (plus the local H730 VD, which
+      # never answers). Concurrent SMART queries to the Shared PERC8 from
+      # several blades freeze ALL chassis disk I/O for ~6s, which shows up
+      # as BLUESTORE_SLOW_OP_ALERT on every OSD. Drive health for the
+      # shared disks comes from the CMC instead.
+      device_include: ^(nvme[0-9]+|bus_[0-9]+_megaraid_[0-9]+)$
     serviceMonitor:
       enabled: true
     prometheusRules:
