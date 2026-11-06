@@ -52,6 +52,13 @@ if [ -d "${home}/.ssh" ]; then
         -exec chmod 0644 {} +
 fi
 
+# The 1Password CLI refuses to run if ~/.config/op is group-accessible, which
+# the same fsGroup reconcile widens on every pod start.
+if [ -d "${home}/.config/op" ]; then
+    chmod 0700 "${home}/.config/op"
+    find "${home}/.config/op" -maxdepth 1 -type f -exec chmod 0600 {} +
+fi
+
 # sshd execs as PID 1 with no profile/PAM step that forwards the container's
 # own env (image env, Kubernetes `env`/`envFrom`, ExternalSecrets-backed
 # values) into SSH login sessions — they're invisible to an SSH session
