@@ -86,7 +86,7 @@ spec:
                 cpu: 50m
                 memory: 256Mi
               limits:
-                memory: 4Gi
+                memory: 32Gi
           dind:
             image:
               repository: docker
