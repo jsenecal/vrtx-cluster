@@ -1,0 +1,101 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+# Series of Tubes Multimode relay (https://github.com/fjaeckel/seriesoftubes/blob/main/docs/HOSTING.md).
+# Exposed as wss://multimode.mtlnog.org/fed through cloudflare-tunnel-mtlnog, which terminates TLS and
+# goes straight to this Service so the relay sees the player's address as the last X-Forwarded-For hop.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app seriesoftubes-relay
+spec:
+  interval: 30m
+  chartRef:
+    kind: OCIRepository
+    name: app-template
+  maxHistory: 2
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    cleanupOnFail: true
+    remediation:
+      strategy: rollback
+      retries: 3
+  dependsOn:
+    - name: rook-ceph-cluster
+      namespace: rook-ceph
+    - name: volsync
+      namespace: volsync-system
+  values:
+    controllers:
+      seriesoftubes-relay:
+        strategy: Recreate
+        containers:
+          app:
+            image:
+              repository: ghcr.io/fjaeckel/seriesoftubes-relay
+              tag: 4.2.1@sha256:a0967119ef67a49e1d90a1d4b14d65d14c3e2c2ece4bbf96d5901527901cc387
+            args: ["up"]
+            env:
+              # First start only (they found the server and are then signed into its record).
+              RELAY_URL: wss://multimode.mtlnog.org/fed
+              RELAY_NAME: MTLNOG
+              RELAY_SYNC: open
+              RELAY_LANGS: en,fr
+              RELAY_DESC: "Montreal Network Operator Group: network engineers and operators from Montréal, Quebec and beyond. Bienvenue à tous · mtlnog.org"
+              RELAY_LISTEN: 0.0.0.0:8080
+              RELAY_METRICS: 0.0.0.0:9100
+              RELAY_METRICS_PUBLIC: "true"
+              # Every start. Only cloudflared reaches port 8080 (networkpolicy.yaml), so the pod CIDR is safe to trust.
+              RELAY_TRUSTED_PROXIES: 10.42.0.0/16
+              RELAY_LOG_JSON: "true"
+              GOMEMLIMIT: 400MiB
+            probes:
+              liveness: &probe
+                enabled: true
+                type: TCP
+              readiness: *probe
+            resources:
+              requests:
+                cpu: 10m
+                memory: 64Mi
+              limits:
+                memory: 512Mi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
+    defaultPodOptions:
+      securityContext:
+        # uid 1000 rather than the image's 65532: the VolSync mover runs as 1000 and must read /data.
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+    service:
+      app:
+        controller: seriesoftubes-relay
+        ports:
+          http:
+            port: 8080
+          metrics:
+            port: 9100
+    serviceMonitor:
+      app:
+        serviceName: *app
+        endpoints:
+          - port: metrics
+            scheme: http
+            path: /metrics
+            interval: 1m
+            scrapeTimeout: 10s
+    persistence:
+      data:
+        existingClaim: *app
+        globalMounts:
+          - path: /data
+      tmp:
+        type: emptyDir

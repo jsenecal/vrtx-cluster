@@ -7,6 +7,7 @@ components:
   - ../../components/common
 resources:
   - ./cloudflare-tunnel-lab/ks.yaml
+  - ./cloudflare-tunnel-mtlnog/ks.yaml
   - ./cloudflare-tunnel-prod/ks.yaml
   - ./cloudflare-dns/ks.yaml
   - ./echo/ks.yaml

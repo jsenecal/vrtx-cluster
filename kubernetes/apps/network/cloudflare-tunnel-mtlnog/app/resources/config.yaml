@@ -1,0 +1,7 @@
+---
+# The relay must see the client address as the last X-Forwarded-For hop, so the hostname goes
+# straight to its Service instead of through the Envoy gateway (which would append its own hop).
+ingress:
+  - hostname: multimode.mtlnog.org
+    service: http://seriesoftubes-relay.default.svc.cluster.local:8080
+  - service: http_status:404

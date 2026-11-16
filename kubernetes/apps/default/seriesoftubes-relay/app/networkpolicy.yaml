@@ -1,0 +1,29 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/cilium.io/ciliumnetworkpolicy_v2.json
+# The relay trusts X-Forwarded-For from the whole pod CIDR, so only cloudflared may reach its
+# WebSocket port, and only Prometheus its metrics port. Egress stays open (other relays, servers.json).
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: seriesoftubes-relay
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: seriesoftubes-relay
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: network
+            app.kubernetes.io/name: cloudflare-tunnel-mtlnog
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: observability
+            app.kubernetes.io/name: prometheus
+      toPorts:
+        - ports:
+            - port: "9100"
+              protocol: TCP
