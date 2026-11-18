@@ -111,6 +111,8 @@ spec:
               GITSYNC_ROOT: /git
               GITSYNC_LINK: repo
               GITSYNC_PERIOD: 30s
+              # git-sync v4.8+ fails git's ownership check on the root-owned emptyDir
+              GITSYNC_GIT_CONFIG: safe.directory:/git
               HOME: /tmp
             resources:
               requests:
