@@ -34,7 +34,7 @@ spec:
           app:
             image:
               repository: ghcr.io/fjaeckel/seriesoftubes-relay
-              tag: 4.2.1@sha256:a0967119ef67a49e1d90a1d4b14d65d14c3e2c2ece4bbf96d5901527901cc387
+              tag: 4.9.0@sha256:d6ede47d16c340e82125f2943c2b48e04bd8c4a515b2c792bdd02df69958d7bb
             args: ["up"]
             env:
               # First start only (they found the server and are then signed into its record).
