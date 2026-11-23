@@ -4,4 +4,6 @@
 ingress:
   - hostname: multimode.mtlnog.org
     service: http://seriesoftubes-relay.default.svc.cluster.local:8080
+  - hostname: irrexplorer.mtlnog.org
+    service: http://irrexplorer.default.svc.cluster.local:8000
   - service: http_status:404

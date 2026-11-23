@@ -7,4 +7,5 @@ components:
   - ../../components/common
 resources:
   - ./homebox/ks.yaml
+  - ./irrexplorer/ks.yaml
   - ./seriesoftubes-relay/ks.yaml

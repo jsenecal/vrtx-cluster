@@ -1,0 +1,31 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/postgresql.cnpg.io/cluster_v1.json
+# Holds only BGP origins and RIR stats, all re-imported by the import-data CronJob, so no backups.
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: irrexplorer-postgres
+spec:
+  instances: 1
+
+  # renovate: datasource=docker depName=ghcr.io/cloudnative-pg/postgresql
+  imageName: ghcr.io/cloudnative-pg/postgresql:18.1-202601120807-standard-bookworm
+
+  storage:
+    storageClass: ceph-block
+    size: 10Gi
+
+  bootstrap:
+    initdb:
+      database: irrexplorer
+      owner: irrexplorer
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
+
+  monitoring:
+    enablePodMonitor: true
