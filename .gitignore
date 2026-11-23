@@ -9,6 +9,8 @@
 /github-deploy.key
 /github-deploy.key.pub
 /github-push-token.txt
+# etcd snapshots
+*.snapshot
 # Template config files
 /cluster.yaml
 /nodes.yaml
