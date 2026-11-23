@@ -1,0 +1,50 @@
+# syntax=docker/dockerfile:1.28
+# IRR explorer (https://github.com/nlnog/irrexplorer) has no upstream image or releases,
+# so this builds a pinned commit. Bump IRREXPLORER_REF to update; the image is tagged with it.
+ARG IRREXPLORER_REF=2e812de5ca44dc03671c41a926858bb9c8bd4bc1
+ARG PYTHON_VERSION=3.13
+
+FROM docker.io/library/alpine:3.22 AS source
+ARG IRREXPLORER_REF
+RUN apk add --no-cache git
+WORKDIR /src
+RUN git init -q . \
+ && git remote add origin https://github.com/nlnog/irrexplorer.git \
+ && git fetch -q --depth 1 origin "${IRREXPLORER_REF}" \
+ && git checkout -q FETCH_HEAD \
+ && rm -rf .git
+
+FROM docker.io/library/node:22-alpine AS frontend
+WORKDIR /src/frontend
+COPY --from=source /src/frontend/package.json /src/frontend/yarn.lock ./
+RUN yarn install --frozen-lockfile --network-timeout 600000
+COPY --from=source /src/frontend ./
+RUN yarn build
+
+FROM docker.io/library/python:${PYTHON_VERSION}-slim AS python
+ENV POETRY_VIRTUALENVS_IN_PROJECT=true \
+    POETRY_NO_INTERACTION=1 \
+    PIP_NO_CACHE_DIR=1
+RUN pip install --no-cache-dir poetry==2.1.3
+WORKDIR /app
+COPY --from=source /src/pyproject.toml /src/poetry.lock ./
+RUN poetry install --only main --no-root
+
+FROM docker.io/library/python:${PYTHON_VERSION}-slim
+ARG IRREXPLORER_REF
+LABEL org.opencontainers.image.title="irrexplorer" \
+      org.opencontainers.image.url="https://github.com/nlnog/irrexplorer" \
+      org.opencontainers.image.version="${IRREXPLORER_REF}"
+ENV PATH=/app/.venv/bin:$PATH \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+WORKDIR /app
+COPY --from=python /app/.venv /app/.venv
+COPY --from=source /src/irrexplorer ./irrexplorer
+COPY --from=source /src/alembic.ini /src/scripts.py ./
+COPY --from=frontend /src/frontend/build ./frontend/build
+RUN python -m compileall -q irrexplorer scripts.py
+USER 1000:1000
+EXPOSE 8000
+# Static files are served from the relative path frontend/build, so the working directory must stay /app.
+CMD ["uvicorn", "irrexplorer.app:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2", "--proxy-headers", "--forwarded-allow-ips", "*"]
