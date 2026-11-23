@@ -30,7 +30,7 @@ spec:
           migrate:
             image: &image
               repository: ghcr.io/jsenecal/irrexplorer
-              tag: 2e812de-57b5e8d@sha256:5aa31bd758212d0a4366ceffea2b40aa2a0cbf46f0506057d8fb12f83573b974
+              tag: 2e812de-a13a593@sha256:e80d17c935fb56850856ea05767ab1b8e7e3d9a67926834fd9c43bf1907093e2
             command: ["alembic", "upgrade", "head"]
             env: &env
               DATABASE_URL:
