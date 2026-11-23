@@ -1,6 +1,7 @@
 # syntax=docker/dockerfile:1.28
 # IRR explorer (https://github.com/nlnog/irrexplorer) has no upstream image or releases,
 # so this builds a pinned commit. Bump IRREXPLORER_REF to update; the image is tagged with it.
+# overlay/ themes the frontend to match mtlnog.org; re-check it against upstream when bumping.
 ARG IRREXPLORER_REF=2e812de5ca44dc03671c41a926858bb9c8bd4bc1
 ARG PYTHON_VERSION=3.13
 
@@ -19,7 +20,11 @@ WORKDIR /src/frontend
 COPY --from=source /src/frontend/package.json /src/frontend/yarn.lock ./
 RUN yarn install --frozen-lockfile --network-timeout 600000
 COPY --from=source /src/frontend ./
-RUN yarn build
+# MTLNOG theme: overlay replaces upstream files 1:1, theme.css is appended after upstream styles.
+COPY overlay/frontend/ ./
+COPY overlay/theme.css /tmp/theme.css
+RUN cat /tmp/theme.css >> src/index.css \
+ && yarn build
 
 FROM docker.io/library/python:${PYTHON_VERSION}-slim AS python
 ENV POETRY_VIRTUALENVS_IN_PROJECT=true \

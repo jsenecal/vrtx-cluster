@@ -79,7 +79,8 @@ jobs:
         id: ref
         run: |
           ref="$(sed -n 's/^ARG IRREXPLORER_REF=//p' build/irrexplorer/Containerfile)"
-          echo "short=${ref:0:7}" >> "$GITHUB_OUTPUT"
+          # Upstream commit + this repo's commit, so overlay/theme changes get their own tag.
+          echo "tag=${ref:0:7}-${GITHUB_SHA:0:7}" >> "$GITHUB_OUTPUT"
 
       - name: Set up Buildx
         uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
@@ -99,7 +100,7 @@ jobs:
           file: build/irrexplorer/Containerfile
           push: true
           tags: |
-            ${{ env.IMAGE }}:${{ steps.ref.outputs.short }}
+            ${{ env.IMAGE }}:${{ steps.ref.outputs.tag }}
             ${{ env.IMAGE }}:latest
           cache-from: type=gha,scope=irrexplorer
           cache-to: type=gha,scope=irrexplorer,mode=max
