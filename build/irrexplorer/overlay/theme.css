@@ -1,21 +1,57 @@
 /* MTLNOG theme, appended to frontend/src/index.css at build time (after Bootstrap).
-   Tokens mirror https://mtlnog.org. */
+   Dark tokens mirror https://mtlnog.org; light tokens are a matching day palette.
+   data-bs-theme on <html> is set before first paint by the script in public/index.html. */
+
+/* Palettes */
 :root,
+[data-bs-theme=light] {
+    --mtl-bg: #f6f7fb;
+    --mtl-bg-rgb: 246, 247, 251;
+    --mtl-surface: #ffffff;
+    --mtl-border: #d6dbe8;
+    --mtl-text: #1a1f2e;
+    --mtl-text-dim: #4a5370;
+    --mtl-muted: #6b7591;
+    --mtl-heading: #0b0d14;
+    --mtl-accent: #e8162b;
+    --mtl-accent-hover: #c41226;
+    --mtl-link: #c41226;
+    --mtl-link-rgb: 196, 18, 38;
+    --mtl-link-hover: #9e0e1f;
+    --mtl-on-accent: #ffffff;
+    --mtl-code: #c2410c;
+    --mtl-tint: rgba(26, 31, 46, .03);
+    --mtl-tint-hover: rgba(26, 31, 46, .05);
+}
+
 [data-bs-theme=dark] {
     --mtl-bg: #08090d;
+    --mtl-bg-rgb: 8, 9, 13;
     --mtl-surface: #0e1018;
     --mtl-border: #2a3048;
     --mtl-text: #dde2f2;
     --mtl-text-dim: #9ba5c4;
     --mtl-muted: #7c8aaa;
+    --mtl-heading: #ffffff;
     --mtl-accent: #e8162b;
     --mtl-accent-hover: #ff2d42;
-    --mtl-accent2: #ff6b35;
+    --mtl-link: #e8162b;
+    --mtl-link-rgb: 232, 22, 43;
+    --mtl-link-hover: #ff2d42;
+    --mtl-on-accent: #08090d;
+    --mtl-code: #ff6b35;
+    --mtl-tint: rgba(221, 226, 242, .03);
+    --mtl-tint-hover: rgba(221, 226, 242, .05);
+}
+
+/* Bootstrap variables, shared by both palettes */
+:root,
+[data-bs-theme] {
     --mtl-mono: "Share Tech Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
     --mtl-sans: "DM Sans", system-ui, sans-serif;
 
     --bs-body-bg: var(--mtl-bg);
-    --bs-body-bg-rgb: 8, 9, 13;
+    --bs-body-bg-rgb: var(--mtl-bg-rgb);
     --bs-body-color: var(--mtl-text);
     --bs-body-font-family: var(--mtl-sans);
     --bs-font-monospace: var(--mtl-mono);
@@ -23,12 +59,12 @@
     --bs-tertiary-bg: var(--mtl-surface);
     --bs-secondary-color: var(--mtl-text-dim);
     --bs-border-color: var(--mtl-border);
-    --bs-emphasis-color: #fff;
-    --bs-link-color: var(--mtl-accent);
-    --bs-link-color-rgb: 232, 22, 43;
-    --bs-link-hover-color: var(--mtl-accent-hover);
-    --bs-link-hover-color-rgb: 255, 45, 66;
-    --bs-code-color: var(--mtl-accent2);
+    --bs-emphasis-color: var(--mtl-heading);
+    --bs-heading-color: var(--mtl-heading);
+    --bs-link-color: var(--mtl-link);
+    --bs-link-color-rgb: var(--mtl-link-rgb);
+    --bs-link-hover-color: var(--mtl-link-hover);
+    --bs-code-color: var(--mtl-code);
     --bs-primary: var(--mtl-accent);
     --bs-primary-rgb: 232, 22, 43;
     --bs-focus-ring-color: rgba(232, 22, 43, .25);
@@ -36,6 +72,7 @@
 
 body {
     font-weight: 300;
+    transition: background-color .2s, color .2s;
 }
 
 h1, h2, h3, h4, h5, h6,
@@ -47,11 +84,17 @@ th,
 }
 
 h1, h2, h3, h4, h5, h6 {
-    color: #fff;
+    color: var(--mtl-heading);
 }
 
 .lead {
     color: var(--mtl-text);
+}
+
+/* The IRR explorer logo is imported by React; swap in the dark-ink variant for light mode */
+[data-bs-theme=light] img.logo,
+[data-bs-theme=light] img.logo-small {
+    content: url("./logo-light.png");
 }
 
 /* Header, mirroring the mtlnog.org header */
@@ -89,6 +132,13 @@ h1, h2, h3, h4, h5, h6 {
     letter-spacing: .08em;
 }
 
+.mtlnog-header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 1.75rem;
+    align-items: center;
+}
+
 .mtlnog-nav {
     display: flex;
     flex-wrap: wrap;
@@ -108,6 +158,43 @@ h1, h2, h3, h4, h5, h6 {
 .mtlnog-nav a:hover,
 .mtlnog-nav a.active {
     color: var(--mtl-accent);
+}
+
+/* Light/dark switch */
+.mtlnog-theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: 1px solid var(--mtl-border);
+    border-radius: 3px;
+    background: transparent;
+    color: var(--mtl-text-dim);
+    cursor: pointer;
+    transition: color .2s, border-color .2s;
+}
+
+.mtlnog-theme-toggle:hover {
+    color: var(--mtl-accent);
+    border-color: var(--mtl-accent);
+}
+
+.mtlnog-theme-toggle:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(232, 22, 43, .25);
+}
+
+.mtlnog-theme-toggle svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Show the icon for the mode you would switch to */
+[data-bs-theme=dark] .mtlnog-theme-toggle .icon-moon,
+[data-bs-theme=light] .mtlnog-theme-toggle .icon-sun {
+    display: none;
 }
 
 /* Footer */
@@ -141,16 +228,16 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Buttons: upstream uses btn-success for search, use the MTLNOG accent instead */
 .btn-success {
-    --bs-btn-color: var(--mtl-bg);
+    --bs-btn-color: var(--mtl-on-accent);
     --bs-btn-bg: var(--mtl-accent);
     --bs-btn-border-color: var(--mtl-accent);
-    --bs-btn-hover-color: var(--mtl-bg);
+    --bs-btn-hover-color: var(--mtl-on-accent);
     --bs-btn-hover-bg: var(--mtl-accent-hover);
     --bs-btn-hover-border-color: var(--mtl-accent-hover);
-    --bs-btn-active-color: var(--mtl-bg);
+    --bs-btn-active-color: var(--mtl-on-accent);
     --bs-btn-active-bg: var(--mtl-accent-hover);
     --bs-btn-active-border-color: var(--mtl-accent-hover);
-    --bs-btn-disabled-color: var(--mtl-bg);
+    --bs-btn-disabled-color: var(--mtl-on-accent);
     --bs-btn-disabled-bg: var(--mtl-accent);
     --bs-btn-disabled-border-color: var(--mtl-accent);
     --bs-btn-border-radius: 2px;
@@ -170,7 +257,7 @@ h1, h2, h3, h4, h5, h6 {
     --bs-btn-color: var(--mtl-text);
     --bs-btn-hover-bg: var(--mtl-border);
     --bs-btn-hover-border-color: var(--mtl-border);
-    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-color: var(--mtl-heading);
 }
 
 /* Form inputs, as on mtlnog.org */
@@ -200,16 +287,16 @@ input[type=checkbox] {
     --bs-table-bg: transparent;
     --bs-table-color: var(--mtl-text);
     --bs-table-border-color: var(--mtl-border);
-    --bs-table-striped-bg: rgba(221, 226, 242, .03);
-    --bs-table-hover-bg: rgba(221, 226, 242, .05);
+    --bs-table-striped-bg: var(--mtl-tint);
+    --bs-table-hover-bg: var(--mtl-tint-hover);
 }
 
 .table-fixed th {
     background: var(--mtl-bg);
 }
 
-/* Status rows: Bootstrap's light tints are unreadable here, use dark tints instead */
-.table-danger {
+/* Status rows: Bootstrap's light tints suit light mode; dark mode needs dark tints */
+[data-bs-theme=dark] .table-danger {
     --bs-table-bg: #2a0c12;
     --bs-table-color: #ffc9cf;
     --bs-table-border-color: #4a1a22;
@@ -217,7 +304,7 @@ input[type=checkbox] {
     --bs-table-striped-color: #ffc9cf;
 }
 
-.table-warning {
+[data-bs-theme=dark] .table-warning {
     --bs-table-bg: #2a1d08;
     --bs-table-color: #ffe0b0;
     --bs-table-border-color: #4a3414;
@@ -225,7 +312,7 @@ input[type=checkbox] {
     --bs-table-striped-color: #ffe0b0;
 }
 
-.table-success {
+[data-bs-theme=dark] .table-success {
     --bs-table-bg: #0b2018;
     --bs-table-color: #bfeed6;
     --bs-table-border-color: #183a2c;
@@ -233,7 +320,7 @@ input[type=checkbox] {
     --bs-table-striped-color: #bfeed6;
 }
 
-.table-info {
+[data-bs-theme=dark] .table-info {
     --bs-table-bg: #0b1a2a;
     --bs-table-color: #c4dcf5;
     --bs-table-border-color: #1a3048;
@@ -246,20 +333,19 @@ input[type=checkbox] {
     --bs-accordion-bg: transparent;
     --bs-accordion-border-color: var(--mtl-border);
     --bs-accordion-btn-color: var(--mtl-text);
-    --bs-accordion-active-color: #fff;
+    --bs-accordion-active-color: var(--mtl-heading);
     --bs-accordion-active-bg: var(--mtl-surface);
     --bs-accordion-btn-focus-box-shadow: 0 0 0 3px rgba(232, 22, 43, .12);
-    --bs-accordion-btn-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%239ba5c4' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='M2 5L8 11L14 5'/%3e%3c/svg%3e");
-    --bs-accordion-btn-active-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23e8162b' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='M2 5L8 11L14 5'/%3e%3c/svg%3e");
 }
 
 .accordion-button {
     font-family: var(--mtl-mono);
 }
 
-/* Bootstrap's dark mode sets the icons on ::after itself, so they must be overridden there */
-[data-bs-theme=dark] .accordion-button::after {
-    --bs-accordion-btn-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%239ba5c4' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='M2 5L8 11L14 5'/%3e%3c/svg%3e");
+/* Bootstrap's dark mode sets the icons on ::after itself, so they are overridden there */
+.accordion-button::after,
+[data-bs-theme] .accordion-button::after {
+    --bs-accordion-btn-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%237c8aaa' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='M2 5L8 11L14 5'/%3e%3c/svg%3e");
     --bs-accordion-btn-active-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23e8162b' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='M2 5L8 11L14 5'/%3e%3c/svg%3e");
 }
 
@@ -279,5 +365,5 @@ pre.bg-dark {
 
 ::selection {
     background: rgba(232, 22, 43, .35);
-    color: #fff;
+    color: var(--mtl-heading);
 }

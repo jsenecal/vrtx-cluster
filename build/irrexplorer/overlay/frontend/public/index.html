@@ -3,11 +3,22 @@
     <head>
         <meta charset="utf-8"/>
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
-        <meta name="color-scheme" content="dark"/>
+        <meta name="color-scheme" content="dark light"/>
         <meta
                 name="description"
                 content="Gain insights and debug your Internet Routing Registry configuration. Hosted by MTLNOG."
         />
+        <script>
+            // Pick the theme before first paint: saved choice, else the OS preference, else dark.
+            (function () {
+                var theme;
+                try { theme = localStorage.getItem("mtlnog-theme"); } catch (e) {}
+                if (theme !== "light" && theme !== "dark") {
+                    theme = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+                }
+                document.documentElement.setAttribute("data-bs-theme", theme);
+            })();
+        </script>
         <link rel="preconnect" href="https://fonts.googleapis.com"/>
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap"/>
@@ -21,14 +32,65 @@
                     <img class="mtlnog-logo-mark" src="%PUBLIC_URL%/mtlnog-logo.png" alt="MTLNOG logo" width="605" height="147"/>
                     <span class="mtlnog-logo-text">Montreal Network Operator Group</span>
                 </a>
-                <nav class="mtlnog-nav">
-                    <a class="active" href="/">IRR explorer</a>
-                    <a href="https://mtlnog.org/en/events/">Events</a>
-                    <a href="https://mtlnog.org/en/#invite">Request an Invite</a>
-                </nav>
+                <div class="mtlnog-header-actions">
+                    <nav class="mtlnog-nav">
+                        <a class="active" href="/">IRR explorer</a>
+                        <a href="https://mtlnog.org/en/events/">Events</a>
+                        <a href="https://mtlnog.org/en/#invite">Request an Invite</a>
+                    </nav>
+                    <button type="button" class="mtlnog-theme-toggle" id="mtlnog-theme-toggle"
+                            aria-label="Switch to light mode" title="Switch to light mode">
+                        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="12" r="4"/>
+                            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+                        </svg>
+                        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
         </header>
         <div id="root"></div>
         <footer class="footer mt-auto py-3 text-end" id="footer"></footer>
+        <script>
+            (function () {
+                var root = document.documentElement;
+                var button = document.getElementById("mtlnog-theme-toggle");
+
+                function label() {
+                    var next = root.getAttribute("data-bs-theme") === "dark" ? "light" : "dark";
+                    button.setAttribute("aria-label", "Switch to " + next + " mode");
+                    button.setAttribute("title", "Switch to " + next + " mode");
+                }
+
+                function saved() {
+                    try { return localStorage.getItem("mtlnog-theme"); } catch (e) { return null; }
+                }
+
+                button.addEventListener("click", function () {
+                    var next = root.getAttribute("data-bs-theme") === "dark" ? "light" : "dark";
+                    root.setAttribute("data-bs-theme", next);
+                    try { localStorage.setItem("mtlnog-theme", next); } catch (e) {}
+                    label();
+                });
+
+                // Until someone picks a mode, keep following the OS setting.
+                if (window.matchMedia) {
+                    var query = window.matchMedia("(prefers-color-scheme: light)");
+                    var onChange = function (e) {
+                        if (saved() !== "light" && saved() !== "dark") {
+                            root.setAttribute("data-bs-theme", e.matches ? "light" : "dark");
+                            label();
+                        }
+                    };
+                    if (query.addEventListener) { query.addEventListener("change", onChange); }
+                }
+
+                label();
+            })();
+        </script>
     </body>
 </html>
