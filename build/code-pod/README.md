@@ -27,7 +27,7 @@ To ssh in, drop a pubkey into `/etc/code-pod/ssh/authorized_keys` (sshd reads `A
 
 Stage 1 (`aur-build`) builds `yay-bin` from AUR with a disposable `builder` user. Only the resulting `.pkg.tar.zst` crosses into stage 2.
 
-Stage 2 (`final`) installs the pacman package set, copies the AUR yay package and `pacman -U`s it, drops in `rootfs/`, creates `${USERNAME}` (UID `${UID}`, in `wheel`, shell `/usr/bin/fish`), `npm install -g @anthropic-ai/claude-code`, runs the Oh My Fish installer non-interactively as the user, sets the entrypoint.
+Stage 2 (`final`) installs the pacman package set (including `chromium` plus `noto-fonts`/`ttf-dejavu` so headless browser checks, e.g. playwright with `executable_path="/usr/bin/chromium"`, work without extra setup), copies the AUR yay package and `pacman -U`s it, drops in `rootfs/`, creates `${USERNAME}` (UID `${UID}`, in `wheel`, shell `/usr/bin/fish`), `npm install -g @anthropic-ai/claude-code`, runs the Oh My Fish installer non-interactively as the user, sets the entrypoint.
 
 Runtime (`code-pod-entrypoint.sh`) generates sshd host keys into `/etc/ssh` (an emptyDir at deploy time), runs a first-run home-PVC sentinel to set ownership and create `~/.ssh`, then `exec`s `sshd -D -e`.
 

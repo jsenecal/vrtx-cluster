@@ -41,6 +41,12 @@ fi
 # it's why authorized_keys is served from the read-only ssh-seed Secret mount
 # instead of a copy here: sshd never sees this volume's permissions for login.
 # Re-tighten on every start, not just first init.
+# The home PVC root can come back root-owned (fresh CSI volume after the
+# sentinel already exists, VolSync restore), leaving $HOME unwritable for the
+# user: tools that create ~/.cloudflared, ~/.cache/ms-playwright etc. fail.
+# Re-own just the top-level directory; sshd's StrictModes accepts a
+# user-owned 0755 home.
+chown "${USERNAME}:${USERNAME}" "${home}"
 chmod g-w,o-w "${home}"
 if [ -d "${home}/.ssh" ]; then
     chmod 0700 "${home}/.ssh"
@@ -58,6 +64,13 @@ if [ -d "${home}/.config/op" ]; then
     chmod 0700 "${home}/.config/op"
     find "${home}/.config/op" -maxdepth 1 -type f -exec chmod 0600 {} +
 fi
+
+# cloudflared keeps its account-wide origin cert (`cloudflared tunnel login`)
+# in ~/.cloudflared/cert.pem. Pre-create it user-owned and private so login
+# works and the cert isn't left group-readable by the fsGroup reconcile.
+install -d -o "${USERNAME}" -g "${USERNAME}" -m 0700 "${home}/.cloudflared"
+chmod 0700 "${home}/.cloudflared"
+find "${home}/.cloudflared" -maxdepth 1 -type f -exec chmod 0600 {} +
 
 # sshd execs as PID 1 with no profile/PAM step that forwards the container's
 # own env (image env, Kubernetes `env`/`envFrom`, ExternalSecrets-backed

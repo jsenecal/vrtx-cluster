@@ -27,6 +27,7 @@ RUN sed -i 's/^#Color/Color/' /etc/pacman.conf \
       python python-pip ca-certificates tzdata inetutils ncurses \
       kubectl helm kustomize k9s kubectx stern sops age go-task \
       docker docker-compose docker-buildx \
+      chromium noto-fonts ttf-dejavu \
  && pacman -Scc --noconfirm
 
 # tmux/vim ship without the xterm-kitty terminfo entry, so SSH clients

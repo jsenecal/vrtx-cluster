@@ -95,6 +95,8 @@ spec:
               DOCKER_TLS_CERTDIR: ""
             args:
               - --host=unix:///var/run/docker/docker.sock
+              # Socket group = the dev user's GID, so `docker` works without sudo.
+              - --group=1000
               - --storage-driver=overlay2
             securityContext:
               privileged: true
@@ -200,6 +202,16 @@ spec:
           code-pod:
             dind:
               - path: /var/lib/docker
+      # Headless Chromium (playwright screenshots of web UIs) crashes renderers
+      # with the runtime's default 64Mi /dev/shm.
+      dshm:
+        type: emptyDir
+        medium: Memory
+        sizeLimit: 1Gi
+        advancedMounts:
+          code-pod:
+            app:
+              - path: /dev/shm
       docker-socket:
         type: emptyDir
         advancedMounts:
