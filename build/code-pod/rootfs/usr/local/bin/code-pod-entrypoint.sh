@@ -65,6 +65,13 @@ if [ -d "${home}/.config/op" ]; then
     find "${home}/.config/op" -maxdepth 1 -type f -exec chmod 0600 {} +
 fi
 
+# cloudflared keeps its account-wide origin cert (`cloudflared tunnel login`)
+# in ~/.cloudflared/cert.pem. Pre-create it user-owned and private so login
+# works and the cert isn't left group-readable by the fsGroup reconcile.
+install -d -o "${USERNAME}" -g "${USERNAME}" -m 0700 "${home}/.cloudflared"
+chmod 0700 "${home}/.cloudflared"
+find "${home}/.cloudflared" -maxdepth 1 -type f -exec chmod 0600 {} +
+
 # sshd execs as PID 1 with no profile/PAM step that forwards the container's
 # own env (image env, Kubernetes `env`/`envFrom`, ExternalSecrets-backed
 # values) into SSH login sessions — they're invisible to an SSH session
