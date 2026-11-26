@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.28
+# syntax=docker/dockerfile:1.29
 # IRR explorer (https://github.com/nlnog/irrexplorer) has no upstream image or releases,
 # so this builds a pinned commit. Bump IRREXPLORER_REF to update; the image is tagged with it.
 # overlay/ themes the frontend to match mtlnog.org; re-check it against upstream when bumping.
