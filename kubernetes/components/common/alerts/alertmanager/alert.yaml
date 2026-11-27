@@ -8,6 +8,8 @@ spec:
   providerRef:
     name: alertmanager
   eventSeverity: error
+  # HelmRepository/OCIRepository fetch failures are alerted from Prometheus
+  # (FluxSourceNotReady) so transient download errors get retried first.
   eventSources:
     - kind: FluxInstance
       name: "*"
@@ -15,11 +17,7 @@ spec:
       name: "*"
     - kind: HelmRelease
       name: "*"
-    - kind: HelmRepository
-      name: "*"
     - kind: Kustomization
-      name: "*"
-    - kind: OCIRepository
       name: "*"
   exclusionList:
     - "error.*lookup github\\.com"

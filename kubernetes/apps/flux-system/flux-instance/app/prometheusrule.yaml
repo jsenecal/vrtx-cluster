@@ -28,3 +28,21 @@ spec:
               Flux instance {{ $labels.name }} is not ready
           labels:
             severity: critical
+    - name: flux-sources.rules
+      rules:
+        # Replaces the notification-controller event alerts for these kinds, which
+        # page on every single failed fetch (e.g. a transient TLS handshake timeout).
+        - alert: FluxSourceNotReady
+          expr: |
+            max by (exported_namespace, kind, name) (
+              flux_resource_info{kind=~"HelmRepository|OCIRepository|HelmChart", ready!="True", suspended="False"}
+            )
+          for: 30m
+          annotations:
+            summary: >-
+              {{ $labels.kind }} {{ $labels.exported_namespace }}/{{ $labels.name }} has failed to fetch for over 30 minutes
+            description: >-
+              Flux has been retrying {{ $labels.kind }} {{ $labels.exported_namespace }}/{{ $labels.name }}
+              for 30 minutes without success. Check: flux -n {{ $labels.exported_namespace }} get sources all
+          labels:
+            severity: warning
