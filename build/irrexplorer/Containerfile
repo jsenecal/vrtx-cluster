@@ -5,7 +5,7 @@
 ARG IRREXPLORER_REF=2e812de5ca44dc03671c41a926858bb9c8bd4bc1
 ARG PYTHON_VERSION=3.13
 
-FROM docker.io/library/alpine:3.22 AS source
+FROM docker.io/library/alpine:3.24 AS source
 ARG IRREXPLORER_REF
 RUN apk add --no-cache git
 WORKDIR /src
