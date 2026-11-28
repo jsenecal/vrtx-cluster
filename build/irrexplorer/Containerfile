@@ -15,7 +15,7 @@ RUN git init -q . \
  && git checkout -q FETCH_HEAD \
  && rm -rf .git
 
-FROM docker.io/library/node:22-alpine AS frontend
+FROM docker.io/library/node:26-alpine AS frontend
 WORKDIR /src/frontend
 COPY --from=source /src/frontend/package.json /src/frontend/yarn.lock ./
 RUN yarn install --frozen-lockfile --network-timeout 600000
