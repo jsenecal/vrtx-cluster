@@ -26,7 +26,7 @@ spec:
           app:
             image:
               repository: ghcr.io/jsenecal/code-pod
-              tag: main@sha256:3a468aaab7129712ab66fb3c37f180a28b948495a51eb8d23f2c00b2497d3071
+              tag: main@sha256:37acfeefec23de6a6ebbb7e1eb5b7049b3fcebb517dc64dd052c0e1efc045011
             env:
               DOCKER_HOST: unix:///var/run/docker/docker.sock
               HOMEASSISTANT_URL: http://home-assistant.home-automation.svc.cluster.local:8123
